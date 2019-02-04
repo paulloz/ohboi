@@ -1,0 +1,1 @@
+A simple GB emulator written for fun in Go.
