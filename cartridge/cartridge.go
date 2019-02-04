@@ -10,6 +10,7 @@ import (
 
 type MBC interface {
 	Read(address Word) Byte
+	Write(address Word, data Byte)
 }
 
 type Cartridge struct {
@@ -36,7 +37,7 @@ func NewCartridge(filename string) (*Cartridge, error) {
 		cartridge.MBC = &ROM{rom: data}
 	} else {
 		if cartridgeType <= 0x03 {
-			cartridge.MBC = &MBC1{rom: data}
+			cartridge.MBC = NewMBC1(data)
 		} else {
 			return nil, errors.New(fmt.Sprintf("Unknown cartridge type: %X.", cartridgeType))
 		}

@@ -11,3 +11,5 @@ type ROM struct {
 func (c *ROM) Read(address Word) Byte {
 	return c.rom[address]
 }
+
+func (c *ROM) Write(address Word, data Byte) {}
