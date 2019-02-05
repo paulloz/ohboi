@@ -20,6 +20,8 @@ type CPU struct {
 
 // ExecuteOpCode ...
 // TODO: Might want to move this to GameBoy so we don't have to pass *Memory as parameter. Also, it'd make it easier to implement stuff like DI.
+// TODO: Maybe an array of func would be better?
+// TODO: There's probably a better way to handle CPU cycles count
 func (cpu *CPU) ExecuteOpCode(opCode uint8, mem *memory.Memory) uint {
 	switch opCode {
 	case 0xF3: // DI
@@ -53,7 +55,7 @@ func (cpu *CPU) ExecuteOpCode(opCode uint8, mem *memory.Memory) uint {
 	return 0
 }
 
-// AdvancePC return PC value and increments it
+// AdvancePC returns PC value and increments it
 func (cpu *CPU) AdvancePC() uint16 {
 	n := cpu.PC
 	cpu.PC++
@@ -62,33 +64,33 @@ func (cpu *CPU) AdvancePC() uint16 {
 
 func (cpu *CPU) setZFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x40)
+		cpu.AF.SetLo(cpu.AF.Lo() | 0x80) // 0x80 -> 1000 0000
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0xBF)
+		cpu.AF.SetLo(cpu.AF.Lo() & 0x7F) // 0x7F -> 0111 1111
 	}
 }
 
 func (cpu *CPU) setNFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x20)
+		cpu.AF.SetLo(cpu.AF.Lo() | 0x40) // 0x40 -> 0100 0000
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0xDF)
+		cpu.AF.SetLo(cpu.AF.Lo() & 0xBF) // 0xBF -> 1011 1111
 	}
 }
 
 func (cpu *CPU) setHFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x10)
+		cpu.AF.SetLo(cpu.AF.Lo() | 0x20) // 0x20 -> 0010 0000
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0xEF)
+		cpu.AF.SetLo(cpu.AF.Lo() & 0xDF) // 0xDF -> 1101 1111
 	}
 }
 
 func (cpu *CPU) setCFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x08)
+		cpu.AF.SetLo(cpu.AF.Lo() | 0x10) // 0x10 -> 0001 0000
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0xF7)
+		cpu.AF.SetLo(cpu.AF.Lo() & 0xEF) // 0xEF -> 1110 1111
 	}
 }
 
