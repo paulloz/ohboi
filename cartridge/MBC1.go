@@ -51,7 +51,7 @@ func (c *MBC1) Write(address Word, data Byte) {
 		} else { // Bits 5 and 6 of romBank
 			c.bankROM((c.romBank & 0x1F) | (data & 0x60))
 		}
-	} else if address <= 0x6FFF {
+	} else if address <= 0x7FFF {
 		c.isRAMBanking = (data & 1) != 0
 		if !c.isRAMBanking {
 			c.bankRAM(0)
@@ -69,5 +69,5 @@ func (c *MBC1) bankROM(newBank Byte) {
 
 func (c *MBC1) bankRAM(newBank Byte) {
 	c.ramBank = newBank
-	c.activeRamBankStart = Word(c.ramBank) * Word(0xA000)
+	c.activeRamBankStart = Word(c.ramBank) * Word(0x2000)
 }
