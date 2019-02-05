@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/paulloz/gb-emulator/cartridge"
+	. "github.com/paulloz/ohboi/cartridge"
 )
 
 var (

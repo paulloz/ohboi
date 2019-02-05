@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	. "github.com/paulloz/gb-emulator/types"
+	. "github.com/paulloz/ohboi/types"
 )
 
 type MBC interface {

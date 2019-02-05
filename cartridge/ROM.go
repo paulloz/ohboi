@@ -1,7 +1,7 @@
 package cartridge
 
 import (
-	. "github.com/paulloz/gb-emulator/types"
+	. "github.com/paulloz/ohboi/types"
 )
 
 type ROM struct {
