@@ -36,8 +36,18 @@ func NewCartridge(filename string) (*Cartridge, error) {
 	if cartridgeType == 0x00 {
 		cartridge.MBC = &ROM{rom: data}
 	} else {
+		ramSize := Word(0)
+		switch data[0x0149] {
+		case 0x01:
+			ramSize = 2 * 1024
+		case 0x02:
+			ramSize = 8 * 1024
+		case 0x03:
+			ramSize = 32 * 1024
+		}
+
 		if cartridgeType <= 0x03 {
-			cartridge.MBC = NewMBC1(data)
+			cartridge.MBC = NewMBC1(data, ramSize)
 		} else {
 			return nil, errors.New(fmt.Sprintf("Unknown cartridge type: %X.", cartridgeType))
 		}

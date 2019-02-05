@@ -10,14 +10,20 @@ type MBC1 struct {
 	romBank            Byte
 	activeRomBankStart Word
 
+	ram []Byte
+
 	isRAMBanking       bool
 	isRAMEnabled       bool
+	ramBank            Byte
+	activeRamBankStart Word
 }
 
-func NewMBC1(rom []Byte) *MBC1 {
+func NewMBC1(rom []Byte, ramSize Word) *MBC1 {
 	return &MBC1{
 		rom:     rom,
 		romBank: 1,
+
+		ram: make([]Byte, ramSize),
 
 		isRAMBanking: false,
 		isRAMEnabled: false,
@@ -31,7 +37,7 @@ func (c *MBC1) Read(address Word) Byte {
 		return c.rom[address-0x4000+c.activeRomBankStart]
 	}
 
-	return 0
+	return c.ram[address-0xA000+c.activeRamBankStart]
 }
 
 func (c *MBC1) Write(address Word, data Byte) {
@@ -40,12 +46,16 @@ func (c *MBC1) Write(address Word, data Byte) {
 	} else if address <= 0x3FFF { // Lower 5bits of romBank
 		c.bankROM((c.romBank & 0x60) | (data & 0x1F))
 	} else if address <= 0x5FFF {
-		if c.isRAMBanking {
+		if c.isRAMBanking { // 2 bits of ramBank
+			c.bankRAM((c.ramBank & 0xFC) | (data & 0x3))
 		} else { // Bits 5 and 6 of romBank
 			c.bankROM((c.romBank & 0x1F) | (data & 0x60))
 		}
 	} else if address <= 0x6FFF {
 		c.isRAMBanking = (data & 1) != 0
+		if !c.isRAMBanking {
+			c.bankRAM(0)
+		}
 	}
 }
 
@@ -55,4 +65,9 @@ func (c *MBC1) bankROM(newBank Byte) {
 	}
 	c.romBank = newBank
 	c.activeRomBankStart = Word(c.romBank) * Word(0x4000)
+}
+
+func (c *MBC1) bankRAM(newBank Byte) {
+	c.ramBank = newBank
+	c.activeRamBankStart = Word(c.ramBank) * Word(0xA000)
 }
