@@ -56,6 +56,10 @@ func (c *MBC1) Write(address Word, data Byte) {
 		if !c.isRAMBanking {
 			c.bankRAM(0)
 		}
+	} else if address >= 0xA000 && address <= 0xBFFF { // Writing to RAM
+		if c.isRAMEnabled {
+			c.ram[address-0xA000+c.activeRamBankStart] = data
+		}
 	}
 }
 
