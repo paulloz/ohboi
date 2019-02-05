@@ -1,5 +1,9 @@
 package gameboy
 
+import (
+	"github.com/paulloz/ohboi/gameboy/memory"
+)
+
 // Speed constants
 const (
 	ClockSpeed     = 4194304          // Cycles per second
@@ -35,7 +39,14 @@ func (gb *GameBoy) Update() uint {
 	return cycles
 }
 
+// InsertCartridgeFromFile ...
+func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
+	gb.memory.LoadCartridgeFromFile(filename)
+}
+
 // NewGameBoy ...
 func NewGameBoy() *GameBoy {
-	return &GameBoy{}
+	return &GameBoy{
+		memory: memory.NewMemory(),
+	}
 }

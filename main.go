@@ -25,6 +25,7 @@ func init() {
 
 func main() {
 	gameBoy = gameboy.NewGameBoy()
+	gameBoy.InsertCartridgeFromFile(romFilename)
 
 	ticker := time.NewTicker(time.Second / gameboy.FPS)
 

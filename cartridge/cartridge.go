@@ -8,7 +8,7 @@ import (
 // MBC ...
 type MBC interface {
 	Read(address uint16) uint8
-	Write(address uint16, data uint8)
+	Write(address uint16, value uint8)
 }
 
 // Cartridge ...

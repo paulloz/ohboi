@@ -38,25 +38,25 @@ func (c *MBC1) Read(address uint16) uint8 {
 	return c.ram[address-0xA000+c.activeRAMBankStart]
 }
 
-func (c *MBC1) Write(address uint16, data uint8) {
+func (c *MBC1) Write(address uint16, value uint8) {
 	if address <= 0x1FFF { // 0x0A on lower 4 bits enable RAM, other values disable RAM
-		c.isRAMEnabled = (data & 0xF) == 0xA
+		c.isRAMEnabled = (value & 0xF) == 0xA
 	} else if address <= 0x3FFF { // Lower 5bits of romBank
-		c.bankROM((c.romBank & 0x60) | (data & 0x1F))
+		c.bankROM((c.romBank & 0x60) | (value & 0x1F))
 	} else if address <= 0x5FFF {
 		if c.isRAMBanking { // 2 bits of ramBank
-			c.bankRAM((c.ramBank & 0xFC) | (data & 0x3))
+			c.bankRAM((c.ramBank & 0xFC) | (value & 0x3))
 		} else { // Bits 5 and 6 of romBank
-			c.bankROM((c.romBank & 0x1F) | (data & 0x60))
+			c.bankROM((c.romBank & 0x1F) | (value & 0x60))
 		}
 	} else if address <= 0x7FFF {
-		c.isRAMBanking = (data & 1) != 0
+		c.isRAMBanking = (value & 1) != 0
 		if !c.isRAMBanking {
 			c.bankRAM(0)
 		}
 	} else if address >= 0xA000 && address <= 0xBFFF { // Writing to RAM
 		if c.isRAMEnabled {
-			c.ram[address-0xA000+c.activeRAMBankStart] = data
+			c.ram[address-0xA000+c.activeRAMBankStart] = value
 		}
 	}
 }
