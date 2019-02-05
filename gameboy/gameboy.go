@@ -1,6 +1,9 @@
 package gameboy
 
 import (
+	"fmt"
+
+	"github.com/paulloz/ohboi/gameboy/cpu"
 	"github.com/paulloz/ohboi/gameboy/memory"
 )
 
@@ -13,11 +16,18 @@ const (
 
 // GameBoy ...
 type GameBoy struct {
+	cpu    *cpu.CPU
+	memory *memory.Memory
 }
 
 // ExecuteNextOpCode ...
 func (gb *GameBoy) ExecuteNextOpCode() uint {
-	return 1
+	opCode := gb.memory.Read(gb.cpu.AdvancePC())
+	fmt.Printf("[PC]> %X\n", gb.cpu.PC)
+
+	cycles := gb.cpu.ExecuteOpCode(opCode, gb.memory)
+
+	return cycles
 }
 
 // Update ...
@@ -47,6 +57,7 @@ func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
 // NewGameBoy ...
 func NewGameBoy() *GameBoy {
 	return &GameBoy{
+		cpu:    cpu.NewCPU(),
 		memory: memory.NewMemory(),
 	}
 }
