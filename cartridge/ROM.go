@@ -1,15 +1,12 @@
 package cartridge
 
-import (
-	. "github.com/paulloz/ohboi/types"
-)
-
+// ROM ...
 type ROM struct {
-	rom []Byte
+	rom []uint8
 }
 
-func (c *ROM) Read(address Word) Byte {
+func (c *ROM) Read(address uint16) uint8 {
 	return c.rom[address]
 }
 
-func (c *ROM) Write(address Word, data Byte) {}
+func (c *ROM) Write(address uint16, data uint8) {}

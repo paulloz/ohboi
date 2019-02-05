@@ -1,46 +1,44 @@
 package cartridge
 
-import (
-	. "github.com/paulloz/ohboi/types"
-)
-
+// MBC1 ...
 type MBC1 struct {
-	rom []Byte
+	rom []uint8
 
-	romBank            Byte
-	activeRomBankStart Word
+	romBank            uint8
+	activeRomBankStart uint16
 
-	ram []Byte
+	ram []uint8
 
 	isRAMBanking       bool
 	isRAMEnabled       bool
-	ramBank            Byte
-	activeRamBankStart Word
+	ramBank            uint8
+	activeRAMBankStart uint16
 }
 
-func NewMBC1(rom []Byte, ramSize Word) *MBC1 {
+// NewMBC1 ...
+func NewMBC1(rom []uint8, ramSize uint16) *MBC1 {
 	return &MBC1{
 		rom:     rom,
 		romBank: 1,
 
-		ram: make([]Byte, ramSize),
+		ram: make([]uint8, ramSize),
 
 		isRAMBanking: false,
 		isRAMEnabled: false,
 	}
 }
 
-func (c *MBC1) Read(address Word) Byte {
+func (c *MBC1) Read(address uint16) uint8 {
 	if address <= 0x3FFF {
 		return c.rom[address] // First bank is always there
 	} else if address <= 0x7FFF {
 		return c.rom[address-0x4000+c.activeRomBankStart]
 	}
 
-	return c.ram[address-0xA000+c.activeRamBankStart]
+	return c.ram[address-0xA000+c.activeRAMBankStart]
 }
 
-func (c *MBC1) Write(address Word, data Byte) {
+func (c *MBC1) Write(address uint16, data uint8) {
 	if address <= 0x1FFF { // 0x0A on lower 4 bits enable RAM, other values disable RAM
 		c.isRAMEnabled = (data & 0xF) == 0xA
 	} else if address <= 0x3FFF { // Lower 5bits of romBank
@@ -58,20 +56,20 @@ func (c *MBC1) Write(address Word, data Byte) {
 		}
 	} else if address >= 0xA000 && address <= 0xBFFF { // Writing to RAM
 		if c.isRAMEnabled {
-			c.ram[address-0xA000+c.activeRamBankStart] = data
+			c.ram[address-0xA000+c.activeRAMBankStart] = data
 		}
 	}
 }
 
-func (c *MBC1) bankROM(newBank Byte) {
+func (c *MBC1) bankROM(newBank uint8) {
 	if newBank == 0x00 || newBank == 0x20 || newBank == 0x40 || newBank == 0x60 {
-		newBank += 1
+		newBank++
 	}
 	c.romBank = newBank
-	c.activeRomBankStart = Word(c.romBank) * Word(0x4000)
+	c.activeRomBankStart = uint16(c.romBank) * uint16(0x4000)
 }
 
-func (c *MBC1) bankRAM(newBank Byte) {
+func (c *MBC1) bankRAM(newBank uint8) {
 	c.ramBank = newBank
-	c.activeRamBankStart = Word(c.ramBank) * Word(0x2000)
+	c.activeRAMBankStart = uint16(c.ramBank) * uint16(0x2000)
 }

@@ -2,27 +2,24 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
-	. "github.com/paulloz/ohboi/cartridge"
 )
 
 var (
-	filename string
+	romFilename string
 )
 
 func init() {
-	flag.StringVar(&filename, "rom", "", "path to the rom file")
+	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
 	flag.Parse()
+
+	if len(romFilename) <= 0 {
+		flag.Usage()
+		os.Exit(0)
+	}
 }
 
 func main() {
-	cartridge, err := NewCartridge(filename)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		os.Exit(1)
-	}
 
-	fmt.Println(cartridge.Title)
 }
