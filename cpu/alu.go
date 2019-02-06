@@ -38,6 +38,28 @@ func newIncrementRegister(register GetterSetter) Instruction {
 	}
 }
 
+func newXorA(src Getter) Instruction {
+	cycles := uint(4)
+	if src == AddressHL || src == Immediate {
+		cycles = 8
+	}
+
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			final := src.Get(cpu) ^ cpu.A.Get()
+			cpu.A.Set(final)
+
+			cpu.SetZFlag(final == 0)
+			cpu.SetNFlag(false)
+			cpu.SetHFlag(false)
+			cpu.SetCFlag(false)
+
+			return nil
+		},
+		Cycles: cycles,
+	}
+}
+
 func init() {
 	RegisterIntructions(map[uint8]Instruction{
 		op.AND_A_E: {
@@ -56,5 +78,15 @@ func init() {
 		op.INC_H:  newIncrementRegister(RegisterH),
 		op.INC_L:  newIncrementRegister(RegisterL),
 		op.INC_HL: newIncrementRegister(AddressHL),
+
+		op.XOR_A:  newXorA(RegisterA),
+		op.XOR_B:  newXorA(RegisterB),
+		op.XOR_C:  newXorA(RegisterC),
+		op.XOR_D:  newXorA(RegisterD),
+		op.XOR_E:  newXorA(RegisterE),
+		op.XOR_H:  newXorA(RegisterH),
+		op.XOR_L:  newXorA(RegisterL),
+		op.XOR_HL: newXorA(AddressHL),
+		op.XOR_N:  newXorA(Immediate),
 	})
 }
