@@ -12,38 +12,6 @@ type bitopcode struct {
 	end   uint8
 }
 
-func isB(l uint8) bool {
-	return l == 0x0 || l == 0x8
-}
-
-func isC(l uint8) bool {
-	return l == 0x1 || l == 0x9
-}
-
-func isD(l uint8) bool {
-	return l == 0x2 || l == 0xa
-}
-
-func isE(l uint8) bool {
-	return l == 0x3 || l == 0xb
-}
-
-func isH(l uint8) bool {
-	return l == 0x4 || l == 0xc
-}
-
-func isL(l uint8) bool {
-	return l == 0x5 || l == 0xd
-}
-
-func isHL(l uint8) bool {
-	return l == 0x6 || l == 0xe
-}
-
-func isA(l uint8) bool {
-	return l == 0x7 || l == 0xf
-}
-
 func newBitHandler(src Getter, bit uint8) func(*CPU, *memory.Memory) error {
 	return func(cpu *CPU, mem *memory.Memory) error {
 		isSet := bits.Test(bit, src.Get(cpu))
@@ -54,16 +22,16 @@ func newBitHandler(src Getter, bit uint8) func(*CPU, *memory.Memory) error {
 	}
 }
 
-func newResetHandler(dst Setter, src Getter, bit uint8) func(*CPU, *memory.Memory) error {
+func newResetHandler(register GetterSetter, bit uint8) func(*CPU, *memory.Memory) error {
 	return func(cpu *CPU, mem *memory.Memory) error {
-		dst.Set(cpu, bits.Reset(bit, src.Get(cpu)))
+		register.Set(cpu, bits.Reset(bit, register.Get(cpu)))
 		return nil
 	}
 }
 
-func newSetHandler(dst Setter, src Getter, bit uint8) func(*CPU, *memory.Memory) error {
+func newSetHandler(register GetterSetter, bit uint8) func(*CPU, *memory.Memory) error {
 	return func(cpu *CPU, mem *memory.Memory) error {
-		dst.Set(cpu, bits.Set(bit, src.Get(cpu)))
+		register.Set(cpu, bits.Set(bit, register.Get(cpu)))
 		return nil
 	}
 }
@@ -83,38 +51,29 @@ func init() {
 				opCode := (hi << 4) | lo
 				bit := (opCode - bitopcode.start) / 8
 
-				var src Getter
-				var dst Setter
+				var register GetterSetter
 
 				switch {
-				case isB(lo):
-					src = RegisterB
-					dst = RegisterB
-				case isC(lo):
-					src = RegisterC
-					dst = RegisterC
-				case isD(lo):
-					src = RegisterD
-					dst = RegisterD
-				case isE(lo):
-					src = RegisterE
-					dst = RegisterE
-				case isH(lo):
-					src = RegisterH
-					dst = RegisterH
-				case isL(lo):
-					src = RegisterL
-					dst = RegisterL
-				case isHL(lo):
-					src = AddressHL
-					dst = AddressHL
-				case isA(lo):
-					src = RegisterA
-					dst = RegisterA
+				case lo == 0x0 || lo == 0x8:
+					register = RegisterB
+				case lo == 0x1 || lo == 0x9:
+					register = RegisterC
+				case lo == 0x2 || lo == 0xa:
+					register = RegisterD
+				case lo == 0x3 || lo == 0xb:
+					register = RegisterE
+				case lo == 0x4 || lo == 0xc:
+					register = RegisterH
+				case lo == 0x5 || lo == 0xd:
+					register = RegisterL
+				case lo == 0x6 || lo == 0xe:
+					register = AddressHL
+				case lo == 0x7 || lo == 0xf:
+					register = RegisterA
 				}
 
 				cycles := uint(8)
-				if src == AddressHL {
+				if register == AddressHL {
 					cycles = 16
 				}
 
@@ -122,11 +81,11 @@ func init() {
 
 				switch bitopcode.name {
 				case "BIT":
-					handler = newBitHandler(src, bit)
+					handler = newBitHandler(Getter(register), bit)
 				case "RES":
-					handler = newResetHandler(dst, src, bit)
+					handler = newResetHandler(register, bit)
 				case "SET":
-					handler = newSetHandler(dst, src, bit)
+					handler = newSetHandler(register, bit)
 				}
 
 				if handler != nil {
