@@ -1,5 +1,10 @@
 package cpu
 
+type GetterSetter interface {
+	Get(*CPU) uint8
+	Set(*CPU, uint8)
+}
+
 type Setter interface {
 	Set(*CPU, uint8)
 }
