@@ -42,7 +42,7 @@ const (
 
 	LD_NN_A     = 0xea
 	LD_FF00_n_A = 0xe0
-	LD_A_IMM    = 0x3e
+	LD_A_N      = 0x3e
 	LD_SP_NN    = 0x31
 	LD_HL_NN    = 0x21
 
