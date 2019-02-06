@@ -19,12 +19,13 @@ type GameBoy struct {
 }
 
 // ExecuteNextOpCode ...
-func (gb *GameBoy) ExecuteNextOpCode() uint {
+func (gb *GameBoy) ExecuteNextOpCode() (uint, error) {
 	opCode := gb.memory.Read(gb.cpu.AdvancePC())
+	return gb.cpu.ExecuteOpCode(opCode)
+}
 
-	cycles := gb.cpu.ExecuteOpCode(opCode, gb.memory)
-
-	return cycles
+func (gb *GameBoy) Panic(err error) {
+	panic(err)
 }
 
 // Update ...
@@ -32,7 +33,10 @@ func (gb *GameBoy) Update() uint {
 	var cycles uint
 
 	for cycles = 0; cycles < CyclesPerFrame; {
-		_cycles := gb.ExecuteNextOpCode()
+		_cycles, err := gb.ExecuteNextOpCode()
+		if err != nil {
+			gb.Panic(err)
+		}
 
 		// UpdateTimers
 		// UpdateGraphics
@@ -53,8 +57,11 @@ func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
 
 // NewGameBoy ...
 func NewGameBoy() *GameBoy {
+	memory := memory.NewMemory()
+	cpu := cpu.NewCPU(memory)
+
 	return &GameBoy{
-		cpu:    cpu.NewCPU(),
-		memory: memory.NewMemory(),
+		cpu:    cpu,
+		memory: memory,
 	}
 }

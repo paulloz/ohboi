@@ -2,7 +2,6 @@ package cpu
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/paulloz/ohboi/gameboy/memory"
 )
@@ -16,61 +15,89 @@ type CPU struct {
 
 	SP Register
 	PC uint16
+
+	mem *memory.Memory
 }
 
+const (
+	NOOP        = 0x00
+	DI          = 0xf3
+	LD_NN_A     = 0xea
+	LD_FF00_n_A = 0xe0
+	LD_A_H      = 0x7c
+	LD_A_L      = 0x7d
+	LD_A_IMM    = 0x3e
+	LD_SP_NN    = 0x31
+	LD_HL_NN    = 0x21
+	CALL_NN     = 0xcd
+	AND_A_E     = 0xa3
+	INC_A       = 0x3c
+	JP_NN       = 0xc3
+	JR_N        = 0x18
+)
+
 // ExecuteOpCode ...
-// TODO: Might want to move this to GameBoy so we don't have to pass *Memory as parameter. Also, it'd make it easier to implement stuff like DI.
 // TODO: Maybe an array of func would be better?
 // TODO: There's probably a better way to handle CPU cycles count
-func (cpu *CPU) ExecuteOpCode(opCode uint8, mem *memory.Memory) uint {
-	switch opCode {
-	case 0xF3: // DI
-		// TODO: Implement DI
-		return 4
-	case 0xEA: // LD nn, A
-		mem.Write(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()), cpu.AF.Hi())
-		return 16
-	case 0xE0: // LD 0xFF00+n, A
-		mem.Write(0xFF00+uint16(mem.Read(cpu.AdvancePC())), cpu.AF.Hi())
-		return 12
-	case 0xCD: // CALL nn
-		cpu.call(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
-		return 12
-	case 0xC3: // JP nn
-		cpu.jump(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
-		return 12
-	case 0xA3: // AND A, E
-		cpu.and(cpu.AF.SetHi, cpu.DE.Lo(), cpu.AF.Hi())
-		return 4
-	case 0x7D: // LD A, L
-		cpu.AF.SetHi(cpu.HL.Lo())
-		return 4
-	case 0x7C: // LD A, H
-		cpu.AF.SetHi(cpu.HL.Hi())
-		return 4
-	case 0x3E: // LD a, #
-		cpu.AF.SetHi(mem.Read(cpu.AdvancePC()))
-		return 8
-	case 0x3C: // INC A
-		cpu.inc(cpu.AF.SetHi, cpu.AF.Hi())
-		return 4
-	case 0x31: // LD SP, nn
-		cpu.SP.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
-		return 12
-	case 0x21: // LD HL, nn
-		cpu.HL.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
-		return 12
-	case 0x18: // JR n
-		cpu.jump(cpu.PC + uint16(mem.Read(cpu.AdvancePC())))
-		return 8
-	case 0x00: // NOOP
-		return 4
-	default:
-		fmt.Printf("OpCode not implemented: %X\n", opCode)
-		os.Exit(0)
-	}
+func (cpu *CPU) ExecuteOpCode(opcode uint8) (uint, error) {
+	mem := cpu.mem
 
-	return 0
+	switch opcode {
+	case NOOP:
+		return 4, nil
+
+	// Interrupt instructions
+	case DI:
+		// TODO: Implement DI
+		return 4, nil
+
+	// Load instructions
+	case LD_NN_A:
+		mem.Write(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()), cpu.AF.Hi())
+		return 16, nil
+	case LD_FF00_n_A:
+		mem.Write(0xFF00+uint16(cpu.mem.Read(cpu.AdvancePC())), cpu.AF.Hi())
+		return 12, nil
+	case LD_A_L:
+		cpu.AF.SetHi(cpu.HL.Lo())
+		return 4, nil
+	case LD_A_H:
+		cpu.AF.SetHi(cpu.HL.Hi())
+		return 4, nil
+	case LD_A_IMM:
+		cpu.AF.SetHi(mem.Read(cpu.AdvancePC()))
+		return 8, nil
+	case LD_SP_NN:
+		cpu.SP.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
+		return 12, nil
+	case LD_HL_NN:
+		cpu.HL.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
+		return 12, nil
+
+	// Call instructions
+	case CALL_NN:
+		cpu.call(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
+		return 12, nil
+
+	// Jump instructions
+	case JP_NN:
+		cpu.jump(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
+		return 12, nil
+	case JR_N:
+		cpu.jump(cpu.PC + uint16(mem.Read(cpu.AdvancePC())))
+		return 8, nil
+
+	// ALU instructions
+	case AND_A_E:
+		cpu.and(cpu.AF.SetHi, cpu.DE.Lo(), cpu.AF.Hi())
+		return 4, nil
+	case INC_A:
+		cpu.inc(cpu.AF.SetHi, cpu.AF.Hi())
+		return 4, nil
+
+	default:
+		return 0, fmt.Errorf("Opcode %X not implemented\n", opcode)
+	}
 }
 
 // AdvancePC returns PC value and increments it
@@ -141,14 +168,13 @@ func (cpu *CPU) call(nn uint16) {
 }
 
 // NewCPU ...
-func NewCPU() *CPU {
-	cpu := &CPU{PC: 0x100}
-
-	cpu.AF.Set(0x01B0)
-	cpu.BC.Set(0x0013)
-	cpu.DE.Set(0x00D8)
-	cpu.HL.Set(0x014D)
-	cpu.SP.Set(0xFFFE)
-
-	return cpu
+func NewCPU(mem *memory.Memory) *CPU {
+	return &CPU{
+		PC: 0x0100,
+		AF: NewRegister(0x01b0),
+		BC: NewRegister(0x01b0),
+		DE: NewRegister(0x01b0),
+		HL: NewRegister(0x01b0),
+		SP: NewRegister(0xfffE),
+	}
 }

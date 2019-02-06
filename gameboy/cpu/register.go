@@ -34,3 +34,7 @@ func (r *Register) SetHi(value uint8) {
 func (r *Register) SetLo(value uint8) {
 	r.hilo = (r.hilo & 0xFF00) | uint16(value)
 }
+
+func NewRegister(value uint16) Register {
+	return Register{hilo: value}
+}
