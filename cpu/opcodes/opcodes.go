@@ -7,6 +7,13 @@ const (
 	DI = 0xf3
 
 	// Load
+	LD_B_N = 0x06
+	LD_C_N = 0x0e
+	LD_D_N = 0x16
+	LD_E_N = 0x1e
+	LD_H_N = 0x26
+	LD_L_N = 0x2e
+
 	LD_NN_A     = 0xea
 	LD_FF00_n_A = 0xe0
 	LD_A_H      = 0x7c

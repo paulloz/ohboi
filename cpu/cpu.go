@@ -27,7 +27,7 @@ func (cpu *CPU) Dump() {
 	fmt.Printf("D: %X, E: %X\n", cpu.DE.Hi(), cpu.DE.Lo())
 }
 
-func (cpu *CPU) FetchOpcode() uint8 {
+func (cpu *CPU) FetchByte() uint8 {
 	opCode := cpu.mem.Read(cpu.AdvancePC())
 	return opCode
 }
@@ -37,7 +37,7 @@ func (cpu *CPU) FetchOpcode() uint8 {
 // TODO: There's probably a better way to handle CPU cycles count
 func (cpu *CPU) ExecuteOpCode() (uint, error) {
 	mem := cpu.mem
-	opcode := cpu.FetchOpcode()
+	opcode := cpu.FetchByte()
 
 	switch opcode {
 	case op.NOOP:
@@ -49,6 +49,25 @@ func (cpu *CPU) ExecuteOpCode() (uint, error) {
 		return 4, nil
 
 	// Load instructions
+	case op.LD_B_N:
+		cpu.BC.SetHi(cpu.FetchByte())
+		return 8, nil
+	case op.LD_C_N:
+		cpu.BC.SetLo(cpu.FetchByte())
+		return 8, nil
+	case op.LD_D_N:
+		cpu.DE.SetHi(cpu.FetchByte())
+		return 8, nil
+	case op.LD_E_N:
+		cpu.DE.SetLo(cpu.FetchByte())
+		return 8, nil
+	case op.LD_H_N:
+		cpu.HL.SetHi(cpu.FetchByte())
+		return 8, nil
+	case op.LD_L_N:
+		cpu.HL.SetLo(cpu.FetchByte())
+		return 8, nil
+
 	case op.LD_NN_A:
 		mem.Write(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()), cpu.AF.Hi())
 		return 16, nil
