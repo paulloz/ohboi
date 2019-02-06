@@ -22,11 +22,17 @@ func RegisterIntructions(instructions map[uint8]Instruction) {
 	}
 }
 
+var NoopInstruction = Instruction{
+	Handler: NoopHandler,
+	Cycles:  4,
+}
+
+func NoopHandler(cpu *CPU, mem *memory.Memory) error {
+	return nil
+}
+
 func init() {
 	RegisterIntructions(map[uint8]Instruction{
-		op.NOOP: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error { return nil },
-			Cycles:  4,
-		},
+		op.NOOP: NoopInstruction,
 	})
 }

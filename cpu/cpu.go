@@ -6,12 +6,26 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
+type PseudoRegister interface {
+	Get() uint8
+	Set(value uint8)
+}
+
 // CPU describes the Gameboy processor
 type CPU struct {
 	AF Register
 	BC Register
 	DE Register
 	HL Register
+
+	A PseudoRegister
+	B PseudoRegister
+	C PseudoRegister
+	D PseudoRegister
+	E PseudoRegister
+	F PseudoRegister
+	H PseudoRegister
+	L PseudoRegister
 
 	SP Register
 	PC uint16
@@ -49,8 +63,32 @@ func (cpu *CPU) AdvancePC() uint16 {
 	return n
 }
 
+type PseudoRegisterHigh struct {
+	hwRegister *Register
+}
+
+func (r PseudoRegisterHigh) Get() uint8 {
+	return r.hwRegister.Hi()
+}
+
+func (r PseudoRegisterHigh) Set(v uint8) {
+	r.hwRegister.SetHi(v)
+}
+
+type PseudoRegisterLow struct {
+	hwRegister *Register
+}
+
+func (r PseudoRegisterLow) Get() uint8 {
+	return r.hwRegister.Lo()
+}
+
+func (r PseudoRegisterLow) Set(v uint8) {
+	r.hwRegister.SetLo(v)
+}
+
 func NewCPU(mem *memory.Memory) *CPU {
-	return &CPU{
+	cpu := &CPU{
 		PC:  0x0100,
 		AF:  NewRegister(0x01b0),
 		BC:  NewRegister(0x01b0),
@@ -59,4 +97,13 @@ func NewCPU(mem *memory.Memory) *CPU {
 		SP:  NewRegister(0xfffe),
 		mem: mem,
 	}
+	cpu.A = PseudoRegisterHigh{hwRegister: &cpu.AF}
+	cpu.F = PseudoRegisterLow{hwRegister: &cpu.AF}
+	cpu.B = PseudoRegisterHigh{hwRegister: &cpu.BC}
+	cpu.C = PseudoRegisterLow{hwRegister: &cpu.BC}
+	cpu.D = PseudoRegisterHigh{hwRegister: &cpu.DE}
+	cpu.E = PseudoRegisterLow{hwRegister: &cpu.DE}
+	cpu.H = PseudoRegisterHigh{hwRegister: &cpu.HL}
+	cpu.L = PseudoRegisterLow{hwRegister: &cpu.HL}
+	return cpu
 }
