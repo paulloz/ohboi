@@ -31,9 +31,6 @@ func (cpu *CPU) FetchByte() uint8 {
 	return opCode
 }
 
-// ExecuteOpCode ...
-// TODO: Maybe an array of func would be better?
-// TODO: There's probably a better way to handle CPU cycles count
 func (cpu *CPU) ExecuteOpCode() (uint, error) {
 	opcode := cpu.FetchByte()
 
@@ -52,7 +49,6 @@ func (cpu *CPU) AdvancePC() uint16 {
 	return n
 }
 
-// NewCPU ...
 func NewCPU(mem *memory.Memory) *CPU {
 	return &CPU{
 		PC:  0x0100,
