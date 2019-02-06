@@ -1,8 +1,6 @@
 package gameboy
 
 import (
-	"fmt"
-
 	"github.com/paulloz/ohboi/gameboy/cpu"
 	"github.com/paulloz/ohboi/gameboy/memory"
 )
@@ -23,7 +21,6 @@ type GameBoy struct {
 // ExecuteNextOpCode ...
 func (gb *GameBoy) ExecuteNextOpCode() uint {
 	opCode := gb.memory.Read(gb.cpu.AdvancePC())
-	fmt.Printf("[PC]> %X\n", gb.cpu.PC)
 
 	cycles := gb.cpu.ExecuteOpCode(opCode, gb.memory)
 

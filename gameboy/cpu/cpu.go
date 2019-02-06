@@ -25,7 +25,7 @@ type CPU struct {
 func (cpu *CPU) ExecuteOpCode(opCode uint8, mem *memory.Memory) uint {
 	switch opCode {
 	case 0xF3: // DI
-		// TODO
+		// TODO: Implement DI
 		return 4
 	case 0xEA: // LD nn, A
 		mem.Write(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()), cpu.AF.Hi())
@@ -33,9 +33,21 @@ func (cpu *CPU) ExecuteOpCode(opCode uint8, mem *memory.Memory) uint {
 	case 0xE0: // LD 0xFF00+n, A
 		mem.Write(0xFF00+uint16(mem.Read(cpu.AdvancePC())), cpu.AF.Hi())
 		return 12
+	case 0xCD: // CALL nn
+		cpu.call(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
+		return 12
 	case 0xC3: // JP nn
 		cpu.jump(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
 		return 12
+	case 0xA3: // AND A, E
+		cpu.and(cpu.AF.SetHi, cpu.DE.Lo(), cpu.AF.Hi())
+		return 4
+	case 0x7D: // LD A, L
+		cpu.AF.SetHi(cpu.HL.Lo())
+		return 4
+	case 0x7C: // LD A, H
+		cpu.AF.SetHi(cpu.HL.Hi())
+		return 4
 	case 0x3E: // LD a, #
 		cpu.AF.SetHi(mem.Read(cpu.AdvancePC()))
 		return 8
@@ -45,10 +57,16 @@ func (cpu *CPU) ExecuteOpCode(opCode uint8, mem *memory.Memory) uint {
 	case 0x31: // LD SP, nn
 		cpu.SP.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
 		return 12
+	case 0x21: // LD HL, nn
+		cpu.HL.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
+		return 12
+	case 0x18: // JR n
+		cpu.jump(cpu.PC + uint16(mem.Read(cpu.AdvancePC())))
+		return 8
 	case 0x00: // NOOP
 		return 4
 	default:
-		fmt.Printf("Unknown OpCode: %X\n", opCode)
+		fmt.Printf("OpCode not implemented: %X\n", opCode)
 		os.Exit(0)
 	}
 
@@ -94,6 +112,16 @@ func (cpu *CPU) setCFlag(v bool) {
 	}
 }
 
+func (cpu *CPU) and(out func(uint8), a uint8, b uint8) {
+	result := b & a
+	out(result)
+
+	cpu.setZFlag(result == 0)
+	cpu.setNFlag(false)
+	cpu.setHFlag(true)
+	cpu.setCFlag(false)
+}
+
 func (cpu *CPU) inc(out func(uint8), in uint8) {
 	new := in + 1
 	out(new)
@@ -104,6 +132,11 @@ func (cpu *CPU) inc(out func(uint8), in uint8) {
 }
 
 func (cpu *CPU) jump(nn uint16) {
+	cpu.PC = nn
+}
+
+func (cpu *CPU) call(nn uint16) {
+	// TODO: push PC on stack
 	cpu.PC = nn
 }
 
