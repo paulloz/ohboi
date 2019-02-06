@@ -16,6 +16,29 @@ func (cpu *CPU) And(out func(uint8), a uint8, b uint8) {
 	cpu.SetCFlag(false)
 }
 
+func newCompareA(src Getter) Instruction {
+	cycles := uint(4)
+	if src == AddressHL || src == Immediate {
+		cycles = 8
+	}
+
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			a := cpu.A.Get()
+			n := src.Get(cpu)
+			result := a - n
+
+			cpu.SetZFlag(result == 0)
+			cpu.SetNFlag(true)
+			cpu.SetHFlag((a & 0x0f) < (n & 0x0f))
+			cpu.SetCFlag(a < n)
+
+			return nil
+		},
+		Cycles: cycles,
+	}
+}
+
 func newIncrementRegister(register GetterSetter) Instruction {
 	cycles := uint(4)
 	if register == AddressHL {
@@ -69,6 +92,16 @@ func init() {
 			},
 			Cycles: 4,
 		},
+
+		op.CP_A:  newCompareA(RegisterA),
+		op.CP_B:  newCompareA(RegisterB),
+		op.CP_C:  newCompareA(RegisterC),
+		op.CP_D:  newCompareA(RegisterD),
+		op.CP_E:  newCompareA(RegisterE),
+		op.CP_H:  newCompareA(RegisterH),
+		op.CP_L:  newCompareA(RegisterL),
+		op.CP_HL: newCompareA(AddressHL),
+		op.CP_N:  newCompareA(Immediate),
 
 		op.INC_A:  newIncrementRegister(RegisterA),
 		op.INC_B:  newIncrementRegister(RegisterB),
