@@ -6,7 +6,7 @@ const (
 	// Interrupt
 	DI = 0xf3
 
-	// Load
+	// LD n, nn
 	LD_B_N = 0x06
 	LD_C_N = 0x0e
 	LD_D_N = 0x16
@@ -14,10 +14,34 @@ const (
 	LD_H_N = 0x26
 	LD_L_N = 0x2e
 
+	// LD r1, r2
+	LD_A_A  = 0x7f
+	LD_A_B  = 0x78
+	LD_A_C  = 0x79
+	LD_A_D  = 0x7a
+	LD_A_E  = 0x7b
+	LD_A_H  = 0x7c
+	LD_A_L  = 0x7d
+	LD_A_HL = 0x7e
+
+	LD_B_B  = 0x40
+	LD_B_C  = 0x41
+	LD_B_D  = 0x42
+	LD_B_E  = 0x43
+	LD_B_H  = 0x44
+	LD_B_L  = 0x45
+	LD_B_HL = 0x46
+
+	LD_C_B  = 0x48
+	LD_C_C  = 0x49
+	LD_C_D  = 0x4a
+	LD_C_E  = 0x4b
+	LD_C_H  = 0x4c
+	LD_C_L  = 0x4d
+	LD_C_HL = 0x4e
+
 	LD_NN_A     = 0xea
 	LD_FF00_n_A = 0xe0
-	LD_A_H      = 0x7c
-	LD_A_L      = 0x7d
 	LD_A_IMM    = 0x3e
 	LD_SP_NN    = 0x31
 	LD_HL_NN    = 0x21
