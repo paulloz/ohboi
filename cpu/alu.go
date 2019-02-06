@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"github.com/paulloz/ohboi/bits"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
 	"github.com/paulloz/ohboi/memory"
 )
@@ -21,7 +22,7 @@ func (cpu *CPU) Inc(out func(uint8), in uint8) {
 
 	cpu.SetZFlag(new == 0)
 	cpu.SetNFlag(false)
-	cpu.SetHFlag(false) // TODO: Implement HalfCarry Flag
+	cpu.SetHFlag(bits.HalfCarryCheck(in, 1))
 }
 
 func init() {
