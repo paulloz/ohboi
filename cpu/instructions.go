@@ -11,6 +11,7 @@ type Instruction struct {
 }
 
 var InstructionSet map[uint8]Instruction
+var ExtInstructionSet map[uint8]Instruction
 
 func RegisterIntructions(instructions map[uint8]Instruction) {
 	if InstructionSet == nil {
@@ -19,6 +20,16 @@ func RegisterIntructions(instructions map[uint8]Instruction) {
 
 	for opcode, instruction := range instructions {
 		InstructionSet[opcode] = instruction
+	}
+}
+
+func RegisterExtInstruction(instructions map[uint8]Instruction) {
+	if ExtInstructionSet == nil {
+		ExtInstructionSet = make(map[uint8]Instruction)
+	}
+
+	for opcode, instruction := range instructions {
+		ExtInstructionSet[opcode] = instruction
 	}
 }
 
