@@ -18,12 +18,6 @@ type GameBoy struct {
 	memory *memory.Memory
 }
 
-// ExecuteNextOpCode ...
-func (gb *GameBoy) ExecuteNextOpCode() (uint, error) {
-	opCode := gb.memory.Read(gb.cpu.AdvancePC())
-	return gb.cpu.ExecuteOpCode(opCode)
-}
-
 func (gb *GameBoy) Panic(err error) {
 	panic(err)
 }
@@ -33,7 +27,7 @@ func (gb *GameBoy) Update() uint {
 	var cycles uint
 
 	for cycles = 0; cycles < CyclesPerFrame; {
-		_cycles, err := gb.ExecuteNextOpCode()
+		_cycles, err := gb.cpu.ExecuteOpCode()
 		if err != nil {
 			gb.Panic(err)
 		}

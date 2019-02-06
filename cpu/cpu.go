@@ -20,11 +20,24 @@ type CPU struct {
 	mem *memory.Memory
 }
 
+func (cpu *CPU) Dump() {
+	fmt.Printf("PC:%X\n", cpu.PC)
+	fmt.Printf("A: %X, F: %X\n", cpu.AF.Hi(), cpu.AF.Lo())
+	fmt.Printf("B: %X, C: %X\n", cpu.BC.Hi(), cpu.BC.Lo())
+	fmt.Printf("D: %X, E: %X\n", cpu.DE.Hi(), cpu.DE.Lo())
+}
+
+func (cpu *CPU) FetchOpcode() uint8 {
+	opCode := cpu.mem.Read(cpu.AdvancePC())
+	return opCode
+}
+
 // ExecuteOpCode ...
 // TODO: Maybe an array of func would be better?
 // TODO: There's probably a better way to handle CPU cycles count
-func (cpu *CPU) ExecuteOpCode(opcode uint8) (uint, error) {
+func (cpu *CPU) ExecuteOpCode() (uint, error) {
 	mem := cpu.mem
+	opcode := cpu.FetchOpcode()
 
 	switch opcode {
 	case op.NOOP:
@@ -94,13 +107,12 @@ func (cpu *CPU) AdvancePC() uint16 {
 // NewCPU ...
 func NewCPU(mem *memory.Memory) *CPU {
 	return &CPU{
-		PC: 0x0100,
-		AF: NewRegister(0x01b0),
-		BC: NewRegister(0x01b0),
-		DE: NewRegister(0x01b0),
-		HL: NewRegister(0x01b0),
-		SP: NewRegister(0xfffE),
-
+		PC:  0x0100,
+		AF:  NewRegister(0x01b0),
+		BC:  NewRegister(0x01b0),
+		DE:  NewRegister(0x01b0),
+		HL:  NewRegister(0x01b0),
+		SP:  NewRegister(0xfffe),
 		mem: mem,
 	}
 }
