@@ -118,4 +118,8 @@ func (a addressHL) Get(cpu *CPU) uint8 {
 	return cpu.mem.Read(cpu.HL.hilo)
 }
 
+func (a addressHL) Set(cpu *CPU, v uint8) {
+	cpu.mem.Write(cpu.HL.hilo, v)
+}
+
 var AddressHL = addressHL{}
