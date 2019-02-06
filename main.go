@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"os"
+	"fmt"
 	"time"
 
 	"github.com/paulloz/ohboi/gameboy"
@@ -18,8 +18,7 @@ func init() {
 	flag.Parse()
 
 	if len(romFilename) <= 0 {
-		flag.Usage()
-		os.Exit(0)
+		fmt.Println("No cardbridge inserted...")
 	}
 }
 
