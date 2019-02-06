@@ -81,6 +81,13 @@ const (
 	// ALU
 	AND_A_E = 0xa3
 	INC_A   = 0x3c
+	INC_B   = 0x04
+	INC_C   = 0x0c
+	INC_D   = 0x14
+	INC_E   = 0x1c
+	INC_H   = 0x24
+	INC_L   = 0x2c
+	INC_HL  = 0x34
 
 	// Jumps
 	JP_NN    = 0xc3

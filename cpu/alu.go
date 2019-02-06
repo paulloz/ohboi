@@ -16,13 +16,26 @@ func (cpu *CPU) And(out func(uint8), a uint8, b uint8) {
 	cpu.SetCFlag(false)
 }
 
-func (cpu *CPU) Inc(out func(uint8), in uint8) {
-	new := in + 1
-	out(new)
+func newIncrementRegister(dst Setter, src Getter) Instruction {
+	cycles := uint(4)
+	if dst == AddressHL {
+		cycles = 12
+	}
 
-	cpu.SetZFlag(new == 0)
-	cpu.SetNFlag(false)
-	cpu.SetHFlag(bits.HalfCarryCheck(in, 1))
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			initial := src.Get(cpu)
+			final := initial + 1
+			dst.Set(cpu, final)
+
+			cpu.SetZFlag(final == 0)
+			cpu.SetNFlag(false)
+			cpu.SetHFlag(bits.HalfCarryCheck(initial, 1))
+
+			return nil
+		},
+		Cycles: cycles,
+	}
 }
 
 func init() {
@@ -35,12 +48,13 @@ func init() {
 			Cycles: 4,
 		},
 
-		op.INC_A: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.Inc(cpu.AF.SetHi, cpu.AF.Hi())
-				return nil
-			},
-			Cycles: 4,
-		},
+		op.INC_A:  newIncrementRegister(RegisterA, RegisterA),
+		op.INC_B:  newIncrementRegister(RegisterB, RegisterB),
+		op.INC_C:  newIncrementRegister(RegisterC, RegisterC),
+		op.INC_D:  newIncrementRegister(RegisterD, RegisterD),
+		op.INC_E:  newIncrementRegister(RegisterE, RegisterE),
+		op.INC_H:  newIncrementRegister(RegisterH, RegisterH),
+		op.INC_L:  newIncrementRegister(RegisterL, RegisterL),
+		op.INC_HL: newIncrementRegister(AddressHL, AddressHL),
 	})
 }
