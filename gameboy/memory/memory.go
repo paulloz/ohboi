@@ -10,6 +10,8 @@ import (
 type Memory struct {
 	cartridge *cartridge.Cartridge
 
+	hRAM [0x80]uint8
+
 	wRAM [0x2000]uint8 // 2 4KB banks
 }
 
@@ -17,8 +19,28 @@ type Memory struct {
 func (mem *Memory) Read(address uint16) uint8 {
 	if address <= 0x7FFF { // Cartridge ROM
 		return mem.cartridge.Read(address)
+	} else if address <= 0x9FFF { // VRAM
+		// TODO: Implement VRAM
+	} else if address <= 0xBFFF { // Cartridge RAM
+		return mem.cartridge.Read(address)
+	} else if address <= 0xDFFF { // WRAM
+		return mem.wRAM[address-0xC000]
+	} else if address <= 0xFDFF { // ECHO RAM
+		// TODO: Implement ECHO RAM
+	} else if address <= 0xFE9F { // OAM
+		// TODO: Implement OAM
+	} else if address <= 0xFEFF { // Not Usable
+		return 0xFF
+	} else if address <= 0xFF7F { // I/O Ports
+		// TODO: Implement I/O Ports
+	} else if address <= 0xFFFE { // HRAM
+		return mem.hRAM[address-0xFF80]
+	} else if address == 0xFFFF { // Interrupt Enable Register
+		// TODO: Implement Interrupt Enable Register
 	}
-	return 0
+
+	fmt.Printf("Memory Read not implemented at address %X\n", address)
+	return 0xFF
 }
 
 // ReadWord ...
@@ -49,12 +71,13 @@ func (mem *Memory) Write(address uint16, value uint8) {
 	} else if address <= 0xFF7F { // I/O Ports
 		// TODO: Implement I/O Ports
 	} else if address <= 0xFFFE { // HRAM
-		// TODO: Implement HRAM
+		mem.hRAM[address-0xFF80] = value
+		return
 	} else if address == 0xFFFF { // Interrupt Enable Register
 		// TODO: Implement Interrupt Enable Register
 	}
 
-	fmt.Printf("Memory Write not implemented at address %X", address)
+	fmt.Printf("Memory Write not implemented at address %X\n", address)
 }
 
 // LoadCartridge ...
@@ -73,5 +96,39 @@ func (mem *Memory) LoadCartridgeFromFile(filename string) {
 
 // NewMemory ...
 func NewMemory() *Memory {
-	return &Memory{}
+	mem := &Memory{}
+
+	mem.Write(0xFF05, 0x00)
+	mem.Write(0xFF06, 0x00)
+	mem.Write(0xFF07, 0x00)
+	mem.Write(0xFF10, 0x80)
+	mem.Write(0xFF11, 0xBF)
+	mem.Write(0xFF12, 0xF3)
+	mem.Write(0xFF14, 0xBF)
+	mem.Write(0xFF16, 0x3F)
+	mem.Write(0xFF17, 0x00)
+	mem.Write(0xFF19, 0xBF)
+	mem.Write(0xFF1A, 0x7F)
+	mem.Write(0xFF1B, 0xFF)
+	mem.Write(0xFF1C, 0x9F)
+	mem.Write(0xFF1E, 0xBF)
+	mem.Write(0xFF20, 0xFF)
+	mem.Write(0xFF21, 0x00)
+	mem.Write(0xFF22, 0x00)
+	mem.Write(0xFF23, 0xBF)
+	mem.Write(0xFF24, 0x77)
+	mem.Write(0xFF25, 0xF3)
+	mem.Write(0xFF26, 0xF1)
+	mem.Write(0xFF40, 0x91)
+	mem.Write(0xFF42, 0x00)
+	mem.Write(0xFF43, 0x00)
+	mem.Write(0xFF45, 0x00)
+	mem.Write(0xFF47, 0xFC)
+	mem.Write(0xFF48, 0xFF)
+	mem.Write(0xFF49, 0xFF)
+	mem.Write(0xFF4A, 0x00)
+	mem.Write(0xFF4B, 0x00)
+	mem.Write(0xFFFF, 0x00)
+
+	return mem
 }
