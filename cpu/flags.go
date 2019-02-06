@@ -1,33 +1,37 @@
 package cpu
 
+import (
+	"github.com/paulloz/ohboi/bits"
+)
+
 func (cpu *CPU) SetZFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x80) // 0x80 -> 1000 0000
+		cpu.F.Set(bits.Set(7, cpu.F.Get()))
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0x7F) // 0x7F -> 0111 1111
+		cpu.F.Set(bits.Reset(7, cpu.F.Get()))
 	}
 }
 
 func (cpu *CPU) SetNFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x40) // 0x40 -> 0100 0000
+		cpu.F.Set(bits.Set(6, cpu.F.Get()))
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0xBF) // 0xBF -> 1011 1111
+		cpu.F.Set(bits.Reset(6, cpu.F.Get()))
 	}
 }
 
 func (cpu *CPU) SetHFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x20) // 0x20 -> 0010 0000
+		cpu.F.Set(bits.Set(5, cpu.F.Get()))
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0xDF) // 0xDF -> 1101 1111
+		cpu.F.Set(bits.Reset(5, cpu.F.Get()))
 	}
 }
 
 func (cpu *CPU) SetCFlag(v bool) {
 	if v {
-		cpu.AF.SetLo(cpu.AF.Lo() | 0x10) // 0x10 -> 0001 0000
+		cpu.F.Set(bits.Set(4, cpu.F.Get()))
 	} else {
-		cpu.AF.SetLo(cpu.AF.Lo() & 0xEF) // 0xEF -> 1110 1111
+		cpu.F.Set(bits.Reset(4, cpu.F.Get()))
 	}
 }
