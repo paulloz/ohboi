@@ -3,7 +3,7 @@ package cpu
 import (
 	"fmt"
 
-	"github.com/paulloz/ohboi/gameboy/memory"
+	"github.com/paulloz/ohboi/memory"
 )
 
 // CPU ...

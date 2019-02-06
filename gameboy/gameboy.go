@@ -1,8 +1,8 @@
 package gameboy
 
 import (
-	"github.com/paulloz/ohboi/gameboy/cpu"
-	"github.com/paulloz/ohboi/gameboy/memory"
+	"github.com/paulloz/ohboi/cpu"
+	"github.com/paulloz/ohboi/memory"
 )
 
 // Speed constants
