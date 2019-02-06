@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	op "github.com/paulloz/ohboi/cpu/opcodes"
+	"github.com/paulloz/ohboi/memory"
 )
 
 func TestOpcodeLD_B_N(t *testing.T) {
@@ -81,5 +82,19 @@ func TestOpcodeLD_L_N(t *testing.T) {
 
 	if cpu.HL.Lo() != 123 {
 		t.Errorf("Expected A to be 123, got %d", cpu.HL.Lo())
+	}
+}
+
+func TestOpcodeLD_HL_N(t *testing.T) {
+	cpu := newTestCPU([]byte{op.LD_HL_N, 123})
+	cpu.HL.Set(memory.InternalRAM2Addr)
+
+	_, err := cpu.ExecuteOpCode()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if cpu.mem.Read(memory.InternalRAM2Addr) != 123 {
+		t.Errorf("Expected byte 51 to be 123, got %d", cpu.mem.Read(50))
 	}
 }

@@ -72,6 +72,14 @@ const (
 	LD_L_L  = 0x6d
 	LD_L_HL = 0x6e
 
+	LD_HL_B = 0x70
+	LD_HL_C = 0x71
+	LD_HL_D = 0x72
+	LD_HL_E = 0x73
+	LD_HL_H = 0x74
+	LD_HL_L = 0x75
+	LD_HL_N = 0x36
+
 	LD_NN_A     = 0xea
 	LD_FF00_n_A = 0xe0
 	LD_A_N      = 0x3e

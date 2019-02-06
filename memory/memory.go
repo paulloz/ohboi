@@ -6,6 +6,16 @@ import (
 	"github.com/paulloz/ohboi/cartridge"
 )
 
+const (
+	VRAMAddr            = 0x8000
+	SwitchableRAMAddr   = 0xa000
+	InternalRAMAddr     = 0xc000
+	EchoInternalRAMAddr = 0xe000
+	OAMAddr             = 0xfe00
+	IOPortsAddr         = 0xff00
+	InternalRAM2Addr    = 0xff80
+)
+
 // Memory ...
 type Memory struct {
 	cartridge *cartridge.Cartridge
@@ -92,6 +102,10 @@ func (mem *Memory) LoadCartridgeFromFile(filename string) {
 		panic(err)
 	}
 	mem.LoadCartridge(cartridge)
+}
+
+func (mem *Memory) Cartridge() *cartridge.Cartridge {
+	return mem.cartridge
 }
 
 // NewMemory ...

@@ -86,6 +86,14 @@ func init() {
 		op.LD_L_L:  NoopInstruction,
 		op.LD_L_HL: newLoadRegister(RegisterL, AddressHL),
 
+		op.LD_HL_B: newLoadRegister(AddressHL, RegisterB),
+		op.LD_HL_C: newLoadRegister(AddressHL, RegisterC),
+		op.LD_HL_D: newLoadRegister(AddressHL, RegisterD),
+		op.LD_HL_E: newLoadRegister(AddressHL, RegisterE),
+		op.LD_HL_H: newLoadRegister(AddressHL, RegisterH),
+		op.LD_HL_L: newLoadRegister(AddressHL, RegisterL),
+		op.LD_HL_N: newLoadRegister(AddressHL, Immediate),
+
 		op.LD_A_N: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				cpu.AF.SetHi(mem.Read(cpu.AdvancePC()))
