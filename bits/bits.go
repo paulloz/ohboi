@@ -1,7 +1,7 @@
 package bits
 
 func Test(b uint8, value uint8) bool {
-	return (value >> b) == 1
+	return ((value >> b) & 1) == 1
 }
 
 func Set(b uint8, value uint8) uint8 {
