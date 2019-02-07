@@ -5,12 +5,17 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
-func newLoadRegister(dst Setter, src Getter) Instruction {
-	cycles := uint(4)
-	if src == AddressHL {
-		cycles = 8
+func newLoadRegister(dst Setter, src Getter, cycles uint) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			dst.Set(cpu, src.Get(cpu))
+			return nil
+		},
+		Cycles: cycles,
 	}
+}
 
+func newLoadRegister16(dst Setter16, src Getter16, cycles uint) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			dst.Set(cpu, src.Get(cpu))
@@ -22,116 +27,112 @@ func newLoadRegister(dst Setter, src Getter) Instruction {
 
 func init() {
 	RegisterIntructions(map[uint8]Instruction{
-		op.LD_B_N: newLoadRegister(RegisterB, Immediate),
-		op.LD_C_N: newLoadRegister(RegisterC, Immediate),
-		op.LD_D_N: newLoadRegister(RegisterD, Immediate),
-		op.LD_E_N: newLoadRegister(RegisterE, Immediate),
-		op.LD_H_N: newLoadRegister(RegisterH, Immediate),
-		op.LD_L_N: newLoadRegister(RegisterL, Immediate),
+		op.LD_A_N: newLoadRegister(RegisterA, Immediate, 8),
+		op.LD_B_N: newLoadRegister(RegisterB, Immediate, 8),
+		op.LD_C_N: newLoadRegister(RegisterC, Immediate, 8),
+		op.LD_D_N: newLoadRegister(RegisterD, Immediate, 8),
+		op.LD_E_N: newLoadRegister(RegisterE, Immediate, 8),
+		op.LD_H_N: newLoadRegister(RegisterH, Immediate, 8),
+		op.LD_L_N: newLoadRegister(RegisterL, Immediate, 8),
 
 		op.LD_A_A:  NoopInstruction,
-		op.LD_A_B:  newLoadRegister(RegisterA, RegisterB),
-		op.LD_A_C:  newLoadRegister(RegisterA, RegisterC),
-		op.LD_A_D:  newLoadRegister(RegisterA, RegisterD),
-		op.LD_A_E:  newLoadRegister(RegisterA, RegisterE),
-		op.LD_A_H:  newLoadRegister(RegisterA, RegisterH),
-		op.LD_A_L:  newLoadRegister(RegisterA, RegisterL),
-		op.LD_A_HL: newLoadRegister(RegisterA, AddressHL),
+		op.LD_A_B:  newLoadRegister(RegisterA, RegisterB, 4),
+		op.LD_A_C:  newLoadRegister(RegisterA, RegisterC, 4),
+		op.LD_A_D:  newLoadRegister(RegisterA, RegisterD, 4),
+		op.LD_A_E:  newLoadRegister(RegisterA, RegisterE, 4),
+		op.LD_A_H:  newLoadRegister(RegisterA, RegisterH, 4),
+		op.LD_A_L:  newLoadRegister(RegisterA, RegisterL, 4),
+		op.LD_A_BC: newLoadRegister(RegisterL, AddressBC, 8),
+		op.LD_A_DE: newLoadRegister(RegisterL, AddressDE, 8),
+		op.LD_A_HL: newLoadRegister(RegisterA, AddressHL, 8),
+		op.LD_A_NN: newLoadRegister(RegisterA, AddressImmediate, 16),
 
 		op.LD_B_B:  NoopInstruction,
-		op.LD_B_C:  newLoadRegister(RegisterB, RegisterC),
-		op.LD_B_D:  newLoadRegister(RegisterB, RegisterD),
-		op.LD_B_E:  newLoadRegister(RegisterB, RegisterE),
-		op.LD_B_H:  newLoadRegister(RegisterB, RegisterH),
-		op.LD_B_L:  newLoadRegister(RegisterB, RegisterL),
-		op.LD_B_HL: newLoadRegister(RegisterB, AddressHL),
+		op.LD_B_C:  newLoadRegister(RegisterB, RegisterC, 4),
+		op.LD_B_D:  newLoadRegister(RegisterB, RegisterD, 4),
+		op.LD_B_E:  newLoadRegister(RegisterB, RegisterE, 4),
+		op.LD_B_H:  newLoadRegister(RegisterB, RegisterH, 4),
+		op.LD_B_L:  newLoadRegister(RegisterB, RegisterL, 4),
+		op.LD_B_HL: newLoadRegister(RegisterB, AddressHL, 8),
 
-		op.LD_C_B:  newLoadRegister(RegisterC, RegisterB),
+		op.LD_C_B:  newLoadRegister(RegisterC, RegisterB, 4),
 		op.LD_C_C:  NoopInstruction,
-		op.LD_C_D:  newLoadRegister(RegisterC, RegisterD),
-		op.LD_C_E:  newLoadRegister(RegisterC, RegisterE),
-		op.LD_C_H:  newLoadRegister(RegisterC, RegisterH),
-		op.LD_C_L:  newLoadRegister(RegisterC, RegisterL),
-		op.LD_C_HL: newLoadRegister(RegisterC, AddressHL),
+		op.LD_C_D:  newLoadRegister(RegisterC, RegisterD, 4),
+		op.LD_C_E:  newLoadRegister(RegisterC, RegisterE, 4),
+		op.LD_C_H:  newLoadRegister(RegisterC, RegisterH, 4),
+		op.LD_C_L:  newLoadRegister(RegisterC, RegisterL, 4),
+		op.LD_C_HL: newLoadRegister(RegisterC, AddressHL, 8),
 
-		op.LD_D_B:  newLoadRegister(RegisterD, RegisterB),
-		op.LD_D_C:  newLoadRegister(RegisterD, RegisterC),
+		op.LD_D_B:  newLoadRegister(RegisterD, RegisterB, 4),
+		op.LD_D_C:  newLoadRegister(RegisterD, RegisterC, 4),
 		op.LD_D_D:  NoopInstruction,
-		op.LD_D_E:  newLoadRegister(RegisterD, RegisterE),
-		op.LD_D_H:  newLoadRegister(RegisterD, RegisterH),
-		op.LD_D_L:  newLoadRegister(RegisterD, RegisterL),
-		op.LD_D_HL: newLoadRegister(RegisterD, AddressHL),
+		op.LD_D_E:  newLoadRegister(RegisterD, RegisterE, 4),
+		op.LD_D_H:  newLoadRegister(RegisterD, RegisterH, 4),
+		op.LD_D_L:  newLoadRegister(RegisterD, RegisterL, 4),
+		op.LD_D_HL: newLoadRegister(RegisterD, AddressHL, 8),
 
-		op.LD_E_B:  newLoadRegister(RegisterE, RegisterB),
-		op.LD_E_C:  newLoadRegister(RegisterE, RegisterC),
-		op.LD_E_D:  newLoadRegister(RegisterE, RegisterD),
+		op.LD_E_B:  newLoadRegister(RegisterE, RegisterB, 4),
+		op.LD_E_C:  newLoadRegister(RegisterE, RegisterC, 4),
+		op.LD_E_D:  newLoadRegister(RegisterE, RegisterD, 4),
 		op.LD_E_E:  NoopInstruction,
-		op.LD_E_H:  newLoadRegister(RegisterE, RegisterH),
-		op.LD_E_L:  newLoadRegister(RegisterE, RegisterL),
-		op.LD_E_HL: newLoadRegister(RegisterE, AddressHL),
+		op.LD_E_H:  newLoadRegister(RegisterE, RegisterH, 4),
+		op.LD_E_L:  newLoadRegister(RegisterE, RegisterL, 4),
+		op.LD_E_HL: newLoadRegister(RegisterE, AddressHL, 8),
 
-		op.LD_H_B:  newLoadRegister(RegisterH, RegisterB),
-		op.LD_H_C:  newLoadRegister(RegisterH, RegisterC),
-		op.LD_H_D:  newLoadRegister(RegisterH, RegisterD),
-		op.LD_H_E:  newLoadRegister(RegisterH, RegisterE),
+		op.LD_H_B:  newLoadRegister(RegisterH, RegisterB, 4),
+		op.LD_H_C:  newLoadRegister(RegisterH, RegisterC, 4),
+		op.LD_H_D:  newLoadRegister(RegisterH, RegisterD, 4),
+		op.LD_H_E:  newLoadRegister(RegisterH, RegisterE, 4),
 		op.LD_H_H:  NoopInstruction,
-		op.LD_H_L:  newLoadRegister(RegisterH, RegisterL),
-		op.LD_H_HL: newLoadRegister(RegisterH, AddressHL),
+		op.LD_H_L:  newLoadRegister(RegisterH, RegisterL, 4),
+		op.LD_H_HL: newLoadRegister(RegisterH, AddressHL, 8),
 
-		op.LD_L_B:  newLoadRegister(RegisterL, RegisterB),
-		op.LD_L_C:  newLoadRegister(RegisterL, RegisterC),
-		op.LD_L_D:  newLoadRegister(RegisterL, RegisterD),
-		op.LD_L_E:  newLoadRegister(RegisterL, RegisterE),
-		op.LD_L_H:  newLoadRegister(RegisterL, RegisterH),
+		op.LD_L_B:  newLoadRegister(RegisterL, RegisterB, 4),
+		op.LD_L_C:  newLoadRegister(RegisterL, RegisterC, 4),
+		op.LD_L_D:  newLoadRegister(RegisterL, RegisterD, 4),
+		op.LD_L_E:  newLoadRegister(RegisterL, RegisterE, 4),
+		op.LD_L_H:  newLoadRegister(RegisterL, RegisterH, 4),
 		op.LD_L_L:  NoopInstruction,
-		op.LD_L_HL: newLoadRegister(RegisterL, AddressHL),
+		op.LD_L_HL: newLoadRegister(RegisterL, AddressHL, 8),
 
-		op.LD_HL_B: newLoadRegister(AddressHL, RegisterB),
-		op.LD_HL_C: newLoadRegister(AddressHL, RegisterC),
-		op.LD_HL_D: newLoadRegister(AddressHL, RegisterD),
-		op.LD_HL_E: newLoadRegister(AddressHL, RegisterE),
-		op.LD_HL_H: newLoadRegister(AddressHL, RegisterH),
-		op.LD_HL_L: newLoadRegister(AddressHL, RegisterL),
-		op.LD_HL_N: newLoadRegister(AddressHL, Immediate),
+		op.LD_HL_B: newLoadRegister(AddressHL, RegisterB, 8),
+		op.LD_HL_C: newLoadRegister(AddressHL, RegisterC, 8),
+		op.LD_HL_D: newLoadRegister(AddressHL, RegisterD, 8),
+		op.LD_HL_E: newLoadRegister(AddressHL, RegisterE, 8),
+		op.LD_HL_H: newLoadRegister(AddressHL, RegisterH, 8),
+		op.LD_HL_L: newLoadRegister(AddressHL, RegisterL, 8),
+		op.LD_HL_N: newLoadRegister(AddressHL, Immediate, 12),
 
-		op.LD_A_N: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.AF.SetHi(mem.Read(cpu.AdvancePC()))
-				return nil
-			},
-			Cycles: 8,
-		},
+		op.LD_B_A:  newLoadRegister(RegisterB, RegisterA, 4),
+		op.LD_C_A:  newLoadRegister(RegisterC, RegisterA, 4),
+		op.LD_D_A:  newLoadRegister(RegisterD, RegisterA, 4),
+		op.LD_E_A:  newLoadRegister(RegisterE, RegisterA, 4),
+		op.LD_H_A:  newLoadRegister(RegisterH, RegisterA, 4),
+		op.LD_L_A:  newLoadRegister(RegisterL, RegisterA, 4),
+		op.LD_BC_A: newLoadRegister(AddressBC, RegisterA, 8),
+		op.LD_DE_A: newLoadRegister(AddressDE, RegisterA, 8),
+		op.LD_HL_A: newLoadRegister(AddressHL, RegisterA, 8),
+		op.LD_NN_A: newLoadRegister(AddressImmediate, RegisterA, 16),
 
-		op.LD_NN_A: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				mem.Write(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()), cpu.AF.Hi())
-				return nil
-			},
-			Cycles: 16,
-		},
+		op.LD_A_CADDR: newLoadRegister(RegisterA, AddressC, 8),
+		op.LD_CADDR_A: newLoadRegister(AddressC, RegisterA, 8),
 
-		op.LD_FF00_n_A: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				mem.Write(0xFF00+uint16(cpu.mem.Read(cpu.AdvancePC())), cpu.AF.Hi())
-				return nil
-			},
-			Cycles: 12,
-		},
+		op.LD_A_HLD: newLoadRegister(RegisterA, AddressHLDec, 8),
+		op.LD_HLD_A: newLoadRegister(AddressHLDec, RegisterA, 8),
 
-		op.LD_SP_NN: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.SP.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
-				return nil
-			},
-			Cycles: 12,
-		},
+		op.LD_A_HLI: newLoadRegister(RegisterA, AddressHLDec, 8),
+		op.LD_HLI_A: newLoadRegister(AddressHLDec, RegisterA, 8),
 
-		op.LD_HL_NN: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.HL.Set(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
-				return nil
-			},
-			Cycles: 12,
-		},
+		op.LDH_FF00N_A: newLoadRegister(AddressFF00N, RegisterA, 12),
+		op.LDH_A_FF00N: newLoadRegister(RegisterA, AddressFF00N, 12),
+
+		op.LD_BC_NN: newLoadRegister16(RegisterBC, Immediate16, 12),
+		op.LD_DE_NN: newLoadRegister16(RegisterDE, Immediate16, 12),
+		op.LD_HL_NN: newLoadRegister16(RegisterHL, Immediate16, 12),
+		op.LD_SP_NN: newLoadRegister16(RegisterSP, Immediate16, 12),
+
+		op.LD_SP_HL:   newLoadRegister16(RegisterSP, RegisterHL, 8),
+		op.LD_HL_SP_N: newLoadRegister16(RegisterHL, AddressSPN, 12),
+		op.LD_NN_SP:   newLoadRegister16(AddressImmediate16, RegisterSP, 20),
 	})
 }

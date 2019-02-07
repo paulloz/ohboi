@@ -54,10 +54,17 @@ func (mem *Memory) Read(address uint16) uint8 {
 }
 
 // ReadWord ...
-func (mem *Memory) ReadWord(loAddress uint16, hiAddress uint16) uint16 {
-	hi := mem.Read(hiAddress)
-	lo := mem.Read(loAddress)
+func (mem *Memory) ReadWord(loAddress, hiAddress uint16) uint16 {
+	addr := (uint16(hiAddress) << 8) | uint16(loAddress)
+	lo := mem.Read(addr)
+	hi := mem.Read(addr + 1)
 	return (uint16(hi) << 8) | uint16(lo)
+}
+
+func (mem *Memory) WriteWord(loAddress, hiAddress, value uint16) {
+	addr := (uint16(hiAddress) << 8) | uint16(loAddress)
+	mem.Write(addr, uint8(value&0xff))
+	mem.Write(addr+1, uint8(value>>8))
 }
 
 // Write ...

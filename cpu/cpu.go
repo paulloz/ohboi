@@ -63,30 +63,6 @@ func (cpu *CPU) AdvancePC() uint16 {
 	return n
 }
 
-type PseudoRegisterHigh struct {
-	hwRegister *Register
-}
-
-func (r PseudoRegisterHigh) Get() uint8 {
-	return r.hwRegister.Hi()
-}
-
-func (r PseudoRegisterHigh) Set(v uint8) {
-	r.hwRegister.SetHi(v)
-}
-
-type PseudoRegisterLow struct {
-	hwRegister *Register
-}
-
-func (r PseudoRegisterLow) Get() uint8 {
-	return r.hwRegister.Lo()
-}
-
-func (r PseudoRegisterLow) Set(v uint8) {
-	r.hwRegister.SetLo(v)
-}
-
 func NewCPU(mem *memory.Memory) *CPU {
 	cpu := &CPU{
 		PC:  0x0100,
