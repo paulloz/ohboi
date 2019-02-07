@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/paulloz/ohboi/cpu"
+	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
 )
 
@@ -17,6 +18,7 @@ const (
 // GameBoy ...
 type GameBoy struct {
 	cpu    *cpu.CPU
+	io     *io.IO
 	memory *memory.Memory
 }
 
@@ -78,11 +80,13 @@ func (gb *GameBoy) PowerOn() {
 
 // NewGameBoy ...
 func NewGameBoy() *GameBoy {
-	memory := memory.NewMemory()
+	io := io.NewIO()
+	memory := memory.NewMemory(io)
 	cpu := cpu.NewCPU(memory)
 
 	return &GameBoy{
 		cpu:    cpu,
+		io:     io,
 		memory: memory,
 	}
 }

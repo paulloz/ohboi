@@ -2,6 +2,7 @@ package memory
 
 import (
 	"github.com/paulloz/ohboi/cartridge"
+	"github.com/paulloz/ohboi/io"
 )
 
 const (
@@ -14,22 +15,16 @@ const (
 	InternalRAM2Addr    = 0xff80
 )
 
-const (
-	DisableROMRegister = 0x50
-)
-
-// Memory ...
 type Memory struct {
 	cartridge *cartridge.Cartridge
+	io        *io.IO
 
-	vRAM    [0x2000]uint8
-	hwPorts [0x7f]uint8
-	hRAM    [0x80]uint8
+	vRAM [0x2000]uint8
+	hRAM [0x80]uint8
 
 	wRAM [0x2000]uint8 // 2 4KB banks
 }
 
-// Read ...
 func (mem *Memory) Read(address uint16) uint8 {
 	switch {
 	case address >= 0xFFFF:
@@ -41,7 +36,7 @@ func (mem *Memory) Read(address uint16) uint8 {
 		return mem.hRAM[address-InternalRAM2Addr]
 
 	case address >= IOPortsAddr:
-		return mem.hwPorts[address-IOPortsAddr]
+		return mem.io.Read(uint8(address & 0xff))
 
 	case address >= 0xFEA0:
 		// Not usable
@@ -69,7 +64,7 @@ func (mem *Memory) Read(address uint16) uint8 {
 
 	default:
 		// Cartridge ROM
-		if mem.hwPorts[DisableROMRegister] == 0 && address < uint16(len(bootRom)) {
+		if mem.io.Read(0x50) == 0 && address < uint16(len(bootRom)) {
 			return bootRom[address]
 		}
 
@@ -77,7 +72,6 @@ func (mem *Memory) Read(address uint16) uint8 {
 	}
 }
 
-// ReadWord ...
 func (mem *Memory) ReadWord(addr uint16) uint16 {
 	lo := mem.Read(addr)
 	hi := mem.Read(addr + 1)
@@ -89,7 +83,6 @@ func (mem *Memory) WriteWord(addr, value uint16) {
 	mem.Write(addr+1, uint8(value>>8))
 }
 
-// Write ...
 func (mem *Memory) Write(address uint16, value uint8) {
 	switch {
 	case address >= 0xFFFF:
@@ -100,7 +93,7 @@ func (mem *Memory) Write(address uint16, value uint8) {
 		mem.hRAM[address-InternalRAM2Addr] = value
 		return
 	case address >= IOPortsAddr:
-		mem.hwPorts[address-IOPortsAddr] = value
+		mem.io.Write(uint8(address&0xff), value)
 		return
 	case address >= 0xFEA0:
 		// Not usable
@@ -129,12 +122,10 @@ func (mem *Memory) Write(address uint16, value uint8) {
 	}
 }
 
-// LoadCartridge ...
 func (mem *Memory) LoadCartridge(cartridge *cartridge.Cartridge) {
 	mem.cartridge = cartridge
 }
 
-// LoadCartridgeFromFile ...
 func (mem *Memory) LoadCartridgeFromFile(filename string) {
 	cartridge, err := cartridge.NewCartridge(filename)
 	if err != nil {
@@ -147,9 +138,8 @@ func (mem *Memory) Cartridge() *cartridge.Cartridge {
 	return mem.cartridge
 }
 
-// NewMemory ...
-func NewMemory() *Memory {
-	mem := &Memory{}
+func NewMemory(io *io.IO) *Memory {
+	mem := &Memory{io: io}
 
 	/*
 		// Disable for now as it generates a lot of errors
