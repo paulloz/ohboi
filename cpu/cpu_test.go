@@ -142,11 +142,27 @@ func (c carryFlagSetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory)
 	}
 }
 
+type carryFlagResetCheck struct{}
+
+func (c carryFlagResetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
+	if cpu.GetCFlag() {
+		t.Errorf("Expected C flag to be reset")
+	}
+}
+
 type zeroFlagSetCheck struct{}
 
 func (c zeroFlagSetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
 	if !cpu.GetZFlag() {
 		t.Errorf("Expected Z flag to be set")
+	}
+}
+
+type zeroFlagResetCheck struct{}
+
+func (c zeroFlagResetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
+	if cpu.GetZFlag() {
+		t.Errorf("Expected Z flag to be reset")
 	}
 }
 

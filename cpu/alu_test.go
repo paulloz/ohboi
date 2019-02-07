@@ -44,7 +44,7 @@ func TestOpcodeADD_A_ZFlag(t *testing.T) {
 		checks: []check{
 			zeroFlagSetCheck{},
 		},
-	})
+	})(t)
 }
 
 func TestOpcodeIncA(t *testing.T) {
@@ -56,6 +56,52 @@ func TestOpcodeIncA(t *testing.T) {
 		},
 		checks: []check{
 			newRegisterCheck("A", cpu.RegisterA, 12),
+		},
+	})(t)
+}
+
+func TestOpCodeXOR_A(t *testing.T) {
+	newTestCPU(testScenario{
+		bytecode: []byte{op.XOR_B},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0x55)
+			cpu.B.Set(0xaa)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 0xff),
+			zeroFlagResetCheck{},
+			carryFlagResetCheck{},
+		},
+	})(t)
+}
+func TestOpCodeXOR_N(t *testing.T) {
+	newTestCPU(testScenario{
+		bytecode: []byte{op.XOR_N, 0x55},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0x55)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 0),
+			zeroFlagSetCheck{},
+			carryFlagResetCheck{},
+		},
+	})(t)
+}
+func TestOpCodeXOR_HL(t *testing.T) {
+	newTestCPU(testScenario{
+		bytecode: []byte{op.XOR_HL},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0x0f)
+			cpu.HL.Set(memory.InternalRAMAddr)
+			mem.Write(memory.InternalRAMAddr, 0x1f)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 0x10),
+			zeroFlagResetCheck{},
+			carryFlagResetCheck{},
 		},
 	})(t)
 }
