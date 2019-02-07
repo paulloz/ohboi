@@ -29,13 +29,49 @@ func newAddC(src Getter, cycles uint) Instruction {
 			if cpu.F.Get()&CarryFlag != 0 {
 				carry = 1
 			}
-			sum := uint16(cpu.A.Get()) + uint16(src.Get(cpu)+carry)
+			sum := uint16(cpu.A.Get()) - uint16(src.Get(cpu)-carry)
 			cpu.A.Set(uint8(sum))
 
 			cpu.SetZFlag(sum == 0)
 			cpu.SetNFlag(false)
 			cpu.SetHFlag(sum&0x8 != 0)
 			cpu.SetCFlag(sum >= 256)
+			return nil
+		},
+		Cycles: cycles,
+	}
+}
+
+func newSub(src Getter, cycles uint) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			sum := uint16(cpu.A.Get()) - uint16(src.Get(cpu))
+			cpu.A.Set(uint8(sum))
+
+			cpu.SetZFlag(sum == 0)
+			cpu.SetNFlag(true)
+			cpu.SetHFlag(sum&0x10 != 0)
+			cpu.SetCFlag(sum >= 0)
+			return nil
+		},
+		Cycles: cycles,
+	}
+}
+
+func newSubC(src Getter, cycles uint) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			var carry uint8
+			if cpu.F.Get()&CarryFlag != 0 {
+				carry = 1
+			}
+			sum := uint16(cpu.A.Get()) + uint16(src.Get(cpu)+carry)
+			cpu.A.Set(uint8(sum))
+
+			cpu.SetZFlag(sum == 0)
+			cpu.SetNFlag(true)
+			cpu.SetHFlag(sum&0x10 != 0)
+			cpu.SetCFlag(sum >= 0)
 			return nil
 		},
 		Cycles: cycles,
@@ -51,6 +87,23 @@ func newAnd(register Getter, cycles uint) Instruction {
 			cpu.SetZFlag(result == 0)
 			cpu.SetNFlag(false)
 			cpu.SetHFlag(true)
+			cpu.SetCFlag(false)
+
+			return nil
+		},
+		Cycles: cycles,
+	}
+}
+
+func newOr(register Getter, cycles uint) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			result := register.Get(cpu) | cpu.A.Get()
+			cpu.A.Set(result)
+
+			cpu.SetZFlag(result == 0)
+			cpu.SetNFlag(false)
+			cpu.SetHFlag(false)
 			cpu.SetCFlag(false)
 
 			return nil
@@ -190,6 +243,25 @@ func init() {
 		op.ADC_A_HL: newAddC(AddressHL, 8),
 		op.ADC_A_N:  newAddC(Immediate, 8),
 
+		op.SUB_A_A:  newSub(RegisterA, 4),
+		op.SUB_A_B:  newSub(RegisterB, 4),
+		op.SUB_A_C:  newSub(RegisterC, 4),
+		op.SUB_A_D:  newSub(RegisterD, 4),
+		op.SUB_A_E:  newSub(RegisterE, 4),
+		op.SUB_A_H:  newSub(RegisterH, 4),
+		op.SUB_A_L:  newSub(RegisterL, 4),
+		op.SUB_A_HL: newSub(AddressHL, 8),
+		op.SUB_A_N:  newSub(Immediate, 8),
+
+		op.SBC_A_A:  newSubC(RegisterA, 4),
+		op.SBC_A_B:  newSubC(RegisterB, 4),
+		op.SBC_A_C:  newSubC(RegisterC, 4),
+		op.SBC_A_D:  newSubC(RegisterD, 4),
+		op.SBC_A_E:  newSubC(RegisterE, 4),
+		op.SBC_A_H:  newSubC(RegisterH, 4),
+		op.SBC_A_L:  newSubC(RegisterL, 4),
+		op.SBC_A_HL: newSubC(AddressHL, 8),
+
 		op.AND_A_A:  newAnd(RegisterA, 4),
 		op.AND_A_B:  newAnd(RegisterB, 4),
 		op.AND_A_C:  newAnd(RegisterC, 4),
@@ -199,6 +271,16 @@ func init() {
 		op.AND_A_L:  newAnd(RegisterL, 4),
 		op.AND_A_HL: newAnd(AddressHL, 8),
 		op.AND_A_N:  newAnd(Immediate, 8),
+
+		op.OR_A_A:  newOr(RegisterA, 4),
+		op.OR_A_B:  newOr(RegisterB, 4),
+		op.OR_A_C:  newOr(RegisterC, 4),
+		op.OR_A_D:  newOr(RegisterD, 4),
+		op.OR_A_E:  newOr(RegisterE, 4),
+		op.OR_A_H:  newOr(RegisterH, 4),
+		op.OR_A_L:  newOr(RegisterL, 4),
+		op.OR_A_HL: newOr(AddressHL, 8),
+		op.OR_A_N:  newOr(Immediate, 8),
 
 		op.CP_A:  newCompareA(RegisterA),
 		op.CP_B:  newCompareA(RegisterB),
