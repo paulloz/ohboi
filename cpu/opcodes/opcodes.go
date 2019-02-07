@@ -203,6 +203,16 @@ const (
 	INC16_HL = 0x23
 	INC16_SP = 0x33
 
+	// Swaps
+	SWAP_A  = 0x37
+	SWAP_B  = 0x30
+	SWAP_C  = 0x31
+	SWAP_D  = 0x32
+	SWAP_E  = 0x33
+	SWAP_H  = 0x34
+	SWAP_L  = 0x35
+	SWAP_HL = 0x36
+
 	// Jumps
 	JP_NN    = 0xc3
 	JP_C_NN  = 0xda
