@@ -105,3 +105,17 @@ func TestOpCodeXOR_HL(t *testing.T) {
 		},
 	})(t)
 }
+
+func TestOpCodeAND_A_B(t *testing.T) {
+	newTestCPU(testScenario{
+		bytecode: []byte{op.AND_A_B},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0xab)
+			cpu.B.Set(0xf0)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 0xa0),
+		},
+	})(t)
+}
