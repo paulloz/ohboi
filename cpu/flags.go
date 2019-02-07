@@ -1,7 +1,12 @@
 package cpu
 
-import (
-	"github.com/paulloz/ohboi/bits"
+import "github.com/paulloz/ohboi/bits"
+
+const (
+	NFlag     = 0x40
+	ZFlag     = 0x80
+	HFlag     = 0x20
+	CarryFlag = 0x10
 )
 
 func (cpu *CPU) SetZFlag(v bool) {

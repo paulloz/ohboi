@@ -9,7 +9,7 @@ func Set(b uint8, value uint8) uint8 {
 }
 
 func Reset(b uint8, value uint8) uint8 {
-	return value & (0xF ^ (1 << b))
+	return value &^ (1 << b)
 }
 
 func HalfCarryCheck(a uint8, b uint8) bool {
