@@ -95,5 +95,5 @@ func init() {
 		}
 	}
 
-	RegisterExtInstruction(instructions)
+	RegisterExtInstructions(instructions)
 }

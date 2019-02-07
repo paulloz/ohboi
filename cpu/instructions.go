@@ -23,7 +23,7 @@ func RegisterIntructions(instructions map[uint8]Instruction) {
 	}
 }
 
-func RegisterExtInstruction(instructions map[uint8]Instruction) {
+func RegisterExtInstructions(instructions map[uint8]Instruction) {
 	if ExtInstructionSet == nil {
 		ExtInstructionSet = make(map[uint8]Instruction)
 	}

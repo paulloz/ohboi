@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 
+	op "github.com/paulloz/ohboi/cpu/opcodes"
 	"github.com/paulloz/ohboi/memory"
 )
 
@@ -52,9 +53,20 @@ func (cpu *CPU) FetchWord() uint16 {
 func (cpu *CPU) ExecuteOpCode() (uint, error) {
 	opcode := cpu.FetchByte()
 
-	instruction, ok := InstructionSet[opcode]
-	if !ok {
-		return 0, fmt.Errorf("opcode %X not implemented", opcode)
+	var instruction Instruction
+	var ok bool
+
+	if opcode == op.CB {
+		opcode = cpu.FetchByte()
+		instruction, ok = ExtInstructionSet[opcode]
+		if !ok {
+			return 0, fmt.Errorf("extended opcode %X not implemented", opcode)
+		}
+	} else {
+		instruction, ok = InstructionSet[opcode]
+		if !ok {
+			return 0, fmt.Errorf("opcode %X not implemented", opcode)
+		}
 	}
 
 	return instruction.Cycles, instruction.Handler(cpu, cpu.mem)
