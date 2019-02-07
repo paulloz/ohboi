@@ -280,7 +280,7 @@ var AddressImmediate = addressImmediate{}
 type addressImmediate16 struct{}
 
 func (i addressImmediate16) Get(cpu *CPU) uint16 {
-	return cpu.mem.ReadWord(uint16(cpu.FetchByte()), uint16(cpu.FetchByte()))
+	return cpu.mem.ReadWord(cpu.FetchWord())
 }
 
 func (i addressImmediate16) Set(cpu *CPU, v uint16) {

@@ -14,7 +14,7 @@ func init() {
 	RegisterIntructions(map[uint8]Instruction{
 		op.CALL_NN: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.Call(mem.ReadWord(cpu.AdvancePC(), cpu.AdvancePC()))
+				cpu.Call(cpu.FetchWord())
 				return nil
 			},
 			Cycles: 12,

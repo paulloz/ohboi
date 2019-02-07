@@ -261,7 +261,7 @@ func TestOpcodeLD_NN_SP(t *testing.T) {
 		t.Error(err)
 	}
 
-	if cpu.mem.ReadWord(0x80, 0xff) != 0xabcd {
-		t.Errorf("Expected address 0xff80 to contain 0xabcd, got %x", cpu.mem.ReadWord(0x80, 0xff))
+	if cpu.mem.ReadWord(0xff80) != 0xabcd {
+		t.Errorf("Expected address 0xff80 to contain 0xabcd, got %x", cpu.mem.ReadWord(0xff80))
 	}
 }

@@ -41,8 +41,12 @@ func (cpu *CPU) Dump() {
 }
 
 func (cpu *CPU) FetchByte() uint8 {
-	opCode := cpu.mem.Read(cpu.AdvancePC())
-	return opCode
+	return cpu.mem.Read(cpu.AdvancePC())
+}
+
+func (cpu *CPU) FetchWord() uint16 {
+	defer cpu.AdvancePC() // because differs are cool
+	return cpu.mem.ReadWord(cpu.AdvancePC())
 }
 
 func (cpu *CPU) ExecuteOpCode() (uint, error) {

@@ -9,12 +9,20 @@ const (
 	CarryFlag = 0x10
 )
 
+func (cpu *CPU) GetZFlag() bool {
+	return bits.Test(7, cpu.F.Get())
+}
+
 func (cpu *CPU) SetZFlag(v bool) {
 	if v {
 		cpu.F.Set(bits.Set(7, cpu.F.Get()))
 	} else {
 		cpu.F.Set(bits.Reset(7, cpu.F.Get()))
 	}
+}
+
+func (cpu *CPU) GetNFlag() bool {
+	return bits.Test(6, cpu.F.Get())
 }
 
 func (cpu *CPU) SetNFlag(v bool) {
@@ -25,12 +33,20 @@ func (cpu *CPU) SetNFlag(v bool) {
 	}
 }
 
+func (cpu *CPU) GetHFlag() bool {
+	return bits.Test(5, cpu.F.Get())
+}
+
 func (cpu *CPU) SetHFlag(v bool) {
 	if v {
 		cpu.F.Set(bits.Set(5, cpu.F.Get()))
 	} else {
 		cpu.F.Set(bits.Reset(5, cpu.F.Get()))
 	}
+}
+
+func (cpu *CPU) GetCFFlag() bool {
+	return bits.Test(4, cpu.F.Get())
 }
 
 func (cpu *CPU) SetCFlag(v bool) {

@@ -16,8 +16,8 @@ func TestOpcodePUSH_AF(t *testing.T) {
 		t.Error(err)
 	}
 
-	if cpu.mem.ReadWord(0x80, 0xff) != 123 {
-		t.Errorf("Expected address 0xff80 to contain 123, got %x", cpu.mem.ReadWord(0x80, 0xff))
+	if cpu.mem.ReadWord(0xff80) != 123 {
+		t.Errorf("Expected address 0xff80 to contain 123, got %x", cpu.mem.ReadWord(0xff80))
 	}
 }
 
