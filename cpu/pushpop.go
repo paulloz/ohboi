@@ -8,9 +8,7 @@ import (
 func newPushRegister16(src Getter16, cycles uint) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			sp := cpu.SP.Get()
-			mem.WriteWord(sp, src.Get(cpu))
-			cpu.SP.Set(sp - 2)
+			cpu.Push(src.Get(cpu))
 			return nil
 		},
 		Cycles: cycles,
@@ -20,9 +18,7 @@ func newPushRegister16(src Getter16, cycles uint) Instruction {
 func newPopRegister16(dst Setter16, cycles uint) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			sp := cpu.SP.Get()
-			dst.Set(cpu, mem.ReadWord(sp))
-			cpu.SP.Set(sp + 2)
+			dst.Set(cpu, cpu.Pop())
 			return nil
 		},
 		Cycles: cycles,
