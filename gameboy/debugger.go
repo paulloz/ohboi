@@ -15,6 +15,7 @@ type tDebugger struct {
 	uifps       *widgets.Paragraph
 	uiregisters *widgets.Paragraph
 	uinext      *widgets.Paragraph
+	uistack     *widgets.Paragraph
 
 	stepByStep bool
 
@@ -32,6 +33,7 @@ func init() {
 		uifps:       widgets.NewParagraph(),
 		uiregisters: widgets.NewParagraph(),
 		uinext:      widgets.NewParagraph(),
+		uistack:     widgets.NewParagraph(),
 
 		stepByStep: true,
 		stepper:    make(chan int),
@@ -41,16 +43,20 @@ func init() {
 func (debugger *tDebugger) start(gb *GameBoy) {
 	go func() {
 		debugger.uifps.Title = "FPS"
-		debugger.uifps.SetRect(0, 0, 15, 3)
+		debugger.uifps.SetRect(0, 0, 10, 3)
 
 		debugger.uiregisters.Title = "CPU Registers"
-		debugger.uiregisters.SetRect(15, 0, 35, 12)
+		debugger.uiregisters.SetRect(10, 0, 30, 12)
 
-		debugger.uinext.SetRect(35, 0, 55, 12)
+		debugger.uinext.SetRect(30, 0, 50, 12)
+
+		debugger.uistack.Title = "Stack"
+		debugger.uistack.SetRect(30, 12, 50, 36)
 
 		ui.Render(debugger.uifps)
 		ui.Render(debugger.uiregisters)
 		ui.Render(debugger.uinext)
+		ui.Render(debugger.uistack)
 
 		ticker := time.NewTicker(time.Second / FPS).C
 		uiEvents := ui.PollEvents()
@@ -82,12 +88,22 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 				for i := uint16(1); i < 10; i++ {
 					next += fmt.Sprintf("    0x%02x\n", gb.memory.Read(pc+i))
 				}
-
 				debugger.uinext.Text = next
+
+				stack := fmt.Sprintf("\nSP: 0x%04x\n\n", gb.cpu.SP.Get())
+				for i := gb.cpu.SP.Get(); i <= 0xfffe; i++ {
+					prefix := "   "
+					if i == gb.cpu.SP.Get() {
+						prefix = " =>"
+					}
+					stack += fmt.Sprintf("%s (0x%04x) 0x%02x\n", prefix, i, gb.memory.Read(i))
+				}
+				debugger.uistack.Text = stack
 
 				ui.Render(debugger.uifps)
 				ui.Render(debugger.uiregisters)
 				ui.Render(debugger.uinext)
+				ui.Render(debugger.uistack)
 			}
 		}
 	}()

@@ -16,12 +16,10 @@ func (r *Register) Lo() uint8 {
 	return uint8(r.hilo & 0xFF)
 }
 
-// Get ...
 func (r *Register) Get() uint16 {
 	return r.hilo
 }
 
-// Set ...
 func (r *Register) Set(value uint16) {
 	r.hilo = value
 }

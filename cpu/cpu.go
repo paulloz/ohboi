@@ -35,7 +35,7 @@ type CPU struct {
 }
 
 func (cpu *CPU) Dump() string {
-	return fmt.Sprintf("PC:0x%02x\n", cpu.PC) +
+	return fmt.Sprintf("PC:0x%04x\n", cpu.PC) +
 		fmt.Sprintf("\n") +
 		fmt.Sprintf("A: 0x%02x, F: 0x%02x\n", cpu.AF.Hi(), cpu.AF.Lo()) +
 		fmt.Sprintf("B: 0x%02x, C: 0x%02x\n", cpu.BC.Hi(), cpu.BC.Lo()) +
