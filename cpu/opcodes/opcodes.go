@@ -299,8 +299,8 @@ const (
 	RET_Z  = 0xc8
 
 	// Rotates & Shifts
-	RLCA = 0x07
 	RLA  = 0x17
+	RLCA = 0x07
 
 	RL_A  = 0x17
 	RL_B  = 0x10
@@ -310,6 +310,15 @@ const (
 	RL_H  = 0x14
 	RL_L  = 0x15
 	RL_HL = 0x16
+
+	RLC_A  = 0x07
+	RLC_B  = 0x00
+	RLC_C  = 0x01
+	RLC_D  = 0x02
+	RLC_E  = 0x03
+	RLC_H  = 0x04
+	RLC_L  = 0x05
+	RLC_HL = 0x06
 
 	// 16-bit OpCodes
 	CB = 0xcb
