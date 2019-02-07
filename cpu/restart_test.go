@@ -1,29 +1,24 @@
-package cpu
+package cpu_test
 
 import (
 	"testing"
 
+	"github.com/paulloz/ohboi/cpu"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
+	"github.com/paulloz/ohboi/memory"
 )
 
 func TestOpcodeRST_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.RST_30H})
-	cpu.SP.Set(0xffff)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.PC != 0x30 {
-		t.Errorf("Expected PC to contain 0x30, got %X", cpu.PC)
-	}
-
-	if cpu.SP.Get() != 0xfffd {
-		t.Errorf("Expected SP to contain 0xfffd, got %X", cpu.SP.Get())
-	}
-
-	if cpu.mem.ReadWord(0xfffd) != 0x100 {
-		t.Errorf("Expected memory 0xfffd to contain 0x100, got %X", cpu.mem.ReadWord(0xfffd))
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.RST_30H},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.SP.Set(0xffff)
+		},
+		checks: []check{
+			newRegister16Check("PC", cpu.RegisterPC, 0x30),
+			newRegister16Check("SP", cpu.RegisterSP, 0xfffd),
+			newMemoryWordCheck(0xfffd, 0x100),
+		},
+	})(t)
 }

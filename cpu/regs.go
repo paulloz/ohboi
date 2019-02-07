@@ -322,3 +322,15 @@ func (a addressSPN) Get(cpu *CPU) uint16 {
 }
 
 var AddressSPN = addressSPN{}
+
+type registerPC struct{}
+
+func (r registerPC) Get(cpu *CPU) uint16 {
+	return cpu.PC
+}
+
+func (r registerPC) Set(cpu *CPU, v uint16) {
+	cpu.PC = v
+}
+
+var RegisterPC = registerPC{}

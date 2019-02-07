@@ -1,105 +1,87 @@
-package cpu
+package cpu_test
 
 import (
 	"testing"
 
+	"github.com/paulloz/ohboi/cpu"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
+	"github.com/paulloz/ohboi/memory"
 )
 
 func TestOpcodeJP_NN(t *testing.T) {
-	cpu := newTestCPU([]byte{op.JP_NN, 0x80, 0xff})
-	cpu.SP.Set(0xabcd)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.PC != 0xff80 {
-		t.Errorf("Expected PC to contain 0xff00, got %x", cpu.PC)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.JP_NN, 0x80, 0xff},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.SP.Set(0xabcd)
+		},
+		checks: []check{
+			newRegister16Check("PC", cpu.RegisterPC, 0xff80),
+		},
+	})(t)
 }
 
 func TestOpcodeJP_Z_NN(t *testing.T) {
-	cpu := newTestCPU([]byte{op.ADD_A_A, op.JP_Z_NN, 0x80, 0xff})
-	cpu.A.Set(0)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.PC != 0xff80 {
-		t.Errorf("Expected PC to contain 0xff80, got %x", cpu.PC)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.ADD_A_A, op.JP_Z_NN, 0x80, 0xff},
+		instr:    2,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0)
+		},
+		checks: []check{
+			newRegister16Check("PC", cpu.RegisterPC, 0xff80),
+		},
+	})(t)
 }
 
 func TestOpcodeJP_NZ_NN(t *testing.T) {
-	cpu := newTestCPU([]byte{op.ADD_A_A, op.JP_NZ_NN, 0x80, 0xff})
-	cpu.A.Set(0)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.PC != 0x104 {
-		t.Errorf("Expected PC to contain 0x104, got %X", cpu.PC)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.ADD_A_A, op.JP_NZ_NN, 0x80, 0xff},
+		instr:    2,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0)
+		},
+		checks: []check{
+			newRegister16Check("PC", cpu.RegisterPC, 0x104),
+		},
+	})(t)
 }
 
 func TestOpcodeJP_HL(t *testing.T) {
-	cpu := newTestCPU([]byte{op.JP_HL})
-	cpu.HL.Set(0xff80)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.PC != 0xff80 {
-		t.Errorf("Expected PC to contain 0xff80, got %X", cpu.PC)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.JP_HL},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.HL.Set(0xff80)
+		},
+		checks: []check{
+			newRegister16Check("PC", cpu.RegisterPC, 0xff80),
+		},
+	})(t)
 }
 
 func TestOpcodeJR_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.JR_N, 0xb0})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.PC != 0xb2 {
-		t.Errorf("Expected PC to contain 0xb2, got %X", cpu.PC)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.JR_N, 0xb0},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.HL.Set(0xff80)
+		},
+		checks: []check{
+			newRegister16Check("PC", cpu.RegisterPC, 0xb2),
+		},
+	})(t)
 }
 
 func TestOpcodeJR_Z_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.ADD_A_A, op.JR_Z_N, 0x7})
-	cpu.A.Set(0)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.PC != 0x10a {
-		t.Errorf("Expected PC to contain 0x10a, got %X", cpu.PC)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.ADD_A_A, op.JR_Z_N, 0x7},
+		instr:    2,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0)
+		},
+		checks: []check{
+			newRegister16Check("PC", cpu.RegisterPC, 0x10a),
+		},
+	})(t)
 }

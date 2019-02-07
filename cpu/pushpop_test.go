@@ -25,8 +25,9 @@ func TestOpcodePUSH_AF(t *testing.T) {
 func TestOpcodePOP_AF(t *testing.T) {
 	newTestCPU(testScenario{
 		bytecode: []byte{op.POP_AF},
+		instr:    1,
 		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
-			mem.WriteWord(0x80, 0xff, 0xabcd)
+			mem.WriteWord(0xff80, 0xabcd)
 			cpu.SP.Set(0xff80)
 		},
 		checks: []check{
