@@ -15,7 +15,7 @@ type bitopcode struct {
 func newBitHandler(src Getter, bit uint8) func(*CPU, *memory.Memory) error {
 	return func(cpu *CPU, mem *memory.Memory) error {
 		isSet := bits.Test(bit, src.Get(cpu))
-		cpu.SetZFlag(isSet)
+		cpu.SetZFlag(!isSet)
 		cpu.SetNFlag(false)
 		cpu.SetHFlag(true)
 		return nil
