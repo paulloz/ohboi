@@ -97,6 +97,48 @@ func newIncrementRegister(register GetterSetter) Instruction {
 	}
 }
 
+func newIncrementRegister16(register GetterSetter16) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			register.Set(cpu, register.Get(cpu)+1)
+			return nil
+		},
+		Cycles: 8,
+	}
+}
+
+func newDecrementRegister(register GetterSetter) Instruction {
+	cycles := uint(4)
+	if register == AddressHL {
+		cycles = 12
+	}
+
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			initial := register.Get(cpu)
+			final := initial - 1
+			register.Set(cpu, final)
+
+			cpu.SetZFlag(final == 0)
+			cpu.SetNFlag(false)
+			cpu.SetHFlag(bits.HalfCarryCheck(initial, 1))
+
+			return nil
+		},
+		Cycles: cycles,
+	}
+}
+
+func newDecrementRegister16(register GetterSetter16) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			register.Set(cpu, register.Get(cpu)-1)
+			return nil
+		},
+		Cycles: 8,
+	}
+}
+
 func newXorA(src Getter) Instruction {
 	cycles := uint(4)
 	if src == AddressHL || src == Immediate {
@@ -159,14 +201,33 @@ func init() {
 		op.CP_HL: newCompareA(AddressHL),
 		op.CP_N:  newCompareA(Immediate),
 
-		op.INC_A:  newIncrementRegister(RegisterA),
-		op.INC_B:  newIncrementRegister(RegisterB),
-		op.INC_C:  newIncrementRegister(RegisterC),
-		op.INC_D:  newIncrementRegister(RegisterD),
-		op.INC_E:  newIncrementRegister(RegisterE),
-		op.INC_H:  newIncrementRegister(RegisterH),
-		op.INC_L:  newIncrementRegister(RegisterL),
-		op.INC_HL: newIncrementRegister(AddressHL),
+		op.INC_A:   newIncrementRegister(RegisterA),
+		op.INC_B:   newIncrementRegister(RegisterB),
+		op.INC_C:   newIncrementRegister(RegisterC),
+		op.INC_D:   newIncrementRegister(RegisterD),
+		op.INC_E:   newIncrementRegister(RegisterE),
+		op.INC_H:   newIncrementRegister(RegisterH),
+		op.INC_L:   newIncrementRegister(RegisterL),
+		op.INC_HLA: newIncrementRegister(AddressHL),
+
+		op.INC_BC: newIncrementRegister16(RegisterBC),
+		op.INC_DE: newIncrementRegister16(RegisterDE),
+		op.INC_HL: newIncrementRegister16(RegisterHL),
+		op.INC_SP: newIncrementRegister16(RegisterSP),
+
+		op.DEC_A:   newDecrementRegister(RegisterA),
+		op.DEC_B:   newDecrementRegister(RegisterB),
+		op.DEC_C:   newDecrementRegister(RegisterC),
+		op.DEC_D:   newDecrementRegister(RegisterD),
+		op.DEC_E:   newDecrementRegister(RegisterE),
+		op.DEC_H:   newDecrementRegister(RegisterH),
+		op.DEC_L:   newDecrementRegister(RegisterL),
+		op.DEC_HLA: newDecrementRegister(AddressHL),
+
+		op.DEC_BC: newDecrementRegister16(RegisterBC),
+		op.DEC_DE: newDecrementRegister16(RegisterDE),
+		op.DEC_HL: newDecrementRegister16(RegisterHL),
+		op.DEC_SP: newDecrementRegister16(RegisterSP),
 
 		op.XOR_A:  newXorA(RegisterA),
 		op.XOR_B:  newXorA(RegisterB),

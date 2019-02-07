@@ -5,6 +5,11 @@ type GetterSetter interface {
 	Set(*CPU, uint8)
 }
 
+type GetterSetter16 interface {
+	Get(*CPU) uint16
+	Set(*CPU, uint16)
+}
+
 type Setter interface {
 	Set(*CPU, uint8)
 }
