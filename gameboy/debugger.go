@@ -1,3 +1,5 @@
+// +build DEBUG
+
 package gameboy
 
 import (
@@ -7,10 +9,6 @@ import (
 
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
-)
-
-const (
-	debug = true
 )
 
 type tDebugger struct {
@@ -28,17 +26,15 @@ var (
 )
 
 func init() {
-	if debug {
-		ui.Init()
+	ui.Init()
 
-		debugger = &tDebugger{
-			uifps:       widgets.NewParagraph(),
-			uiregisters: widgets.NewParagraph(),
-			uinext:      widgets.NewParagraph(),
+	debugger = &tDebugger{
+		uifps:       widgets.NewParagraph(),
+		uiregisters: widgets.NewParagraph(),
+		uinext:      widgets.NewParagraph(),
 
-			stepByStep: true,
-			stepper:    make(chan int),
-		}
+		stepByStep: true,
+		stepper:    make(chan int),
 	}
 }
 
@@ -99,4 +95,18 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 
 func (debugger *tDebugger) close() {
 	ui.Close()
+}
+
+func debuggerStart(gb *GameBoy) {
+	debugger.start(gb)
+}
+
+func debuggerStop() {
+	debugger.close()
+}
+
+func debuggerStep() {
+	if debugger.stepByStep {
+		<-debugger.stepper
+	}
 }

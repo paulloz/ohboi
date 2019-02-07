@@ -21,9 +21,7 @@ type GameBoy struct {
 }
 
 func (gb *GameBoy) Panic(err error) {
-	if debug && debugger != nil {
-		debugger.close()
-	}
+	debuggerStop()
 	panic(err)
 }
 
@@ -32,9 +30,7 @@ func (gb *GameBoy) Update() uint {
 	var cycles uint
 
 	for cycles = 0; cycles < CyclesPerFrame; {
-		if debug && debugger != nil && debugger.stepByStep {
-			<-debugger.stepper
-		}
+		debuggerStep()
 
 		_cycles, err := gb.cpu.ExecuteOpCode()
 		if err != nil {
@@ -61,9 +57,7 @@ func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
 func (gb *GameBoy) PowerOn() {
 	ticker := time.NewTicker(time.Second / FPS).C
 
-	if debugger != nil {
-		debugger.start(gb)
-	}
+	debuggerStart(gb)
 
 	start := time.Now()
 	frames := 0
