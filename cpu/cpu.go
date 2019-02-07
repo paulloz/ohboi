@@ -34,11 +34,17 @@ type CPU struct {
 	mem *memory.Memory
 }
 
-func (cpu *CPU) Dump() {
-	fmt.Printf("PC:%X\n", cpu.PC)
-	fmt.Printf("A: %X, F: %X\n", cpu.AF.Hi(), cpu.AF.Lo())
-	fmt.Printf("B: %X, C: %X\n", cpu.BC.Hi(), cpu.BC.Lo())
-	fmt.Printf("D: %X, E: %X\n", cpu.DE.Hi(), cpu.DE.Lo())
+func (cpu *CPU) Dump() string {
+	return fmt.Sprintf("PC:0x%02x\n", cpu.PC) +
+		fmt.Sprintf("\n") +
+		fmt.Sprintf("A: 0x%02x, F: 0x%02x\n", cpu.AF.Hi(), cpu.AF.Lo()) +
+		fmt.Sprintf("B: 0x%02x, C: 0x%02x\n", cpu.BC.Hi(), cpu.BC.Lo()) +
+		fmt.Sprintf("D: 0x%02x, E: 0x%02x\n", cpu.DE.Hi(), cpu.DE.Lo()) +
+		fmt.Sprintf("\n") +
+		fmt.Sprintf("HL: 0x%04x\n", cpu.HL.Get()) +
+		fmt.Sprintf("\n") +
+		fmt.Sprintf("Z: %5t, H: %5t\n", cpu.GetZFlag(), cpu.GetHFlag()) +
+		fmt.Sprintf("N: %5t, C: %5t\n", cpu.GetNFlag(), cpu.GetCFlag())
 }
 
 func (cpu *CPU) FetchByte() uint8 {
