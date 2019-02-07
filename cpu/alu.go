@@ -42,14 +42,21 @@ func newAddC(src Getter, cycles uint) Instruction {
 	}
 }
 
-func (cpu *CPU) And(out func(uint8), a uint8, b uint8) {
-	result := b & a
-	out(result)
+func newAnd(register Getter, cycles uint) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			result := register.Get(cpu) & cpu.A.Get()
+			cpu.A.Set(result)
 
-	cpu.SetZFlag(result == 0)
-	cpu.SetNFlag(false)
-	cpu.SetHFlag(true)
-	cpu.SetCFlag(false)
+			cpu.SetZFlag(result == 0)
+			cpu.SetNFlag(false)
+			cpu.SetHFlag(true)
+			cpu.SetCFlag(false)
+
+			return nil
+		},
+		Cycles: cycles,
+	}
 }
 
 func newCompareA(src Getter) Instruction {
@@ -183,13 +190,15 @@ func init() {
 		op.ADC_A_HL: newAddC(AddressHL, 8),
 		op.ADC_A_N:  newAddC(Immediate, 8),
 
-		op.AND_A_E: {
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.And(cpu.AF.SetHi, cpu.DE.Lo(), cpu.AF.Hi())
-				return nil
-			},
-			Cycles: 4,
-		},
+		op.AND_A_A:  newAnd(RegisterA, 4),
+		op.AND_A_B:  newAnd(RegisterA, 4),
+		op.AND_A_C:  newAnd(RegisterA, 4),
+		op.AND_A_D:  newAnd(RegisterA, 4),
+		op.AND_A_E:  newAnd(RegisterA, 4),
+		op.AND_A_H:  newAnd(RegisterA, 4),
+		op.AND_A_L:  newAnd(RegisterA, 4),
+		op.AND_A_HL: newAnd(RegisterA, 8),
+		op.AND_A_N:  newAnd(RegisterA, 8),
 
 		op.CP_A:  newCompareA(RegisterA),
 		op.CP_B:  newCompareA(RegisterB),

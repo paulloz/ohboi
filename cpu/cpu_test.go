@@ -28,6 +28,7 @@ func newTestCPU(scenario testScenario) func(t *testing.T) {
 		memory.LoadCartridge(&cartridge.Cartridge{MBC: rom})
 
 		cpu := cpu.NewCPU(memory)
+		cpu.PC = 0x100
 
 		if scenario.setup != nil {
 			scenario.setup(cpu, memory)
