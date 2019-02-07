@@ -47,7 +47,7 @@ func TestOpcodeADD_A_ZFlag(t *testing.T) {
 	})(t)
 }
 
-func TestOpcodeIncA(t *testing.T) {
+func TestOpcodeINC_A(t *testing.T) {
 	newTestCPU(testScenario{
 		bytecode: []byte{op.INC_A},
 		instr:    1,

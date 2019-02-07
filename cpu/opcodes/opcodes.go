@@ -159,6 +159,15 @@ const (
 	CP_HL = 0xbe
 	CP_N  = 0xfe
 
+	DEC_A  = 0x3d
+	DEC_B  = 0x05
+	DEC_C  = 0x0d
+	DEC_D  = 0x15
+	DEC_E  = 0x1d
+	DEC_H  = 0x25
+	DEC_L  = 0x2d
+	DEC_HL = 0x35
+
 	INC_A  = 0x3c
 	INC_B  = 0x04
 	INC_C  = 0x0c
@@ -167,6 +176,16 @@ const (
 	INC_H  = 0x24
 	INC_L  = 0x2c
 	INC_HL = 0x34
+
+	SUB_A  = 0x97
+	SUB_B  = 0x90
+	SUB_C  = 0x91
+	SUB_D  = 0x92
+	SUB_E  = 0x93
+	SUB_H  = 0x94
+	SUB_L  = 0x95
+	SUB_HL = 0x96
+	SUB_N  = 0xd6
 
 	XOR_A  = 0xaf
 	XOR_B  = 0xa8
@@ -177,6 +196,12 @@ const (
 	XOR_L  = 0xad
 	XOR_HL = 0xae
 	XOR_N  = 0xee
+
+	// 16-Bit ALU
+	INC16_BC = 0x03
+	INC16_DE = 0x13
+	INC16_HL = 0x23
+	INC16_SP = 0x33
 
 	// Jumps
 	JP_NN    = 0xc3
@@ -218,6 +243,16 @@ const (
 
 	// Rotates & Shifts
 	RLCA = 0x07
+	RLA  = 0x17
+
+	RL_A  = 0x17
+	RL_B  = 0x10
+	RL_C  = 0x11
+	RL_D  = 0x12
+	RL_E  = 0x13
+	RL_H  = 0x14
+	RL_L  = 0x15
+	RL_HL = 0x16
 
 	// 16-bit OpCodes
 	CB = 0xcb
