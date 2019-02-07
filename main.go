@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"time"
 
 	"github.com/paulloz/ohboi/gameboy"
 )
@@ -24,19 +23,8 @@ func init() {
 
 func main() {
 	gameBoy = gameboy.NewGameBoy()
-	gameBoy.InsertCartridgeFromFile(romFilename)
-
-	ticker := time.NewTicker(time.Second / gameboy.FPS)
-
-	start := time.Now()
-	frames := 0
-	for range ticker.C {
-		gameBoy.Update()
-
-		frames++
-		if time.Since(start) > time.Second {
-			start = time.Now()
-			frames = 0
-		}
+	if len(romFilename) > 0 {
+		gameBoy.InsertCartridgeFromFile(romFilename)
+		gameBoy.PowerOn()
 	}
 }

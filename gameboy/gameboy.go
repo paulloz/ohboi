@@ -1,6 +1,8 @@
 package gameboy
 
 import (
+	"time"
+
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/memory"
 )
@@ -47,6 +49,22 @@ func (gb *GameBoy) Update() uint {
 // InsertCartridgeFromFile ...
 func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
 	gb.memory.LoadCartridgeFromFile(filename)
+}
+
+func (gb *GameBoy) PowerOn() {
+	ticker := time.NewTicker(time.Second / FPS)
+
+	start := time.Now()
+	frames := 0
+	for range ticker.C {
+		gb.Update()
+
+		frames++
+		if time.Since(start) > time.Second {
+			start = time.Now()
+			frames = 0
+		}
+	}
 }
 
 // NewGameBoy ...
