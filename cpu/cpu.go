@@ -100,7 +100,7 @@ func (cpu *CPU) DisableInterrupts() {
 
 func NewCPU(mem *memory.Memory) *CPU {
 	cpu := &CPU{
-		PC:  0x0100,
+		PC:  0x00,
 		AF:  NewRegister(0x01b0),
 		BC:  NewRegister(0x01b0),
 		DE:  NewRegister(0x01b0),
