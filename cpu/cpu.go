@@ -67,6 +67,17 @@ func (cpu *CPU) AdvancePC() uint16 {
 	return n
 }
 
+func (cpu *CPU) Push(v uint16) {
+	cpu.SP.hilo -= 2
+	cpu.mem.WriteWord(cpu.SP.Get(), v)
+}
+
+func (cpu *CPU) Pop() uint16 {
+	value := cpu.mem.ReadWord(cpu.SP.Get())
+	cpu.SP.hilo += 2
+	return value
+}
+
 func NewCPU(mem *memory.Memory) *CPU {
 	cpu := &CPU{
 		PC:  0x0100,

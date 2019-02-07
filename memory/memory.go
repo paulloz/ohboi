@@ -63,8 +63,7 @@ func (mem *Memory) ReadWord(addr uint16) uint16 {
 	return (uint16(hi) << 8) | uint16(lo)
 }
 
-func (mem *Memory) WriteWord(loAddress, hiAddress, value uint16) {
-	addr := (uint16(hiAddress) << 8) | uint16(loAddress)
+func (mem *Memory) WriteWord(addr, value uint16) {
 	mem.Write(addr, uint8(value&0xff))
 	mem.Write(addr+1, uint8(value>>8))
 }

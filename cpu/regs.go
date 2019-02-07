@@ -286,7 +286,7 @@ func (i addressImmediate16) Get(cpu *CPU) uint16 {
 func (i addressImmediate16) Set(cpu *CPU, v uint16) {
 	lo := cpu.FetchByte()
 	hi := cpu.FetchByte()
-	cpu.mem.WriteWord(uint16(lo), uint16(hi), v)
+	cpu.mem.WriteWord(uint16(hi)<<8|uint16(lo), v)
 }
 
 var AddressImmediate16 = addressImmediate16{}

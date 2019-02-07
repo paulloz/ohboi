@@ -5,63 +5,68 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
-func (cpu *CPU) Call(nn uint16) {
-	cpu.Push(cpu.PC)
-	cpu.PC = nn
-}
-
 func init() {
 	RegisterIntructions(map[uint8]Instruction{
-		op.CALL_NN: {
+		op.RET: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.Call(cpu.FetchWord())
+				cpu.PC = cpu.Pop()
 				return nil
 			},
-			Cycles: 12,
+			Cycles: 8,
 		},
 
-		op.CALL_C_NN: {
+		op.RET_C: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.FetchWord()
+				addr := cpu.Pop()
 				if cpu.GetCFlag() {
-					cpu.Call(addr)
+					cpu.PC = addr
 				}
 				return nil
 			},
-			Cycles: 12,
+			Cycles: 8,
 		},
 
-		op.CALL_NC_NN: {
+		op.RET_NC: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.FetchWord()
+				addr := cpu.Pop()
 				if !cpu.GetCFlag() {
-					cpu.Call(addr)
+					cpu.PC = addr
 				}
 				return nil
 			},
-			Cycles: 12,
+			Cycles: 8,
 		},
 
-		op.CALL_Z_NN: {
+		op.RET_Z: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.FetchWord()
+				addr := cpu.Pop()
 				if cpu.GetZFlag() {
-					cpu.Call(addr)
+					cpu.PC = addr
 				}
 				return nil
 			},
-			Cycles: 12,
+			Cycles: 8,
 		},
 
-		op.CALL_NZ_NN: {
+		op.RET_NZ: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.FetchWord()
+				addr := cpu.Pop()
 				if !cpu.GetZFlag() {
-					cpu.Call(addr)
+					cpu.PC = addr
 				}
 				return nil
 			},
-			Cycles: 12,
+			Cycles: 8,
+		},
+
+		op.RETI: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				addr := cpu.Pop()
+				cpu.PC = addr
+				cpu.EnableInterrupts()
+				return nil
+			},
+			Cycles: 8,
 		},
 	})
 }
