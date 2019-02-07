@@ -22,6 +22,8 @@ type Memory struct {
 
 	inBootMode bool
 
+	vRAM [0x2000]uint8
+
 	hRAM [0x80]uint8
 
 	wRAM [0x2000]uint8 // 2 4KB banks
@@ -35,11 +37,12 @@ func (mem *Memory) Read(address uint16) uint8 {
 		}
 		return mem.cartridge.Read(address)
 	} else if address <= 0x9FFF { // VRAM
+		return mem.vRAM[address-VRAMAddr]
 		// TODO: Implement VRAM
 	} else if address <= 0xBFFF { // Cartridge RAM
 		return mem.cartridge.Read(address)
 	} else if address <= 0xDFFF { // WRAM
-		return mem.wRAM[address-0xC000]
+		return mem.wRAM[address-InternalRAMAddr]
 	} else if address <= 0xFDFF { // ECHO RAM
 		// TODO: Implement ECHO RAM
 	} else if address <= 0xFE9F { // OAM
@@ -76,11 +79,13 @@ func (mem *Memory) Write(address uint16, value uint8) {
 		mem.cartridge.Write(address, value)
 		return
 	} else if address <= 0x9FFF { // VRAM
-		// TODO: Implement VRAM
+		mem.vRAM[address-VRAMAddr] = value
+		return
 	} else if address <= 0xBFFF { // Cartridge RAM
 		mem.cartridge.Write(address, value)
+		return
 	} else if address <= 0xDFFF { // WRAM
-		mem.wRAM[address-0xC000] = value
+		mem.wRAM[address-InternalRAMAddr] = value
 		return
 	} else if address <= 0xFDFF { // ECHO RAM
 		// TODO: Implement ECHO RAM
