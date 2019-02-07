@@ -36,7 +36,7 @@ func init() {
 			uiregisters: widgets.NewParagraph(),
 			uinext:      widgets.NewParagraph(),
 
-			stepByStep: false,
+			stepByStep: true,
 			stepper:    make(chan int),
 		}
 	}
@@ -72,6 +72,9 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 					}
 				case "p":
 					debugger.stepByStep = !debugger.stepByStep
+					if !debugger.stepByStep {
+						debugger.stepper <- 1
+					}
 				}
 			case <-ticker:
 				pc := gb.cpu.PC
