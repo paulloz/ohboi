@@ -30,7 +30,7 @@ func newPopRegister16(dst Setter16, cycles uint) Instruction {
 }
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.PUSH_AF: newPushRegister16(RegisterAF, 16),
 		op.PUSH_BC: newPushRegister16(RegisterBC, 16),
 		op.PUSH_DE: newPushRegister16(RegisterDE, 16),

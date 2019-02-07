@@ -11,7 +11,7 @@ func (cpu *CPU) Call(nn uint16) {
 }
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.CALL_NN: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				cpu.Call(cpu.FetchWord())

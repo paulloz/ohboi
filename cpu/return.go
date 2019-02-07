@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.RET: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				cpu.PC = cpu.Pop()

@@ -222,7 +222,7 @@ func newXorA(src Getter) Instruction {
 }
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.ADD_A_A:  newAdd(RegisterA, 4),
 		op.ADD_A_B:  newAdd(RegisterB, 4),
 		op.ADD_A_C:  newAdd(RegisterC, 4),

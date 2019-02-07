@@ -13,7 +13,7 @@ type Instruction struct {
 var InstructionSet map[uint8]Instruction
 var ExtInstructionSet map[uint8]Instruction
 
-func RegisterIntructions(instructions map[uint8]Instruction) {
+func RegisterInstructions(instructions map[uint8]Instruction) {
 	if InstructionSet == nil {
 		InstructionSet = make(map[uint8]Instruction)
 	}
@@ -43,7 +43,7 @@ func NoopHandler(cpu *CPU, mem *memory.Memory) error {
 }
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.NOOP: NoopInstruction,
 	})
 }

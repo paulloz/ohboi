@@ -10,7 +10,7 @@ func (cpu *CPU) Jump(nn uint16) {
 }
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.JP_NN: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				cpu.Jump(cpu.FetchWord())

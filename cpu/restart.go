@@ -17,7 +17,7 @@ func newReset(offset uint8) Instruction {
 }
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.RST_00H: newReset(0x00),
 		op.RST_08H: newReset(0x08),
 		op.RST_10H: newReset(0x10),

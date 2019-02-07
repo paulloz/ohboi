@@ -26,7 +26,7 @@ func newLoadRegister16(dst Setter16, src Getter16, cycles uint) Instruction {
 }
 
 func init() {
-	RegisterIntructions(map[uint8]Instruction{
+	RegisterInstructions(map[uint8]Instruction{
 		op.LD_A_N: newLoadRegister(RegisterA, Immediate, 8),
 		op.LD_B_N: newLoadRegister(RegisterB, Immediate, 8),
 		op.LD_C_N: newLoadRegister(RegisterC, Immediate, 8),
