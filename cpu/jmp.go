@@ -115,7 +115,7 @@ func init() {
 		op.JR_NZ_N: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				rel := int(int8(cpu.FetchByte()))
-				if !cpu.GetCFlag() {
+				if !cpu.GetZFlag() {
 					cpu.Jump(uint16(int(cpu.PC) + rel))
 				}
 				return nil
