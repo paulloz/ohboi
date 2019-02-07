@@ -78,6 +78,14 @@ func (cpu *CPU) Pop() uint16 {
 	return value
 }
 
+func (cpu *CPU) EnableInterrupts() {
+	// TODO
+}
+
+func (cpu *CPU) DisableInterrupts() {
+	// TODO
+}
+
 func NewCPU(mem *memory.Memory) *CPU {
 	cpu := &CPU{
 		PC:  0x0100,
