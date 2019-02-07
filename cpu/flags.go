@@ -45,7 +45,7 @@ func (cpu *CPU) SetHFlag(v bool) {
 	}
 }
 
-func (cpu *CPU) GetCFFlag() bool {
+func (cpu *CPU) GetCFlag() bool {
 	return bits.Test(4, cpu.F.Get())
 }
 

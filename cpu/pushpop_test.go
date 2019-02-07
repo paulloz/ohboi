@@ -1,37 +1,36 @@
-package cpu
+package cpu_test
 
 import (
 	"testing"
 
+	"github.com/paulloz/ohboi/cpu"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
+	"github.com/paulloz/ohboi/memory"
 )
 
 func TestOpcodePUSH_AF(t *testing.T) {
-	cpu := newTestCPU([]byte{op.PUSH_AF})
-	cpu.SP.Set(0xff80)
-	cpu.AF.Set(123)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.mem.ReadWord(0xff80) != 123 {
-		t.Errorf("Expected address 0xff80 to contain 123, got %x", cpu.mem.ReadWord(0xff80))
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.PUSH_AF},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.SP.Set(0xff80)
+			cpu.AF.Set(123)
+		},
+		checks: []check{
+			newMemoryWordCheck(0xff80, 123),
+		},
+	})(t)
 }
 
 func TestOpcodePOP_AF(t *testing.T) {
-	cpu := newTestCPU([]byte{op.POP_AF})
-	cpu.mem.WriteWord(0x80, 0xff, 0xabcd)
-	cpu.SP.Set(0xff80)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.AF.Get() != 0xabcd {
-		t.Errorf("Expected AF to contain 0xabcd, got %x", cpu.AF.Get())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.POP_AF},
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			mem.WriteWord(0x80, 0xff, 0xabcd)
+			cpu.SP.Set(0xff80)
+		},
+		checks: []check{
+			newRegister16Check("AF", cpu.RegisterAF, 0xabcd),
+		},
+	})(t)
 }

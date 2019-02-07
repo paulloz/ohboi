@@ -1,267 +1,218 @@
-package cpu
+package cpu_test
 
 import (
 	"testing"
 
+	"github.com/paulloz/ohboi/cpu"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
 	"github.com/paulloz/ohboi/memory"
 )
 
 func TestOpcodeLD_B_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_B_N, 123})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.BC.Hi() != 123 {
-		t.Errorf("Expected A to be 123, got %d", cpu.BC.Hi())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_B_N, 123},
+		instr:    1,
+		checks: []check{
+			newRegisterCheck("B", cpu.RegisterB, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_C_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_C_N, 123})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.BC.Lo() != 123 {
-		t.Errorf("Expected A to be 123, got %d", cpu.BC.Lo())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_C_N, 123},
+		instr:    1,
+		checks: []check{
+			newRegisterCheck("C", cpu.RegisterC, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_D_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_D_N, 123})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.DE.Hi() != 123 {
-		t.Errorf("Expected A to be 123, got %d", cpu.DE.Hi())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_D_N, 123},
+		instr:    1,
+		checks: []check{
+			newRegisterCheck("D", cpu.RegisterD, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_E_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_E_N, 123})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.DE.Lo() != 123 {
-		t.Errorf("Expected A to be 123, got %d", cpu.DE.Lo())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_E_N, 123},
+		instr:    1,
+		checks: []check{
+			newRegisterCheck("E", cpu.RegisterE, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_H_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_H_N, 123})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.HL.Hi() != 123 {
-		t.Errorf("Expected A to be 123, got %d", cpu.HL.Lo())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_H_N, 123},
+		instr:    1,
+		checks: []check{
+			newRegisterCheck("H", cpu.RegisterH, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_L_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_L_N, 123})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.HL.Lo() != 123 {
-		t.Errorf("Expected A to be 123, got %d", cpu.HL.Lo())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_L_N, 123},
+		instr:    1,
+		checks: []check{
+			newRegisterCheck("L", cpu.RegisterL, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_HL_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_HL_N, 123})
-	cpu.HL.Set(memory.InternalRAM2Addr)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.mem.Read(memory.InternalRAM2Addr) != 123 {
-		t.Errorf("Expected byte 51 to be 123, got %d", cpu.mem.Read(50))
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_HL_N, 123},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.HL.Set(memory.InternalRAM2Addr)
+		},
+		checks: []check{
+			newMemoryCheck(memory.InternalRAM2Addr, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_A_NN(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_A_NN, uint8(memory.InternalRAM2Addr & 0xff), uint8(memory.InternalRAM2Addr >> 8)})
-	cpu.mem.Write(memory.InternalRAM2Addr, 123)
-
-	cycles, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.A.Get() != 123 {
-		t.Errorf("Expected A to contain 123, got %d", cpu.mem.Read(50))
-	}
-
-	if cycles != 16 {
-		t.Errorf("Expected LD_A_NN to take 16 cycles, got %d", cycles)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_A_NN, uint8(memory.InternalRAM2Addr & 0xff), uint8(memory.InternalRAM2Addr >> 8)},
+		instr:    1,
+		cycles:   16,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			mem.Write(memory.InternalRAM2Addr, 123)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_NN_A(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_NN_A, uint8(memory.InternalRAM2Addr & 0xff), uint8(memory.InternalRAM2Addr >> 8)})
-	cpu.A.Set(123)
-
-	cycles, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.mem.Read(memory.InternalRAM2Addr) != 123 {
-		t.Errorf("Expected A to contain 123, got %d", cpu.mem.Read(memory.InternalRAM2Addr))
-	}
-
-	if cycles != 16 {
-		t.Errorf("Expected LD_NN_A to take 16 cycles, got %d", cycles)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_NN_A, uint8(memory.InternalRAM2Addr & 0xff), uint8(memory.InternalRAM2Addr >> 8)},
+		instr:    1,
+		cycles:   16,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(123)
+		},
+		checks: []check{
+			newMemoryCheck(memory.InternalRAM2Addr, 123),
+		},
+	})(t)
 }
+
 func TestOpcodeLD_A_CADDR(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_A_CADDR})
-	cpu.C.Set(0x80)
-	cpu.mem.Write(memory.InternalRAM2Addr, 123)
-
-	cycles, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.A.Get() != 123 {
-		t.Errorf("Expected A to contain 123, got %d", cpu.mem.Read(memory.IOPortsAddr))
-	}
-
-	if cycles != 8 {
-		t.Errorf("Expected LD_A_CADDR to take 8 cycles, got %d", cycles)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_A_CADDR},
+		instr:    1,
+		cycles:   8,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.C.Set(0x80)
+			mem.Write(memory.InternalRAM2Addr, 123)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_A_HLD(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_A_HLD})
-	cpu.HL.Set(memory.InternalRAM2Addr)
-	cpu.mem.Write(memory.InternalRAM2Addr, 123)
-
-	cycles, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.A.Get() != 123 {
-		t.Errorf("Expected A to contain 123, got %d", cpu.mem.Read(memory.IOPortsAddr))
-	}
-
-	if cpu.HL.Get() != memory.InternalRAM2Addr-1 {
-		t.Errorf("Expected A to contain InternalRAM2Addr, got %d", cpu.HL.Get())
-	}
-
-	if cycles != 8 {
-		t.Errorf("Expected LD_A_HLD to take 8 cycles, got %d", cycles)
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_A_HLD},
+		instr:    1,
+		cycles:   8,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.HL.Set(memory.InternalRAM2Addr)
+			mem.Write(memory.InternalRAM2Addr, 123)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 123),
+			newRegister16Check("HL", cpu.RegisterHL, memory.InternalRAM2Addr-1),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_HLD_A(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_HLD_A})
-	cpu.HL.Set(memory.InternalRAM2Addr)
-	cpu.A.Set(123)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.mem.Read(memory.InternalRAM2Addr) != 123 {
-		t.Errorf("Expected InternalRAM2Addr to contain 123, got %d", cpu.mem.Read(memory.InternalRAM2Addr))
-	}
-
-	if cpu.HL.Get() != memory.InternalRAM2Addr-1 {
-		t.Errorf("Expected A to contain InternalRAM2Addr, got %d", cpu.HL.Get())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_HLD_A},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.HL.Set(memory.InternalRAM2Addr)
+			cpu.A.Set(123)
+		},
+		checks: []check{
+			newMemoryCheck(memory.InternalRAM2Addr, 123),
+			newRegister16Check("HL", cpu.RegisterHL, memory.InternalRAM2Addr-1),
+		},
+	})(t)
 }
 
 func TestOpcodeLDH_FF00N_A(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LDH_FF00N_A, 128})
-	cpu.A.Set(123)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.mem.Read(memory.InternalRAM2Addr) != 123 {
-		t.Errorf("Expected InternalRAM2Addr to contain 123, got %d", cpu.mem.Read(memory.InternalRAM2Addr))
-	}
-
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LDH_FF00N_A, 128},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(123)
+		},
+		checks: []check{
+			newMemoryCheck(memory.InternalRAM2Addr, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_BC_NN(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_BC_NN, 123, 00})
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.BC.Get() != 123 {
-		t.Errorf("Expected BC to contain 123, got %d", cpu.BC.Get())
-	}
-
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_BC_NN, 123, 00},
+		instr:    1,
+		checks: []check{
+			newRegister16Check("BC", cpu.RegisterBC, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_SP_HL(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_SP_HL})
-	cpu.HL.Set(123)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.SP.Get() != 123 {
-		t.Errorf("Expected SP to contain 123, got %d", cpu.SP.Get())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_SP_HL},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.HL.Set(123)
+		},
+		checks: []check{
+			newRegister16Check("SP", cpu.RegisterSP, 123),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_HL_SP_N(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_HL_SP_N, 128})
-	cpu.SP.Set(0xff00)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.HL.Get() != 0xff80 {
-		t.Errorf("Expected SP to contain 0xff80, got %x", cpu.HL.Get())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_HL_SP_N, 128},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.SP.Set(0xff00)
+		},
+		checks: []check{
+			newRegister16Check("HL", cpu.RegisterHL, 0xff80),
+		},
+	})(t)
 }
 
 func TestOpcodeLD_NN_SP(t *testing.T) {
-	cpu := newTestCPU([]byte{op.LD_NN_SP, 0x80, 0xff})
-	cpu.SP.Set(0xabcd)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.mem.ReadWord(0xff80) != 0xabcd {
-		t.Errorf("Expected address 0xff80 to contain 0xabcd, got %x", cpu.mem.ReadWord(0xff80))
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.LD_NN_SP, 0x80, 0xff},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.SP.Set(0xabcd)
+		},
+		checks: []check{
+			newMemoryWordCheck(0xff80, 0xabcd),
+		},
+	})(t)
 }

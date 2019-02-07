@@ -1,49 +1,61 @@
-package cpu
+package cpu_test
 
 import (
 	"testing"
 
+	"github.com/paulloz/ohboi/cpu"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
+	"github.com/paulloz/ohboi/memory"
 )
 
 func TestOpcodeADD_A_A(t *testing.T) {
-	cpu := newTestCPU([]byte{op.ADD_A_A})
-	cpu.A.Set(10)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.A.Get() != 20 {
-		t.Errorf("Expected A to be 20, got %d", cpu.A.Get())
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.ADD_A_A},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(10)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 20),
+		},
+	})(t)
 }
 
 func TestOpcodeADD_A_CarryFlag(t *testing.T) {
-	cpu := newTestCPU([]byte{op.ADD_A_A})
-	cpu.A.Set(200)
-
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.F.Get()&CarryFlag == 0 {
-		t.Errorf("Expected carry to be set")
-	}
+	newTestCPU(testScenario{
+		bytecode: []byte{op.ADD_A_A},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(200)
+		},
+		checks: []check{
+			carryFlagSetCheck{},
+		},
+	})(t)
 }
 
 func TestOpcodeADD_A_ZFlag(t *testing.T) {
-	cpu := newTestCPU([]byte{op.ADD_A_A})
-	cpu.A.Set(0)
+	newTestCPU(testScenario{
+		bytecode: []byte{op.ADD_A_A},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(0)
+		},
+		checks: []check{
+			zeroFlagSetCheck{},
+		},
+	})
+}
 
-	_, err := cpu.ExecuteOpCode()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if cpu.F.Get()&ZFlag == 0 {
-		t.Errorf("Expected zero flag to be set")
-	}
+func TestOpcodeIncA(t *testing.T) {
+	newTestCPU(testScenario{
+		bytecode: []byte{op.INC_A},
+		instr:    1,
+		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
+			cpu.A.Set(11)
+		},
+		checks: []check{
+			newRegisterCheck("A", cpu.RegisterA, 12),
+		},
+	})(t)
 }

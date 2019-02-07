@@ -44,7 +44,7 @@ func init() {
 		op.JP_C_NN: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				addr := cpu.FetchWord()
-				if cpu.GetCFFlag() {
+				if cpu.GetCFlag() {
 					cpu.Jump(addr)
 				}
 				return nil
@@ -55,7 +55,7 @@ func init() {
 		op.JP_NC_NN: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				addr := cpu.FetchWord()
-				if !cpu.GetCFFlag() {
+				if !cpu.GetCFlag() {
 					cpu.Jump(addr)
 				}
 				return nil
@@ -82,7 +82,7 @@ func init() {
 		op.JR_C_N: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				rel := int(int8(cpu.FetchByte()))
-				if cpu.GetCFFlag() {
+				if cpu.GetCFlag() {
 					cpu.Jump(uint16(int(cpu.PC) + rel))
 				}
 				return nil
@@ -93,7 +93,7 @@ func init() {
 		op.JR_NC_N: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				rel := int(int8(cpu.FetchByte()))
-				if !cpu.GetCFFlag() {
+				if !cpu.GetCFlag() {
 					cpu.Jump(uint16(int(cpu.PC) + rel))
 				}
 				return nil
@@ -115,7 +115,7 @@ func init() {
 		op.JR_NZ_N: {
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				rel := int(int8(cpu.FetchByte()))
-				if !cpu.GetCFFlag() {
+				if !cpu.GetCFlag() {
 					cpu.Jump(uint16(int(cpu.PC) + rel))
 				}
 				return nil
