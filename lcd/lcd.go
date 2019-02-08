@@ -66,6 +66,59 @@ func (lcd *LCD) SetLCDSTAT() {
 		lcd.io.Write(io.STAT, 1<<2)
 		return
 	}
+
+	ly := lcd.io.Read(io.LY)
+
+	stat := lcd.io.Read(io.STAT)
+	modeChanged := func(currentMode uint8) func() bool {
+		return func() bool {
+			return currentMode != stat&0x3
+		}
+	}(stat & 0x03)
+
+	if ly >= 144 {
+		// We're in V-BLANK, set mode bits to 01
+		stat = bits.Reset(1, bits.Set(0, stat))
+		if bits.Test(4, stat) && modeChanged() {
+			// We changed mode and V-Blank STAT interrupt is enabled
+			lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+		}
+	} else {
+		// The end of V-Blank to begin of next V-Blank period takes 456 CPU cycles
+		// It is timed like this: Mode2 (80 cycles) -> Mode3 (170~240 cycles) -> Mode0 (remaining cycles)
+		if lcd.scanlineCounter < 80 {
+			// We're in Mode2, set mode bits to 11
+			stat = bits.Set(1, bits.Set(0, stat))
+			if bits.Test(5, stat) && modeChanged() {
+				// We changed mode and Mode2 interrupt is enabled
+				lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+			}
+		} else if lcd.scanlineCounter < 80+170 {
+			// We're in Mode3, set mode bits to 10, no interrupt for Mode3
+			stat = bits.Set(1, bits.Reset(0, stat))
+		} else {
+			// We're in Mode0, set mode bits to 00
+			stat = bits.Reset(1, bits.Reset(0, stat))
+			if bits.Test(3, stat) && modeChanged() {
+				// We changed mode and Mode0 interrupt is enabled
+				lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+			}
+		}
+	}
+
+	// if LYC == LYC, must set bit 2 and request interrupt if bit 6 is set
+	// must reset bit 2 otherwise
+	lyc := lcd.io.Read(io.LYC)
+	if lyc == ly {
+		bits.Set(2, stat)
+		if bits.Test(6, stat) {
+			lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+		}
+	} else {
+		bits.Reset(2, stat)
+	}
+
+	lcd.io.Write(io.STAT, stat)
 }
 
 func (lcd *LCD) DrawScanline() {
