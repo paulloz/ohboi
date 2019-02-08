@@ -6,6 +6,12 @@ const (
 	SGBSupport   = 3 // Game supports SGB functions
 )
 
+// CGB flags
+const (
+	CGBCompatible = 0x80 // Game supports CGB functions, but works on old gameboys also
+	CGBOnly       = 0xC0 // Game works on CGB only (physically the same as 80h)
+)
+
 // Ram sizes
 const (
 	RAMNone = 0
