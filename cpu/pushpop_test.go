@@ -13,11 +13,11 @@ func TestOpcodePUSH_AF(t *testing.T) {
 		bytecode: []byte{op.PUSH_AF},
 		instr:    1,
 		setup: func(cpu *cpu.CPU, mem *memory.Memory) {
-			cpu.SP.Set(0xff80)
+			cpu.SP.Set(0xffff)
 			cpu.AF.Set(123)
 		},
 		checks: []check{
-			newMemoryWordCheck(0xff80, 123),
+			newMemoryWordCheck(0xfffd, 123),
 		},
 	})(t)
 }
