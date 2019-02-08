@@ -32,7 +32,8 @@ type CPU struct {
 	SP Register
 	PC uint16
 
-	div uint8
+	divCycles uint32
+	div       uint8
 
 	mem *memory.Memory
 	io  *io.IO
@@ -116,8 +117,13 @@ func (cpu *CPU) writeDIV(val uint8) {
 	cpu.div = 0
 }
 
-func (cpu *CPU) IncrementDIV() {
-	cpu.div++
+func (cpu *CPU) UpdateDIV(cycles uint32, frequency uint32) {
+	cpu.divCycles += cycles
+
+	for cpu.divCycles >= frequency {
+		cpu.divCycles -= frequency
+		cpu.div++
+	}
 }
 
 func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
@@ -129,7 +135,8 @@ func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 		HL: NewRegister(0x01b0),
 		SP: NewRegister(0xfffe),
 
-		div: 0,
+		divCycles: 0,
+		div:       0,
 
 		mem: mem,
 		io:  io_,

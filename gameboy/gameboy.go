@@ -34,32 +34,27 @@ func (gb *GameBoy) Panic(err error) {
 	panic(err)
 }
 
-func (gb *GameBoy) Update(pendingDIVCycles uint32) (uint32, uint32) {
+func (gb *GameBoy) Update() uint32 {
 	var cycles uint32
-	var cyclesDIV uint32 = pendingDIVCycles
 
 	for cycles = 0; cycles < CyclesPerFrame; {
 		debuggerStep()
 
 		// Execute instruction
-		_cycles, err := gb.cpu.ExecuteOpCode()
+		currentInstrCycles, err := gb.cpu.ExecuteOpCode()
 		if err != nil {
 			gb.Panic(err)
 		}
 
 		// Update DIV register
-		cyclesDIV += uint32(_cycles)
-		if cyclesDIV >= CyclesPerDIV {
-			cyclesDIV -= CyclesPerDIV
-			gb.cpu.IncrementDIV()
-		}
+		gb.cpu.UpdateDIV(currentInstrCycles, CyclesPerDIV)
 
-		gb.UpdateTimers(_cycles)
+		gb.UpdateTimers(currentInstrCycles)
 
-		cycles += uint32(_cycles)
+		cycles += uint32(currentInstrCycles)
 	}
 
-	return cycles, cyclesDIV
+	return cycles
 }
 
 func (gb *GameBoy) UpdateTimers(cycles uint32) {
@@ -103,12 +98,10 @@ func (gb *GameBoy) PowerOn() {
 	start := time.Now()
 	frames := 0
 
-	var pendingDIVCycles uint32
-
 	for {
 		select {
 		case <-ticker:
-			_, pendingDIVCycles = gb.Update(pendingDIVCycles)
+			gb.Update()
 
 			frames++
 			if time.Since(start) > time.Second {
