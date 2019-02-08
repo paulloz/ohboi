@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/paulloz/ohboi/apu"
+	"github.com/paulloz/ohboi/bits"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
@@ -24,6 +25,8 @@ type GameBoy struct {
 	cpu    *cpu.CPU
 	io     *io.IO
 	memory *memory.Memory
+
+	timaClock uint32
 }
 
 func (gb *GameBoy) Panic(err error) {
@@ -51,10 +54,41 @@ func (gb *GameBoy) Update(pendingDIVCycles uint32) (uint32, uint32) {
 			gb.cpu.IncrementDIV()
 		}
 
+		gb.UpdateTimers(_cycles)
+
 		cycles += uint32(_cycles)
 	}
 
 	return cycles, cyclesDIV
+}
+
+func (gb *GameBoy) UpdateTimers(cycles uint32) {
+	// If Timer Enable (bit 2 of TAC is set)
+	if bits.Test(2, gb.io.Read(io.TAC)) {
+		// Retrieve frequency
+		timaClockFrequency := uint32(1024)
+		switch gb.io.Read(io.TAC) & 0x03 {
+		case 1:
+			timaClockFrequency = 16
+		case 2:
+			timaClockFrequency = 64
+		case 3:
+			timaClockFrequency = 256
+		}
+
+		gb.timaClock += cycles
+		for gb.timaClock >= timaClockFrequency {
+			gb.timaClock -= timaClockFrequency
+
+			tima := gb.io.Read(io.TIMA)
+			if tima < 0xff {
+				gb.io.Write(io.TIMA, tima+1)
+			} else {
+				gb.io.Write(io.TIMA, gb.io.Read(io.TMA))
+				// Request Timer Interrupt (IF bit 2)
+			}
+		}
+	}
 }
 
 func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
@@ -86,15 +120,15 @@ func (gb *GameBoy) PowerOn() {
 }
 
 func NewGameBoy() *GameBoy {
-	io := io.NewIO()
-	memory := memory.NewMemory(io)
-	cpu := cpu.NewCPU(memory, io)
-	apu := apu.NewAPU(io)
+	io_ := io.NewIO()
+	memory := memory.NewMemory(io_)
+	cpu := cpu.NewCPU(memory, io_)
+	apu := apu.NewAPU(io_)
 
 	return &GameBoy{
 		apu:    apu,
 		cpu:    cpu,
-		io:     io,
+		io:     io_,
 		memory: memory,
 	}
 }
