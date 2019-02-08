@@ -34,27 +34,29 @@ func (gb *GameBoy) Panic(err error) {
 	panic(err)
 }
 
-func (gb *GameBoy) Update() uint32 {
+func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 	var cycles uint32
+	var currentInstrCycles = pendingCycles
 
 	for cycles = 0; cycles < CyclesPerFrame; {
 		debuggerStep()
 
 		// Execute instruction
-		currentInstrCycles, err := gb.cpu.ExecuteOpCode()
+		opCycles, err := gb.cpu.ExecuteOpCode()
 		if err != nil {
 			gb.Panic(err)
 		}
+		currentInstrCycles += opCycles
 
-		// Update DIV register
 		gb.cpu.UpdateDIV(currentInstrCycles, CyclesPerDIV)
-
 		gb.UpdateTimers(currentInstrCycles)
+		cycles += currentInstrCycles
 
-		cycles += uint32(currentInstrCycles)
+		currentInstrCycles = gb.cpu.ManageInterrupts()
+		cycles += currentInstrCycles
 	}
 
-	return cycles
+	return cycles, currentInstrCycles
 }
 
 func (gb *GameBoy) UpdateTimers(cycles uint32) {
@@ -80,7 +82,7 @@ func (gb *GameBoy) UpdateTimers(cycles uint32) {
 				gb.io.Write(io.TIMA, tima+1)
 			} else {
 				gb.io.Write(io.TIMA, gb.io.Read(io.TMA))
-				// Request Timer Interrupt (IF bit 2)
+				gb.io.Write(io.IF, bits.Set(2, gb.io.Read(io.IF))) // Request Timer Interrupt (IF bit 2)
 			}
 		}
 	}
@@ -98,10 +100,12 @@ func (gb *GameBoy) PowerOn() {
 	start := time.Now()
 	frames := 0
 
+	pendingCycles := uint32(0)
+
 	for {
 		select {
 		case <-ticker:
-			gb.Update()
+			_, pendingCycles = gb.Update(pendingCycles)
 
 			frames++
 			if time.Since(start) > time.Second {

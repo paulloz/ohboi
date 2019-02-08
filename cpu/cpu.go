@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 
+	"github.com/paulloz/ohboi/bits"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
 	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
@@ -34,6 +35,10 @@ type CPU struct {
 
 	divCycles uint32
 	div       uint8
+
+	interruptsMasterEnable    bool
+	interruptsMasterEnabling  bool
+	interruptsMasterDisabling bool
 
 	mem *memory.Memory
 	io  *io.IO
@@ -101,14 +106,6 @@ func (cpu *CPU) Pop() uint16 {
 	return value
 }
 
-func (cpu *CPU) EnableInterrupts() {
-	// TODO
-}
-
-func (cpu *CPU) DisableInterrupts() {
-	// TODO
-}
-
 func (cpu *CPU) readDIV() uint8 {
 	return cpu.div
 }
@@ -126,6 +123,60 @@ func (cpu *CPU) UpdateDIV(cycles uint32, frequency uint32) {
 	}
 }
 
+func (cpu *CPU) EnableInterrupts() {
+	cpu.interruptsMasterEnabling = true
+}
+
+func (cpu *CPU) DisableInterrupts() {
+	cpu.interruptsMasterDisabling = true
+}
+
+func (cpu *CPU) ManageInterrupts() uint32 {
+	defer func() {
+		if cpu.interruptsMasterDisabling {
+			cpu.interruptsMasterEnable = false
+			cpu.interruptsMasterDisabling = false
+		}
+	}()
+
+	if cpu.interruptsMasterEnabling {
+		cpu.interruptsMasterEnabling = false
+		cpu.interruptsMasterEnable = true
+		return 0
+	}
+
+	if !cpu.interruptsMasterEnable {
+		return 0
+	}
+
+	interruptEnable := cpu.io.Read(io.IE)
+	interruptFlag := cpu.io.Read(io.IF)
+
+	// Interrupts priority is from least to most significant bits
+	for b := uint8(0); b <= 4; b++ {
+		// If interrupt was requested
+		if bits.Test(b, interruptFlag) {
+			// And this interrupt is enabled
+			if bits.Test(b, interruptEnable) {
+				// Service the interrupt:
+				cpu.interruptsMasterEnable = false // Clear IME
+
+				// Reset bit in IF
+				cpu.io.Write(io.IF, bits.Reset(b, interruptFlag))
+
+				// Push PC to Stack (8 cycles)
+				cpu.Push(cpu.PC)
+				// Set PC to interrupt handler address (4 cycles) */
+				cpu.PC = Interrupts[b]
+				// Execute 2 NOP (8 cycles)
+				return 20
+			}
+		}
+	}
+
+	return 0
+}
+
 func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 	cpu := &CPU{
 		PC: 0x0,
@@ -137,6 +188,10 @@ func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 
 		divCycles: 0,
 		div:       0,
+
+		interruptsMasterEnable:    true,
+		interruptsMasterEnabling:  false,
+		interruptsMasterDisabling: false,
 
 		mem: mem,
 		io:  io_,
