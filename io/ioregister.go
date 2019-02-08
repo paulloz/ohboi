@@ -57,10 +57,35 @@ const (
 	WX   = 0x4b
 )
 
-type IORegister struct {
+type MemoryRegister struct {
 	value uint8
 }
 
-func newIORegister(value uint8) *IORegister {
-	return &IORegister{value: value}
+func (r *MemoryRegister) Read() uint8 {
+	return r.value
+}
+
+func (r *MemoryRegister) Write(value uint8) {
+	r.value = value
+}
+
+func newMemoryRegister(value uint8) *MemoryRegister {
+	return &MemoryRegister{value: value}
+}
+
+type MappedRegister struct {
+	getter func() uint8
+	setter func(uint8)
+}
+
+func (r *MappedRegister) Read() uint8 {
+	return r.getter()
+}
+
+func (r *MappedRegister) Write(v uint8) {
+	r.setter(v)
+}
+
+func NewMappedRegister(getter func() uint8, setter func(uint8)) *MappedRegister {
+	return &MappedRegister{getter: getter, setter: setter}
 }
