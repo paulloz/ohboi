@@ -1,5 +1,9 @@
 package io
 
+import (
+	"github.com/paulloz/ohboi/bits"
+)
+
 type IO struct {
 	registers map[uint8]Register
 }
@@ -13,8 +17,28 @@ func (io *IO) Read(address uint8) uint8 {
 	return io.registers[address].Read()
 }
 
+func (io *IO) ReadBit(address uint8, bit uint8) bool {
+	return bits.Test(bit, io.Read(address))
+}
+
 func (io *IO) Write(address uint8, value uint8) {
 	io.registers[address].Write(value)
+}
+
+func (io *IO) WriteBit(address uint8, bit uint8, value bool) {
+	if value {
+		io.SetBit(address, bit)
+	} else {
+		io.ResetBit(address, bit)
+	}
+}
+
+func (io *IO) SetBit(address uint8, bit uint8) {
+	io.Write(address, bits.Set(bit, io.Read(address)))
+}
+
+func (io *IO) ResetBit(address uint8, bit uint8) {
+	io.Write(address, bits.Reset(bit, io.Read(address)))
 }
 
 func (io *IO) MapRegister(address uint8, getter func() uint8, setter func(uint8)) {

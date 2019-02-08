@@ -125,7 +125,7 @@ func (cpu *CPU) UpdateDIV(cycles uint32, frequency uint32) {
 
 func (cpu *CPU) RequestInterrupt(interrupt uint8) {
 	if interrupt >= I_VBLANK && interrupt <= I_JOYPAD {
-		cpu.io.Write(io.IF, bits.Set(interrupt, cpu.io.Read(io.IF)))
+		cpu.io.SetBit(io.IF, interrupt)
 	}
 }
 
@@ -168,7 +168,7 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 				cpu.interruptsMasterEnable = false // Clear IME
 
 				// Reset bit in IF
-				cpu.io.Write(io.IF, bits.Reset(b, interruptFlag))
+				cpu.io.ResetBit(io.IF, b)
 
 				// Push PC to Stack (8 cycles)
 				cpu.Push(cpu.PC)
