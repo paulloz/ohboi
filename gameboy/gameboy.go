@@ -82,7 +82,7 @@ func (gb *GameBoy) UpdateTimers(cycles uint32) {
 				gb.io.Write(io.TIMA, tima+1)
 			} else {
 				gb.io.Write(io.TIMA, gb.io.Read(io.TMA))
-				gb.io.Write(io.IF, bits.Set(2, gb.io.Read(io.IF))) // Request Timer Interrupt (IF bit 2)
+				gb.cpu.RequestInterrupt(cpu.I_TIMER)
 			}
 		}
 	}

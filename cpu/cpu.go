@@ -123,6 +123,12 @@ func (cpu *CPU) UpdateDIV(cycles uint32, frequency uint32) {
 	}
 }
 
+func (cpu *CPU) RequestInterrupt(interrupt uint8) {
+	if interrupt >= I_VBLANK && interrupt <= I_JOYPAD {
+		cpu.io.Write(io.IF, bits.Set(interrupt, cpu.io.Read(io.IF)))
+	}
+}
+
 func (cpu *CPU) EnableInterrupts() {
 	cpu.interruptsMasterEnabling = true
 }
@@ -167,7 +173,7 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 				// Push PC to Stack (8 cycles)
 				cpu.Push(cpu.PC)
 				// Set PC to interrupt handler address (4 cycles) */
-				cpu.PC = Interrupts[b]
+				cpu.PC = interrupts[b]
 				// Execute 2 NOP (8 cycles)
 				return 20
 			}
