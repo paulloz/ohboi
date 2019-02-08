@@ -14,55 +14,67 @@ const (
 	InternalRAM2Addr    = 0xff80
 )
 
+const (
+	DisableROMRegister = 0x50
+)
+
 // Memory ...
 type Memory struct {
 	cartridge *cartridge.Cartridge
 
-	inBootMode bool
-
-	vRAM [0x2000]uint8
-
-	hRAM [0x80]uint8
+	vRAM    [0x2000]uint8
+	hwPorts [0x7f]uint8
+	hRAM    [0x80]uint8
 
 	wRAM [0x2000]uint8 // 2 4KB banks
 }
 
 // Read ...
 func (mem *Memory) Read(address uint16) uint8 {
-	if address >= 0xFFFF {
+	switch {
+	case address >= 0xFFFF:
 		// TODO: Implement Interrupt Enable Register
 		return 0xFF
-	} else if address >= InternalRAM2Addr {
+
+	case address >= InternalRAM2Addr:
 		// High RAM
 		return mem.hRAM[address-InternalRAM2Addr]
-	} else if address >= IOPortsAddr {
-		// TODO: Implement I/O Ports
-		return 0xFF
-	} else if address >= 0xFEA0 {
+
+	case address >= IOPortsAddr:
+		return mem.hwPorts[address-IOPortsAddr]
+
+	case address >= 0xFEA0:
 		// Not usable
 		return 0xFF
-	} else if address >= OAMAddr {
+
+	case address >= OAMAddr:
 		// TODO: Implement OAM
 		return 0xFF
-	} else if address >= EchoInternalRAMAddr {
+
+	case address >= EchoInternalRAMAddr:
 		// TODO: Implement ECHO RAM
 		return 0xFF
-	} else if address >= InternalRAMAddr {
+
+	case address >= InternalRAMAddr:
 		// Work RAM
 		return mem.wRAM[address-InternalRAMAddr]
-	} else if address >= SwitchableRAMAddr {
+
+	case address >= SwitchableRAMAddr:
 		// Cartridge RAM
 		return mem.cartridge.Read(address)
-	} else if address >= VRAMAddr {
+
+	case address >= VRAMAddr:
 		// Video RAM
 		return mem.vRAM[address-VRAMAddr]
-	}
 
-	// Cartridge ROM
-	if mem.inBootMode && address < uint16(len(bootRom)) {
-		return bootRom[address]
+	default:
+		// Cartridge ROM
+		if mem.hwPorts[DisableROMRegister] == 0 && address < uint16(len(bootRom)) {
+			return bootRom[address]
+		}
+
+		return mem.cartridge.Read(address)
 	}
-	return mem.cartridge.Read(address)
 }
 
 // ReadWord ...
@@ -79,42 +91,42 @@ func (mem *Memory) WriteWord(addr, value uint16) {
 
 // Write ...
 func (mem *Memory) Write(address uint16, value uint8) {
-	if address >= 0xFFFF {
+	switch {
+	case address >= 0xFFFF:
 		// TODO: Implement Interrupt Enable Register
 		return
-	} else if address >= InternalRAM2Addr {
+	case address >= InternalRAM2Addr:
 		// High RAM
 		mem.hRAM[address-InternalRAM2Addr] = value
 		return
-	} else if address >= IOPortsAddr {
-		// TODO: Implement I/O Ports
+	case address >= IOPortsAddr:
+		mem.hwPorts[address-IOPortsAddr] = value
 		return
-	} else if address >= 0xFEA0 {
+	case address >= 0xFEA0:
 		// Not usable
 		return
-	} else if address >= OAMAddr {
+	case address >= OAMAddr:
 		// TODO: Implement OAM
 		return
-	} else if address >= EchoInternalRAMAddr {
+	case address >= EchoInternalRAMAddr:
 		// TODO: Implement ECHO RAM
 		return
-	} else if address >= InternalRAMAddr {
+	case address >= InternalRAMAddr:
 		// Work RAM
 		mem.wRAM[address-InternalRAMAddr] = value
 		return
-	} else if address >= SwitchableRAMAddr {
+	case address >= SwitchableRAMAddr:
 		// Cartridge RAM
 		mem.cartridge.Write(address, value)
 		return
-	} else if address >= VRAMAddr {
+	case address >= VRAMAddr:
 		// Video RAM
 		mem.vRAM[address-VRAMAddr] = value
 		return
+	default:
+		// Cartridge ROM
+		mem.cartridge.Write(address, value)
 	}
-
-	// Cartridge ROM
-	mem.cartridge.Write(address, value)
-	return
 }
 
 // LoadCartridge ...
@@ -137,7 +149,7 @@ func (mem *Memory) Cartridge() *cartridge.Cartridge {
 
 // NewMemory ...
 func NewMemory() *Memory {
-	mem := &Memory{inBootMode: true}
+	mem := &Memory{}
 
 	/*
 		// Disable for now as it generates a lot of errors
