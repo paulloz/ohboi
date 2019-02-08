@@ -3,6 +3,7 @@ package gameboy
 import (
 	"time"
 
+	"github.com/paulloz/ohboi/apu"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
@@ -17,6 +18,7 @@ const (
 
 // GameBoy ...
 type GameBoy struct {
+	apu    *apu.APU
 	cpu    *cpu.CPU
 	io     *io.IO
 	memory *memory.Memory
@@ -83,8 +85,10 @@ func NewGameBoy() *GameBoy {
 	io := io.NewIO()
 	memory := memory.NewMemory(io)
 	cpu := cpu.NewCPU(memory)
+	apu := apu.NewAPU(io)
 
 	return &GameBoy{
+		apu:    apu,
 		cpu:    cpu,
 		io:     io,
 		memory: memory,
