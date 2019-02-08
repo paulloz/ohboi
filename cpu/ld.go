@@ -42,8 +42,8 @@ func init() {
 		op.LD_A_E:  newLoadRegister(RegisterA, RegisterE, 4),
 		op.LD_A_H:  newLoadRegister(RegisterA, RegisterH, 4),
 		op.LD_A_L:  newLoadRegister(RegisterA, RegisterL, 4),
-		op.LD_A_BC: newLoadRegister(RegisterL, AddressBC, 8),
-		op.LD_A_DE: newLoadRegister(RegisterL, AddressDE, 8),
+		op.LD_A_BC: newLoadRegister(RegisterA, AddressBC, 8),
+		op.LD_A_DE: newLoadRegister(RegisterA, AddressDE, 8),
 		op.LD_A_HL: newLoadRegister(RegisterA, AddressHL, 8),
 		op.LD_A_NN: newLoadRegister(RegisterA, AddressImmediate, 16),
 
