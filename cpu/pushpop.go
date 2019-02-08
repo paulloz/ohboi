@@ -5,7 +5,7 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
-func newPushRegister16(src Getter16, cycles uint) Instruction {
+func newPushRegister16(src Getter16, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			cpu.Push(src.Get(cpu))
@@ -15,7 +15,7 @@ func newPushRegister16(src Getter16, cycles uint) Instruction {
 	}
 }
 
-func newPopRegister16(dst Setter16, cycles uint) Instruction {
+func newPopRegister16(dst Setter16, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			dst.Set(cpu, cpu.Pop())

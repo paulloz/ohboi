@@ -72,7 +72,7 @@ func init() {
 					register = RegisterA
 				}
 
-				cycles := uint(8)
+				cycles := uint32(8)
 				if register == AddressHL {
 					cycles = 16
 				}

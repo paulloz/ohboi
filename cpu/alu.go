@@ -6,7 +6,7 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
-func newAdd(src Getter, cycles uint) Instruction {
+func newAdd(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			sum := uint16(cpu.A.Get()) + uint16(src.Get(cpu))
@@ -22,7 +22,7 @@ func newAdd(src Getter, cycles uint) Instruction {
 	}
 }
 
-func newAddC(src Getter, cycles uint) Instruction {
+func newAddC(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			var carry uint8
@@ -42,7 +42,7 @@ func newAddC(src Getter, cycles uint) Instruction {
 	}
 }
 
-func newSub(src Getter, cycles uint) Instruction {
+func newSub(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			sum := uint16(cpu.A.Get()) - uint16(src.Get(cpu))
@@ -58,7 +58,7 @@ func newSub(src Getter, cycles uint) Instruction {
 	}
 }
 
-func newSubC(src Getter, cycles uint) Instruction {
+func newSubC(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			var carry uint8
@@ -78,7 +78,7 @@ func newSubC(src Getter, cycles uint) Instruction {
 	}
 }
 
-func newAnd(register Getter, cycles uint) Instruction {
+func newAnd(register Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			result := register.Get(cpu) & cpu.A.Get()
@@ -95,7 +95,7 @@ func newAnd(register Getter, cycles uint) Instruction {
 	}
 }
 
-func newOr(register Getter, cycles uint) Instruction {
+func newOr(register Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			result := register.Get(cpu) | cpu.A.Get()
@@ -113,7 +113,7 @@ func newOr(register Getter, cycles uint) Instruction {
 }
 
 func newCompareA(src Getter) Instruction {
-	cycles := uint(4)
+	cycles := uint32(4)
 	if src == AddressHL || src == Immediate {
 		cycles = 8
 	}
@@ -136,7 +136,7 @@ func newCompareA(src Getter) Instruction {
 }
 
 func newIncrementRegister(register GetterSetter) Instruction {
-	cycles := uint(4)
+	cycles := uint32(4)
 	if register == AddressHL {
 		cycles = 12
 	}
@@ -168,7 +168,7 @@ func newIncrementRegister16(register GetterSetter16) Instruction {
 }
 
 func newDecrementRegister(register GetterSetter) Instruction {
-	cycles := uint(4)
+	cycles := uint32(4)
 	if register == AddressHL {
 		cycles = 12
 	}
@@ -200,7 +200,7 @@ func newDecrementRegister16(register GetterSetter16) Instruction {
 }
 
 func newXorA(src Getter) Instruction {
-	cycles := uint(4)
+	cycles := uint32(4)
 	if src == AddressHL || src == Immediate {
 		cycles = 8
 	}

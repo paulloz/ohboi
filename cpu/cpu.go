@@ -56,7 +56,7 @@ func (cpu *CPU) FetchWord() uint16 {
 	return cpu.mem.ReadWord(cpu.AdvancePC())
 }
 
-func (cpu *CPU) ExecuteOpCode() (uint, error) {
+func (cpu *CPU) ExecuteOpCode() (uint32, error) {
 	opcode := cpu.FetchByte()
 
 	var instruction Instruction

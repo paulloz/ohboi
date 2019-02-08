@@ -5,7 +5,7 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
-func newSwap(reg GetterSetter, cycles uint) Instruction {
+func newSwap(reg GetterSetter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			reg.Set(cpu, ((reg.Get(cpu)&0xf)<<4)|((reg.Get(cpu)&0xf0)>>4))

@@ -5,7 +5,7 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
-func newLoadRegister(dst Setter, src Getter, cycles uint) Instruction {
+func newLoadRegister(dst Setter, src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			dst.Set(cpu, src.Get(cpu))
@@ -15,7 +15,7 @@ func newLoadRegister(dst Setter, src Getter, cycles uint) Instruction {
 	}
 }
 
-func newLoadRegister16(dst Setter16, src Getter16, cycles uint) Instruction {
+func newLoadRegister16(dst Setter16, src Getter16, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			dst.Set(cpu, src.Get(cpu))

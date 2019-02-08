@@ -7,7 +7,7 @@ import (
 
 type Instruction struct {
 	Handler func(cpu *CPU, mem *memory.Memory) error
-	Cycles  uint
+	Cycles  uint32
 }
 
 var InstructionSet map[uint8]Instruction

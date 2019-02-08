@@ -7,7 +7,7 @@ import (
 )
 
 func newRL(getset GetterSetter, quick bool) Instruction {
-	cycles := uint(8)
+	cycles := uint32(8)
 	if getset == AddressHL {
 		cycles = 16
 	}
@@ -33,7 +33,7 @@ func newRL(getset GetterSetter, quick bool) Instruction {
 }
 
 func newRLC(getset GetterSetter, quick bool) Instruction {
-	cycles := uint(8)
+	cycles := uint32(8)
 	if getset == AddressHL {
 		cycles = 16
 	}

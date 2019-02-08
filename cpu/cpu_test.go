@@ -13,7 +13,7 @@ import (
 type testScenario struct {
 	bytecode []byte
 	instr    uint
-	cycles   uint
+	cycles   uint32
 	setup    func(*cpu.CPU, *memory.Memory)
 	checks   []check
 }
@@ -35,7 +35,7 @@ func newTestCPU(scenario testScenario) func(t *testing.T) {
 			scenario.setup(cpu, memory)
 		}
 
-		cycles := uint(0)
+		cycles := uint32(0)
 		for instr := uint(0); instr < scenario.instr; instr++ {
 			c, err := cpu.ExecuteOpCode()
 			if err != nil {
