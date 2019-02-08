@@ -7,6 +7,7 @@ import (
 	"github.com/paulloz/ohboi/bits"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
+	"github.com/paulloz/ohboi/lcd"
 	"github.com/paulloz/ohboi/memory"
 )
 
@@ -25,6 +26,7 @@ type GameBoy struct {
 	cpu    *cpu.CPU
 	io     *io.IO
 	memory *memory.Memory
+	lcd    *lcd.LCD
 
 	timaClock uint32
 }
@@ -48,6 +50,8 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 		}
 		currentInstrCycles += opCycles
 
+		gb.lcd.Update(currentInstrCycles)
+
 		gb.cpu.UpdateDIV(currentInstrCycles, CyclesPerDIV)
 		gb.UpdateTimers(currentInstrCycles)
 		cycles += currentInstrCycles
@@ -55,6 +59,8 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 		currentInstrCycles = gb.cpu.ManageInterrupts()
 		cycles += currentInstrCycles
 	}
+
+	gb.lcd.RenderFrame()
 
 	return cycles, currentInstrCycles
 }
@@ -118,14 +124,18 @@ func (gb *GameBoy) PowerOn() {
 
 func NewGameBoy() *GameBoy {
 	io_ := io.NewIO()
+	apu := apu.NewAPU(io_)
+
 	memory := memory.NewMemory(io_)
 	cpu := cpu.NewCPU(memory, io_)
-	apu := apu.NewAPU(io_)
+
+	lcd := lcd.NewLCD(cpu, io_)
 
 	return &GameBoy{
 		apu:    apu,
 		cpu:    cpu,
 		io:     io_,
 		memory: memory,
+		lcd:    lcd,
 	}
 }
