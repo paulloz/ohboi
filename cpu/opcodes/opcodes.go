@@ -5,6 +5,7 @@ const (
 
 	// Interrupt
 	DI = 0xf3
+	EI = 0xfb
 
 	// LD n, nn
 	LD_B_N = 0x06

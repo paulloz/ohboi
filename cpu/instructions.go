@@ -34,16 +34,28 @@ func RegisterExtInstructions(instructions map[uint8]Instruction) {
 }
 
 var NoopInstruction = Instruction{
-	Handler: NoopHandler,
-	Cycles:  4,
-}
-
-func NoopHandler(cpu *CPU, mem *memory.Memory) error {
-	return nil
+	Handler: func(cpu *CPU, mem *memory.Memory) error {
+		return nil
+	},
+	Cycles: 4,
 }
 
 func init() {
 	RegisterInstructions(map[uint8]Instruction{
 		op.NOOP: NoopInstruction,
+		op.DI: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				cpu.DisableInterrupts()
+				return nil
+			},
+			Cycles: 4,
+		},
+		op.EI: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				cpu.EnableInterrupts()
+				return nil
+			},
+			Cycles: 4,
+		},
 	})
 }
