@@ -6,6 +6,7 @@ import (
 	"github.com/paulloz/ohboi/cartridge"
 	"github.com/paulloz/ohboi/cpu"
 	op "github.com/paulloz/ohboi/cpu/opcodes"
+	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
 )
 
@@ -24,7 +25,7 @@ func newTestCPU(scenario testScenario) func(t *testing.T) {
 
 		rom := cartridge.NewROM(data)
 
-		memory := memory.NewMemory()
+		memory := memory.NewMemory(io.NewIO())
 		memory.LoadCartridge(&cartridge.Cartridge{MBC: rom})
 
 		cpu := cpu.NewCPU(memory)

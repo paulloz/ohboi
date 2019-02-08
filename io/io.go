@@ -16,7 +16,7 @@ func NewIO() *IO {
 	io := &IO{registers: make(map[uint8]*IORegister, 0xff)}
 
 	for i := uint16(0x0000); i <= 0x00ff; i++ {
-		io.registers[uint8(i&0xff)] = NewIORegister(0)
+		io.registers[uint8(i&0xff)] = newIORegister(0)
 	}
 
 	return io
