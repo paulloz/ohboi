@@ -14,10 +14,12 @@ func TestDisableROM(t *testing.T) {
 	data := []byte{123}
 	rom := cartridge.NewROM(data)
 
-	memory := memory.NewMemory(io.NewIO())
+	io := io.NewIO()
+
+	memory := memory.NewMemory(io)
 	memory.LoadCartridge(&cartridge.Cartridge{MBC: rom})
 
-	cpu := cpu.NewCPU(memory)
+	cpu := cpu.NewCPU(memory, io)
 
 	if memory.Read(0) != op.LD_SP_NN {
 		t.Error("Expected first byte to be LD_SP_NN")

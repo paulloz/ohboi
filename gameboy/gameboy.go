@@ -11,12 +11,14 @@ import (
 
 // Speed constants
 const (
-	ClockSpeed     = 4194304          // Cycles per second
-	FPS            = 60               // We want to run at 60FPS
-	CyclesPerFrame = ClockSpeed / FPS // # of cycles executed each frame
+	ClockSpeed     = uint32(4194304)              // Cycles per second
+	DIVSpeed       = 16384                        // DIV increments per second
+	FPS            = 60                           // We want to run at 60FPS
+	CyclesPerFrame = ClockSpeed / FPS             // Cycles per frame
+	DIVPerFrame    = DIVSpeed / FPS               // DIV increments per frame
+	CyclesPerDIV   = CyclesPerFrame / DIVPerFrame // Cycles to wait between DIV increments
 )
 
-// GameBoy ...
 type GameBoy struct {
 	apu    *apu.APU
 	cpu    *cpu.CPU
@@ -29,31 +31,32 @@ func (gb *GameBoy) Panic(err error) {
 	panic(err)
 }
 
-// Update ...
-func (gb *GameBoy) Update() uint {
-	var cycles uint
+func (gb *GameBoy) Update(pendingDIVCycles uint32) (uint32, uint32) {
+	var cycles uint32
+	var cyclesDIV uint32 = pendingDIVCycles
 
 	for cycles = 0; cycles < CyclesPerFrame; {
 		debuggerStep()
 
+		// Execute instruction
 		_cycles, err := gb.cpu.ExecuteOpCode()
 		if err != nil {
 			gb.Panic(err)
 		}
 
-		// UpdateTimers
-		// UpdateGraphics
-		// Interrupts
+		// Update DIV register
+		cyclesDIV += uint32(_cycles)
+		if cyclesDIV >= CyclesPerDIV {
+			cyclesDIV -= CyclesPerDIV
+			gb.cpu.IncrementDIV()
+		}
 
-		cycles += _cycles
+		cycles += uint32(_cycles)
 	}
 
-	// RenderScreen
-
-	return cycles
+	return cycles, cyclesDIV
 }
 
-// InsertCartridgeFromFile ...
 func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
 	gb.memory.LoadCartridgeFromFile(filename)
 }
@@ -66,10 +69,12 @@ func (gb *GameBoy) PowerOn() {
 	start := time.Now()
 	frames := 0
 
+	var pendingDIVCycles uint32
+
 	for {
 		select {
 		case <-ticker:
-			gb.Update()
+			_, pendingDIVCycles = gb.Update(pendingDIVCycles)
 
 			frames++
 			if time.Since(start) > time.Second {
@@ -80,11 +85,10 @@ func (gb *GameBoy) PowerOn() {
 	}
 }
 
-// NewGameBoy ...
 func NewGameBoy() *GameBoy {
 	io := io.NewIO()
 	memory := memory.NewMemory(io)
-	cpu := cpu.NewCPU(memory)
+	cpu := cpu.NewCPU(memory, io)
 	apu := apu.NewAPU(io)
 
 	return &GameBoy{

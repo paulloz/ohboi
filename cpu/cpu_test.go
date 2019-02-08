@@ -25,10 +25,12 @@ func newTestCPU(scenario testScenario) func(t *testing.T) {
 
 		rom := cartridge.NewROM(data)
 
-		memory := memory.NewMemory(io.NewIO())
+		io := io.NewIO()
+
+		memory := memory.NewMemory(io)
 		memory.LoadCartridge(&cartridge.Cartridge{MBC: rom})
 
-		cpu := cpu.NewCPU(memory)
+		cpu := cpu.NewCPU(memory, io)
 		cpu.PC = 0x100
 
 		if scenario.setup != nil {

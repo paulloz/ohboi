@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	op "github.com/paulloz/ohboi/cpu/opcodes"
+	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
 )
 
@@ -31,7 +32,10 @@ type CPU struct {
 	SP Register
 	PC uint16
 
+	div uint8
+
 	mem *memory.Memory
+	io  *io.IO
 }
 
 func (cpu *CPU) Dump() string {
@@ -104,16 +108,33 @@ func (cpu *CPU) DisableInterrupts() {
 	// TODO
 }
 
-func NewCPU(mem *memory.Memory) *CPU {
+func (cpu *CPU) readDIV() uint8 {
+	return cpu.div
+}
+
+func (cpu *CPU) writeDIV(val uint8) {
+	cpu.div = 0
+}
+
+func (cpu *CPU) IncrementDIV() {
+	cpu.div++
+}
+
+func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 	cpu := &CPU{
-		PC:  0x0,
-		AF:  NewRegister(0x01b0),
-		BC:  NewRegister(0x01b0),
-		DE:  NewRegister(0x01b0),
-		HL:  NewRegister(0x01b0),
-		SP:  NewRegister(0xfffe),
+		PC: 0x0,
+		AF: NewRegister(0x01b0),
+		BC: NewRegister(0x01b0),
+		DE: NewRegister(0x01b0),
+		HL: NewRegister(0x01b0),
+		SP: NewRegister(0xfffe),
+
+		div: 0,
+
 		mem: mem,
+		io:  io_,
 	}
+
 	cpu.A = PseudoRegisterHigh{hwRegister: &cpu.AF}
 	cpu.F = PseudoRegisterLow{hwRegister: &cpu.AF}
 	cpu.B = PseudoRegisterHigh{hwRegister: &cpu.BC}
@@ -122,5 +143,8 @@ func NewCPU(mem *memory.Memory) *CPU {
 	cpu.E = PseudoRegisterLow{hwRegister: &cpu.DE}
 	cpu.H = PseudoRegisterHigh{hwRegister: &cpu.HL}
 	cpu.L = PseudoRegisterLow{hwRegister: &cpu.HL}
+
+	io_.MapRegister(io.DIV, cpu.readDIV, cpu.writeDIV)
+
 	return cpu
 }
