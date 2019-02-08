@@ -3,6 +3,9 @@ package lcd
 import (
 	"os"
 
+	"math/rand"
+	"time"
+
 	"github.com/paulloz/ohboi/bits"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
@@ -17,7 +20,7 @@ const (
 
 type backend interface {
 	Initialize(string)
-	Render([Width * Height]color)
+	Render([Width * Height]*color)
 }
 
 type LCD struct {
@@ -78,7 +81,19 @@ func (lcd *LCD) DrawScanline() {
 }
 
 func (lcd *LCD) RenderFrame() {
-	// lcd.backend.Render()
+	// This is a test
+	pixels := [Width * Height]*color{}
+	for i := range pixels {
+		pixels[i] = newColor(0xb6, 0xb6, 0xb6)
+	}
+
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+
+	for i := 0; i < r.Intn(1000); i++ {
+		pixels[r.Intn(len(pixels))] = newColor(0, 0, 0)
+	}
+	lcd.backend.Render(pixels)
 }
 
 func NewLCD(cpu *cpu.CPU, io_ *io.IO) *LCD {
@@ -93,19 +108,6 @@ func NewLCD(cpu *cpu.CPU, io_ *io.IO) *LCD {
 
 		scanlineCounter: 0,
 	}
-
-	// This is a test
-	pixels := [Width * Height]color{}
-	for x := 0; x < Width; x++ {
-		for y := 0; y < Height; y++ {
-			if x == y {
-				pixels[x+Width*y] = newColor(255, 0, 255)
-			} else {
-				pixels[x+Width*y] = newColor(0, 0, 0)
-			}
-		}
-	}
-	backend.Render(pixels)
 
 	return lcd
 }
