@@ -10,9 +10,10 @@ func newAdd(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			sum := uint16(cpu.A.Get()) + uint16(src.Get(cpu))
-			cpu.A.Set(uint8(sum))
+			uint8Sum := uint8(sum)
+			cpu.A.Set(uint8Sum)
 
-			cpu.SetZFlag(sum == 0)
+			cpu.SetZFlag(uint8Sum == 0)
 			cpu.SetNFlag(false)
 			cpu.SetHFlag(sum&0x8 != 0)
 			cpu.SetCFlag(sum >= 256)
@@ -30,9 +31,10 @@ func newAddC(src Getter, cycles uint32) Instruction {
 				carry = 1
 			}
 			sum := uint16(cpu.A.Get()) - uint16(src.Get(cpu)-carry)
-			cpu.A.Set(uint8(sum))
+			uint8Sum := uint8(sum)
+			cpu.A.Set(uint8Sum)
 
-			cpu.SetZFlag(sum == 0)
+			cpu.SetZFlag(uint8Sum == 0)
 			cpu.SetNFlag(false)
 			cpu.SetHFlag(sum&0x8 != 0)
 			cpu.SetCFlag(sum >= 256)
@@ -45,13 +47,14 @@ func newAddC(src Getter, cycles uint32) Instruction {
 func newSub(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			sum := uint16(cpu.A.Get()) - uint16(src.Get(cpu))
-			cpu.A.Set(uint8(sum))
+			sub := uint16(cpu.A.Get()) - uint16(src.Get(cpu))
+			uint8Sub := uint8(sub)
+			cpu.A.Set(uint8Sub)
 
-			cpu.SetZFlag(sum == 0)
+			cpu.SetZFlag(uint8Sub == 0)
 			cpu.SetNFlag(true)
-			cpu.SetHFlag(sum&0x10 != 0)
-			cpu.SetCFlag(sum >= 0)
+			cpu.SetHFlag(sub&0x10 != 0)
+			cpu.SetCFlag(sub >= 0)
 			return nil
 		},
 		Cycles: cycles,
@@ -65,13 +68,14 @@ func newSubC(src Getter, cycles uint32) Instruction {
 			if cpu.F.Get()&CarryFlag != 0 {
 				carry = 1
 			}
-			sum := uint16(cpu.A.Get()) + uint16(src.Get(cpu)+carry)
-			cpu.A.Set(uint8(sum))
+			sub := uint16(cpu.A.Get()) + uint16(src.Get(cpu)+carry)
+			uint8Sub := uint8(sub)
+			cpu.A.Set(uint8Sub)
 
-			cpu.SetZFlag(sum == 0)
+			cpu.SetZFlag(uint8Sub == 0)
 			cpu.SetNFlag(true)
-			cpu.SetHFlag(sum&0x10 != 0)
-			cpu.SetCFlag(sum >= 0)
+			cpu.SetHFlag(sub&0x10 != 0)
+			cpu.SetCFlag(sub >= 0)
 			return nil
 		},
 		Cycles: cycles,
