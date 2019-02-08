@@ -179,7 +179,7 @@ var RegisterBC = registerBC{}
 type addressBC struct{}
 
 func (a addressBC) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(cpu.HL.hilo)
+	return cpu.mem.Read(cpu.BC.hilo)
 }
 
 func (a addressBC) Set(cpu *CPU, v uint8) {
@@ -203,11 +203,11 @@ var RegisterDE = registerDE{}
 type addressDE struct{}
 
 func (a addressDE) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(cpu.HL.hilo)
+	return cpu.mem.Read(cpu.DE.hilo)
 }
 
 func (a addressDE) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(cpu.HL.hilo, v)
+	cpu.mem.Write(cpu.DE.hilo, v)
 }
 
 var AddressDE = addressDE{}

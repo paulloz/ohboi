@@ -120,8 +120,8 @@ func init() {
 		op.LD_A_HLD: newLoadRegister(RegisterA, AddressHLDec, 8),
 		op.LD_HLD_A: newLoadRegister(AddressHLDec, RegisterA, 8),
 
-		op.LD_A_HLI: newLoadRegister(RegisterA, AddressHLDec, 8),
-		op.LD_HLI_A: newLoadRegister(AddressHLDec, RegisterA, 8),
+		op.LD_A_HLI: newLoadRegister(RegisterA, AddressHLInc, 8),
+		op.LD_HLI_A: newLoadRegister(AddressHLInc, RegisterA, 8),
 
 		op.LDH_FF00N_A: newLoadRegister(AddressFF00N, RegisterA, 12),
 		op.LDH_A_FF00N: newLoadRegister(RegisterA, AddressFF00N, 12),
