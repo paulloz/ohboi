@@ -3,12 +3,10 @@ package lcd
 import (
 	"os"
 
-	"math/rand"
-	"time"
-
 	"github.com/paulloz/ohboi/bits"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
+	"github.com/paulloz/ohboi/memory"
 )
 
 const (
@@ -20,20 +18,25 @@ const (
 
 type backend interface {
 	Initialize(string)
-	Render([Width * Height]*color)
+	Render([Width * Height]color)
 }
 
 type LCD struct {
 	backend backend
 
-	cpu *cpu.CPU
-	io  *io.IO
+	cpu    *cpu.CPU
+	memory *memory.Memory
+	io     *io.IO
 
-	scanlineCounter uint32
+	scanlineCounter   uint32
+	lastDrawnScanline uint8
+
+	workData   [Width * Height]color
+	renderData [Width * Height]color
 }
 
 func (lcd *LCD) Update(cycles uint32) {
-	lcd.SetLCDSTAT()
+	lcd.setLCDSTAT()
 
 	if !lcd.io.ReadBit(io.LDCD, 7) {
 		// If LCD is disabled
@@ -48,17 +51,22 @@ func (lcd *LCD) Update(cycles uint32) {
 		lcd.io.Write(io.LY, ly)
 
 		if ly > 153 {
-			// Can send screen data to backend
 			lcd.io.Write(io.LY, 0)
+			copy(lcd.renderData[:], lcd.workData[:])
+			lcd.clearScreen()
 		} else if ly >= 144 {
 			lcd.cpu.RequestInterrupt(cpu.I_VBLANK)
 		} else {
-			lcd.DrawScanline()
+			if lcd.lastDrawnScanline != ly {
+				// TODO Maybe we should draw at the beginning of H-Blank?
+				lcd.drawScanline(ly)
+				lcd.lastDrawnScanline = ly
+			}
 		}
 	}
 }
 
-func (lcd *LCD) SetLCDSTAT() {
+func (lcd *LCD) setLCDSTAT() {
 	if !lcd.io.ReadBit(io.LDCD, 7) {
 		// Reset everything
 		lcd.scanlineCounter = 0
@@ -121,11 +129,11 @@ func (lcd *LCD) SetLCDSTAT() {
 	lcd.io.Write(io.STAT, stat)
 }
 
-func (lcd *LCD) DrawScanline() {
+func (lcd *LCD) drawScanline(scanline uint8) {
 	lcdc := lcd.io.Read(io.LDCD)
 
 	if bits.Test(0, lcdc) {
-		// Render Tiles
+		lcd.drawBackgroundTiles(scanline)
 	}
 
 	if bits.Test(5, lcdc) {
@@ -133,34 +141,84 @@ func (lcd *LCD) DrawScanline() {
 	}
 }
 
-func (lcd *LCD) RenderFrame() {
-	// This is a test
-	pixels := [Width * Height]*color{}
-	for i := range pixels {
-		pixels[i] = newColor(0xb6, 0xb6, 0xb6)
+func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
+	lcdc := lcd.io.Read(io.LDCD)
+	unsigned := true
+
+	tileData := uint16(0x8000)
+	if !bits.Test(4, lcdc) {
+		tileData = 0x8800
+		unsigned = false
 	}
 
-	s := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(s)
-
-	for i := 0; i < r.Intn(1000); i++ {
-		pixels[r.Intn(len(pixels))] = newColor(0, 0, 0)
+	backgroundData := uint16(0x9800)
+	if bits.Test(3, lcdc) {
+		backgroundData = 0x9C00
 	}
-	lcd.backend.Render(pixels)
+
+	palette := lcd.io.Read(io.BGP)
+	colorPalette := [4]color{}
+	for i := uint8(0); i < 8; i += 2 {
+		shade := (palette >> i) & 0xff
+		colorPalette[i/2] = newColor(shade, shade, shade)
+	}
+
+	y := lcd.io.Read(io.SCY) + scanline
+	tileY := uint16(y / 8)
+	line := y % 8 * 2
+	for i := uint16(0); i < Width; i++ {
+		x := uint16(lcd.io.Read(io.SCX)) + i
+		tileX := x / 8
+
+		tileAddress := backgroundData + (tileY * 32) + tileX
+		tileDataAddress := tileData
+		if unsigned {
+			tileDataAddress += uint16(lcd.memory.Read(tileAddress) * 16)
+		} else {
+			// TODO signed shenanigans
+			// tileNumber := int16(int8(lcd.memory.VRAM[tileAddress-memory.VRAMAddr]))
+			// tileDataAddress = uint16(int32(tileDataAddress) + int32)
+		}
+
+		tileData1 := lcd.memory.Read(tileDataAddress + uint16(line))
+		tileData2 := lcd.memory.Read(tileDataAddress + uint16(line) + 1)
+
+		bit := uint8((int8(x%8) - 7) * -1)
+		shade := ((tileData2 >> bit & 1) << 1) | (tileData1 >> bit & 1)
+
+		lcd.workData[int(scanline)*Width+int(i)] = colorPalette[shade]
+	}
 }
 
-func NewLCD(cpu *cpu.CPU, io_ *io.IO) *LCD {
+func (lcd *LCD) RenderFrame() {
+	lcd.backend.Render(lcd.renderData)
+}
+
+func (lcd *LCD) clearScreen() {
+	palette := lcd.io.Read(io.BGP)
+	shade := palette & 0xff
+	for i := 0; i < Width*Height; i++ {
+		lcd.workData[i] = newColor(shade, shade, shade)
+	}
+}
+
+func NewLCD(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *LCD {
 	backend := NewSDL2()
 	backend.Initialize(os.Args[0])
 
 	lcd := &LCD{
 		backend: backend,
 
-		cpu: cpu,
-		io:  io_,
+		cpu:    cpu,
+		memory: mem,
+		io:     io_,
 
-		scanlineCounter: 0,
+		scanlineCounter:   0,
+		lastDrawnScanline: Height,
 	}
+
+	lcd.clearScreen()
+	copy(lcd.renderData[:], lcd.workData[:])
 
 	return lcd
 }

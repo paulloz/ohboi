@@ -9,7 +9,7 @@ type sdl2 struct {
 	renderer *sdl.Renderer
 }
 
-func (sdl2 *sdl2) Render(pixels [Width * Height]*color) {
+func (sdl2 *sdl2) Render(pixels [Width * Height]color) {
 	// Test
 	for i, pixel := range pixels {
 		sdl2.renderer.SetDrawColor(pixel.r, pixel.g, pixel.b, 255)

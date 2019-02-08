@@ -129,7 +129,7 @@ func NewGameBoy() *GameBoy {
 	memory := memory.NewMemory(io_)
 	cpu := cpu.NewCPU(memory, io_)
 
-	lcd := lcd.NewLCD(cpu, io_)
+	lcd := lcd.NewLCD(cpu, memory, io_)
 
 	return &GameBoy{
 		apu:    apu,
