@@ -37,37 +37,6 @@ type LCD struct {
 	renderData [Width * Height]color
 }
 
-func (lcd *LCD) Update(cycles uint32) {
-	lcd.setLCDSTAT()
-
-	if !lcd.io.ReadBit(io.LDCD, 7) {
-		// If LCD is disabled
-		return
-	}
-
-	lcd.scanlineCounter += cycles
-	if lcd.scanlineCounter >= ScanlineFrequency {
-		lcd.scanlineCounter = 0
-
-		ly := lcd.io.Read(io.LY) + 1
-		lcd.io.Write(io.LY, ly)
-
-		if ly > 153 {
-			lcd.io.Write(io.LY, 0)
-			copy(lcd.renderData[:], lcd.workData[:])
-			lcd.clearScreen()
-		} else if ly >= 144 {
-			lcd.cpu.RequestInterrupt(cpu.I_VBLANK)
-		} else {
-			if lcd.lastDrawnScanline != ly {
-				// TODO Maybe we should draw at the beginning of H-Blank?
-				lcd.drawScanline(ly)
-				lcd.lastDrawnScanline = ly
-			}
-		}
-	}
-}
-
 func (lcd *LCD) setLCDSTAT() {
 	if !lcd.io.ReadBit(io.LDCD, 7) {
 		// Reset everything
@@ -131,6 +100,85 @@ func (lcd *LCD) setLCDSTAT() {
 	lcd.io.Write(io.STAT, stat)
 }
 
+func (lcd *LCD) getPalette(ioAddr uint8) [4]color {
+	palette := lcd.io.Read(ioAddr)
+	colorPalette := [4]color{}
+	for i := uint8(0); i < 8; i += 2 {
+		shade := (palette >> i) & 0xff
+		colorPalette[i/2] = newColor(shade, shade, shade)
+	}
+	return colorPalette
+}
+
+func (lcd *LCD) getBackgroundConf(scanline uint8) (uint16, uint16, bool, uint16) {
+	lcdc := lcd.io.Read(io.LDCD)
+
+	bgData := uint16(0x9800)
+	if bits.Test(3, lcdc) {
+		bgData = 0x9c00
+	}
+
+	window := bits.Test(5, lcdc) && scanline >= lcd.io.Read(io.WY)
+	windowData := uint16(0x9800)
+	if bits.Test(6, lcdc) {
+		windowData = 0x9c00
+	}
+
+	if bits.Test(4, lcdc) {
+		return uint16(0x8000), bgData, window, windowData
+	}
+
+	return uint16(0x8800), bgData, window, windowData
+}
+
+func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
+	tileDataBaseAddr, bgData, window, windowData := lcd.getBackgroundConf(scanline)
+	winX := lcd.io.Read(io.WX) - 7
+	winY := lcd.io.Read(io.WY)
+
+	colorPalette := lcd.getPalette(io.BGP)
+
+	y := func() uint8 {
+		if window {
+			return scanline - winY
+		}
+		return lcd.io.Read(io.SCY) + scanline
+	}()
+	tileY := uint16(y / 8)
+	line := y % 8 * 2
+	for i := uint16(0); i < Width; i++ {
+		x, tileAddress := func() (uint16, uint16) {
+			if window && uint8(i) >= winX {
+				return i - uint16(winX), windowData
+			}
+			return uint16(lcd.io.Read(io.SCX)) + i, bgData
+		}()
+
+		tileX := x / 8
+
+		tileAddress += (tileY * 32) + tileX
+
+		// TODO BG WRAP
+
+		tileDataAddress := func() uint16 {
+			if tileDataBaseAddr == 0x8800 {
+				// TODO signed shenanigans
+				// tileNumber := int16(int8(lcd.memory.VRAM[tileAddress-memory.VRAMAddr]))
+				// tileDataAddress = uint16(int32(tileDataAddress) + int32)
+			}
+			// unsigned addressing
+			return tileDataBaseAddr + uint16(lcd.memory.Read(tileAddress)*16)
+		}()
+
+		tileData := lcd.memory.ReadWord(tileDataAddress + uint16(line))
+
+		bit := uint8((int8(x%8) - 7) * -1)
+		shade := ((tileData >> bit & 1) << 1) | (tileData >> (bit + 8) & 1)
+
+		lcd.workData[int(scanline)*Width+int(i)] = colorPalette[shade]
+	}
+}
+
 func (lcd *LCD) drawScanline(scanline uint8) {
 	lcdc := lcd.io.Read(io.LDCD)
 
@@ -139,61 +187,7 @@ func (lcd *LCD) drawScanline(scanline uint8) {
 	}
 
 	if bits.Test(5, lcdc) {
-		// Render Sprites
 	}
-}
-
-func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
-	lcdc := lcd.io.Read(io.LDCD)
-	unsigned := true
-
-	tileData := uint16(0x8000)
-	if !bits.Test(4, lcdc) {
-		tileData = 0x8800
-		unsigned = false
-	}
-
-	backgroundData := uint16(0x9800)
-	if bits.Test(3, lcdc) {
-		backgroundData = 0x9C00
-	}
-
-	palette := lcd.io.Read(io.BGP)
-	colorPalette := [4]color{}
-	for i := uint8(0); i < 8; i += 2 {
-		shade := (palette >> i) & 0xff
-		colorPalette[i/2] = newColor(shade, shade, shade)
-	}
-
-	y := lcd.io.Read(io.SCY) + scanline
-	tileY := uint16(y / 8)
-	line := y % 8 * 2
-	for i := uint16(0); i < Width; i++ {
-		x := uint16(lcd.io.Read(io.SCX)) + i
-		tileX := x / 8
-
-		tileAddress := backgroundData + (tileY * 32) + tileX
-		tileDataAddress := tileData
-		if unsigned {
-			tileDataAddress += uint16(lcd.memory.Read(tileAddress) * 16)
-		} else {
-			// TODO signed shenanigans
-			// tileNumber := int16(int8(lcd.memory.VRAM[tileAddress-memory.VRAMAddr]))
-			// tileDataAddress = uint16(int32(tileDataAddress) + int32)
-		}
-
-		tileData1 := lcd.memory.Read(tileDataAddress + uint16(line))
-		tileData2 := lcd.memory.Read(tileDataAddress + uint16(line) + 1)
-
-		bit := uint8((int8(x%8) - 7) * -1)
-		shade := ((tileData2 >> bit & 1) << 1) | (tileData1 >> bit & 1)
-
-		lcd.workData[int(scanline)*Width+int(i)] = colorPalette[shade]
-	}
-}
-
-func (lcd *LCD) RenderFrame() {
-	lcd.backend.Render(lcd.renderData)
 }
 
 func (lcd *LCD) clearScreen() {
@@ -202,6 +196,41 @@ func (lcd *LCD) clearScreen() {
 	for i := 0; i < Width*Height; i++ {
 		lcd.workData[i] = newColor(shade, shade, shade)
 	}
+}
+
+func (lcd *LCD) Update(cycles uint32) {
+	lcd.setLCDSTAT()
+
+	if !lcd.io.ReadBit(io.LDCD, 7) {
+		// If LCD is disabled
+		return
+	}
+
+	lcd.scanlineCounter += cycles
+	if lcd.scanlineCounter >= ScanlineFrequency {
+		lcd.scanlineCounter = 0
+
+		ly := lcd.io.Read(io.LY) + 1
+		lcd.io.Write(io.LY, ly)
+
+		if ly > 153 {
+			lcd.io.Write(io.LY, 0)
+			copy(lcd.renderData[:], lcd.workData[:])
+			lcd.clearScreen()
+		} else if ly >= 144 {
+			lcd.cpu.RequestInterrupt(cpu.I_VBLANK)
+		} else {
+			if lcd.lastDrawnScanline != ly {
+				// TODO Maybe we should draw at the beginning of H-Blank?
+				lcd.drawScanline(ly)
+				lcd.lastDrawnScanline = ly
+			}
+		}
+	}
+}
+
+func (lcd *LCD) RenderFrame() {
+	lcd.backend.Render(lcd.renderData)
 }
 
 func NewLCD(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *LCD {
