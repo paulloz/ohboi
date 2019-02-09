@@ -9,13 +9,32 @@ import (
 func newAdd(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			sum := uint16(cpu.A.Get()) + uint16(src.Get(cpu))
+			a, b := cpu.A.Get(), src.Get(cpu)
+			sum := uint16(a) + uint16(b)
 			uint8Sum := uint8(sum)
 			cpu.A.Set(uint8Sum)
 
 			cpu.SetZFlag(uint8Sum == 0)
 			cpu.SetNFlag(false)
-			cpu.SetHFlag(sum&0x8 != 0)
+			cpu.SetHFlag(((a&0xf)+(b&0xf))&0x10 != 0)
+			cpu.SetCFlag(sum >= 256)
+			return nil
+		},
+		Cycles: cycles,
+	}
+}
+
+func newAdd16(src Getter16, cycles uint32) Instruction {
+	return Instruction{
+		Handler: func(cpu *CPU, mem *memory.Memory) error {
+			a, b := cpu.HL.Get(), src.Get(cpu)
+			sum := uint32(a) + uint32(b)
+			uint16Sum := uint16(sum)
+			cpu.HL.Set(uint16Sum)
+
+			cpu.SetZFlag(uint16Sum == 0)
+			cpu.SetNFlag(false)
+			cpu.SetHFlag(((a&0xfff)+(b&0xfff))&0x1000 != 0)
 			cpu.SetCFlag(sum >= 256)
 			return nil
 		},
@@ -236,6 +255,11 @@ func init() {
 		op.ADD_A_L:  newAdd(RegisterL, 4),
 		op.ADD_A_HL: newAdd(AddressHL, 8),
 		op.ADD_A_N:  newAdd(Immediate, 8),
+
+		op.ADD_HL_BC: newAdd16(RegisterBC, 8),
+		op.ADD_HL_DE: newAdd16(RegisterDE, 8),
+		op.ADD_HL_HL: newAdd16(RegisterHL, 8),
+		op.ADD_HL_SP: newAdd16(RegisterSP, 8),
 
 		op.ADC_A_A:  newAddC(RegisterA, 4),
 		op.ADC_A_B:  newAddC(RegisterB, 4),
