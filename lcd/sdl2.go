@@ -5,15 +5,14 @@ import (
 )
 
 type sdl2 struct {
-	window   *sdl.Window
-	renderer *sdl.Renderer
-	texture  *sdl.Texture
+	window     *sdl.Window
+	renderer   *sdl.Renderer
+	texture    *sdl.Texture
+	screenRect *sdl.Rect
 }
 
 func (sdl2 *sdl2) Render(pixels [Width * Height]color) {
-	rect := &sdl.Rect{W: Width, H: Height}
-
-	buffer, _, err := sdl2.texture.Lock(rect)
+	buffer, _, err := sdl2.texture.Lock(sdl2.screenRect)
 	if err != nil {
 		panic(err)
 	}
@@ -27,7 +26,7 @@ func (sdl2 *sdl2) Render(pixels [Width * Height]color) {
 	sdl2.texture.Unlock()
 
 	sdl2.renderer.Clear()
-	sdl2.renderer.Copy(sdl2.texture, rect, rect)
+	sdl2.renderer.Copy(sdl2.texture, sdl2.screenRect, sdl2.screenRect)
 	sdl2.renderer.Present()
 }
 
@@ -57,6 +56,7 @@ func (sdl2 *sdl2) Initialize(windowName string) {
 	sdl2.window = window
 	sdl2.renderer = renderer
 	sdl2.texture = texture
+	sdl2.screenRect = &sdl.Rect{W: Width, H: Height}
 }
 
 func NewSDL2() *sdl2 {
