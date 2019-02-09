@@ -251,11 +251,6 @@ const (
 	ADD_HL_HL = 0x29
 	ADD_HL_SP = 0x39
 
-	INC16_BC = 0x03
-	INC16_DE = 0x13
-	INC16_HL = 0x23
-	INC16_SP = 0x33
-
 	// Swaps
 	SWAP_A  = 0x37
 	SWAP_B  = 0x30

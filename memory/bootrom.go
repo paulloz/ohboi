@@ -38,7 +38,7 @@ var bootRom [0x100]uint8 = [0x100]uint8{
 	op.LD_A_DE,
 	op.CALL_NN, 0x95, 0x00,
 	op.CALL_NN, 0x96, 0x00,
-	op.INC16_DE,
+	op.INC_DE,
 	op.LD_A_E,
 	op.CP_N, 0x34,
 	op.JR_NZ_N, 0xf3,
@@ -47,9 +47,9 @@ var bootRom [0x100]uint8 = [0x100]uint8{
 	op.LD_DE_NN, 0xd8, 0x00,
 	op.LD_B_N, 0x08,
 	op.LD_A_DE,
-	op.INC16_DE,
+	op.INC_DE,
 	op.LD_HLI_A,
-	op.INC16_HL,
+	op.INC_HL,
 	op.DEC_B,
 	op.JR_NZ_N, 0xf9,
 
@@ -133,9 +133,9 @@ var bootRom [0x100]uint8 = [0x100]uint8{
 	op.DEC_B,
 	op.JR_NZ_N, 0xf5,
 	op.LD_HLI_A,
-	op.INC16_HL,
+	op.INC_HL,
 	op.LD_HLI_A,
-	op.INC16_HL,
+	op.INC_HL,
 	op.RET,
 
 	// Nintendo Logo
@@ -152,12 +152,12 @@ var bootRom [0x100]uint8 = [0x100]uint8{
 	// Point DE to Nintendo logo in DMG rom
 	op.LD_DE_NN, 0xa8, 0x00,
 	op.LD_A_DE,
-	op.INC16_DE,
+	op.INC_DE,
 	// Compare logo data in cart to DMG rom
 	op.CP_HL,
 	// If not a match, lock up here
 	op.JR_NZ_N, 0xfe,
-	op.INC16_HL,
+	op.INC_HL,
 	op.LD_A_L,
 	// Do this for 0x30 bytes
 	op.CP_N, 0x34,
@@ -165,7 +165,7 @@ var bootRom [0x100]uint8 = [0x100]uint8{
 	op.LD_B_N, 0x19,
 	op.LD_A_B,
 	op.ADD_A_HL,
-	op.INC16_HL,
+	op.INC_HL,
 	op.DEC_B,
 	op.JR_NZ_N, 0xfb,
 	op.ADD_A_HL,
