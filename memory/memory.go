@@ -19,6 +19,8 @@ type Memory struct {
 	cartridge *cartridge.Cartridge
 	io        *io.IO
 
+	oam [0x100]uint8
+
 	vRAM [0x2000]uint8
 	hRAM [0x80]uint8
 
@@ -43,13 +45,12 @@ func (mem *Memory) Read(address uint16) uint8 {
 		return 0xFF
 
 	case address >= OAMAddr:
-		// TODO: Implement OAM
-		return 0xFF
+		return mem.oam[address-OAMAddr]
 
 	case address >= EchoInternalRAMAddr:
-		// TODO: Implement ECHO RAM
-		return 0xFF
-
+		echoedAddr := address - (EchoInternalRAMAddr - InternalRAMAddr)
+		value := mem.Read(echoedAddr)
+		return value
 	case address >= InternalRAMAddr:
 		// Work RAM
 		return mem.wRAM[address-InternalRAMAddr]
@@ -86,7 +87,7 @@ func (mem *Memory) WriteWord(addr, value uint16) {
 func (mem *Memory) Write(address uint16, value uint8) {
 	switch {
 	case address >= 0xFFFF:
-		// TODO: Implement Interrupt Enable Register
+		mem.io.Write(io.IE, value)
 		return
 	case address >= InternalRAM2Addr:
 		// High RAM
@@ -99,10 +100,10 @@ func (mem *Memory) Write(address uint16, value uint8) {
 		// Not usable
 		return
 	case address >= OAMAddr:
-		// TODO: Implement OAM
+		mem.oam[address-OAMAddr] = value
 		return
 	case address >= EchoInternalRAMAddr:
-		// TODO: Implement ECHO RAM
+		mem.Write(address-(EchoInternalRAMAddr-InternalRAMAddr), value)
 		return
 	case address >= InternalRAMAddr:
 		// Work RAM
@@ -119,6 +120,7 @@ func (mem *Memory) Write(address uint16, value uint8) {
 	default:
 		// Cartridge ROM
 		mem.cartridge.Write(address, value)
+		return
 	}
 }
 
