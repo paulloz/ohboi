@@ -24,7 +24,7 @@ func (sdl2 *sdl2) Initialize(windowName string) {
 		panic(err)
 	}
 
-	window, err := sdl.CreateWindow(windowName, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, Width, Height, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow(windowName, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, Width*Scale, Height*Scale, sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
 	}
@@ -33,6 +33,8 @@ func (sdl2 *sdl2) Initialize(windowName string) {
 	if err != nil {
 		panic(err)
 	}
+	fScale := float32(Scale)
+	renderer.SetScale(fScale, fScale)
 
 	sdl2.window = window
 	sdl2.renderer = renderer

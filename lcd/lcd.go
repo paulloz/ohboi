@@ -13,6 +13,8 @@ const (
 	Width  = 160
 	Height = 144
 
+	Scale = 2
+
 	ScanlineFrequency = 456
 )
 
