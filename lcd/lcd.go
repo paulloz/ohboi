@@ -167,7 +167,7 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 				// tileDataAddress = uint16(int32(tileDataAddress) + int32)
 			}
 			// unsigned addressing
-			return tileDataBaseAddr + uint16(lcd.memory.Read(tileAddress)*16)
+			return tileDataBaseAddr + (uint16(lcd.memory.Read(tileAddress)) * 16)
 		}()
 
 		tileData := lcd.memory.ReadWord(tileDataAddress + uint16(line))
