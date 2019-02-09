@@ -25,7 +25,7 @@ type GameBoy struct {
 	apu    *apu.APU
 	cpu    *cpu.CPU
 	io     *io.IO
-	memory *memory.Memory
+	Memory *memory.Memory
 	lcd    *lcd.LCD
 
 	timaClock uint32
@@ -95,7 +95,7 @@ func (gb *GameBoy) UpdateTimers(cycles uint32) {
 }
 
 func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
-	gb.memory.LoadCartridgeFromFile(filename)
+	gb.Memory.LoadCartridgeFromFile(filename)
 }
 
 func (gb *GameBoy) PowerOn() {
@@ -135,7 +135,7 @@ func NewGameBoy() *GameBoy {
 		apu:    apu,
 		cpu:    cpu,
 		io:     io_,
-		memory: memory,
+		Memory: memory,
 		lcd:    lcd,
 	}
 }

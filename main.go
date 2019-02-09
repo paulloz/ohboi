@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/paulloz/ohboi/gameboy"
+	"github.com/paulloz/ohboi/gui"
 )
 
 var (
@@ -22,9 +24,17 @@ func init() {
 }
 
 func main() {
+	quitChan := make(chan int)
+
 	gameBoy = gameboy.NewGameBoy()
-	if len(romFilename) > 0 {
-		gameBoy.InsertCartridgeFromFile(romFilename)
-		gameBoy.PowerOn()
-	}
+
+	go func() {
+		if len(romFilename) > 0 {
+			gameBoy.InsertCartridgeFromFile(romFilename)
+			gameBoy.PowerOn()
+		}
+		quitChan <- 0
+	}()
+
+	os.Exit(gui.GUIStart(gameBoy, quitChan))
 }
