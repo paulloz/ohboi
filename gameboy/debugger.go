@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"io/ioutil"
+
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
 )
@@ -20,6 +22,8 @@ type tDebugger struct {
 	stepByStep bool
 
 	stepper chan int
+
+	gb *GameBoy
 }
 
 var (
@@ -41,6 +45,8 @@ func init() {
 }
 
 func (debugger *tDebugger) start(gb *GameBoy) {
+	debugger.gb = gb
+
 	go func() {
 		debugger.uifps.Title = "FPS"
 		debugger.uifps.SetRect(0, 0, 10, 3)
@@ -111,6 +117,18 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 
 func (debugger *tDebugger) close() {
 	ui.Close()
+}
+
+func (debugger *tDebugger) hexDump(data []uint8, addrPrefix uint16) {
+	// fmt.Println("NOW")
+	str := time.Now().Format("15:04:05")
+	for a, v := range data {
+		if a%0x10 == 0 {
+			str += fmt.Sprintf("\n%08x   ", addrPrefix+(uint16(a)))
+		}
+		str += fmt.Sprintf(" %02x", v)
+	}
+	ioutil.WriteFile("vram.txt", []byte(str), 0644)
 }
 
 func debuggerStart(gb *GameBoy) {
