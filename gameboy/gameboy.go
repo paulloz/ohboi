@@ -13,12 +13,9 @@ import (
 
 // Speed constants
 const (
-	ClockSpeed     = uint32(4194304)              // Cycles per second
-	DIVSpeed       = 16384                        // DIV increments per second
-	FPS            = 60                           // We want to run at 60FPS
-	CyclesPerFrame = ClockSpeed / FPS             // Cycles per frame
-	DIVPerFrame    = DIVSpeed / FPS               // DIV increments per frame
-	CyclesPerDIV   = CyclesPerFrame / DIVPerFrame // Cycles to wait between DIV increments
+	ClockSpeed     = uint32(4194304)  // Cycles per second
+	FPS            = 60               // We want to run at 60FPS
+	CyclesPerFrame = ClockSpeed / FPS // Cycles per frame
 )
 
 type GameBoy struct {
@@ -54,7 +51,7 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 
 		gb.lcd.Update(currentInstrCycles)
 
-		gb.cpu.UpdateDIV(currentInstrCycles, CyclesPerDIV)
+		gb.cpu.UpdateDIV(currentInstrCycles)
 		gb.UpdateTimers(currentInstrCycles)
 		cycles += currentInstrCycles
 

@@ -112,13 +112,14 @@ func (cpu *CPU) readDIV() uint8 {
 
 func (cpu *CPU) writeDIV(val uint8) {
 	cpu.div = 0
+	cpu.divCycles = 0
 }
 
-func (cpu *CPU) UpdateDIV(cycles uint32, frequency uint32) {
+func (cpu *CPU) UpdateDIV(cycles uint32) {
 	cpu.divCycles += cycles
 
-	for cpu.divCycles >= frequency {
-		cpu.divCycles -= frequency
+	for cpu.divCycles >= 256 {
+		cpu.divCycles -= 256
 		cpu.div++
 	}
 }
