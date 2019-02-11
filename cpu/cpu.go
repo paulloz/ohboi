@@ -183,6 +183,14 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 	return 0
 }
 
+func (cpu *CPU) DMATransfert(baseSrcAddress uint8) {
+	for i := uint16(0); i < 0xa0; i++ {
+		srcAddress := uint16(baseSrcAddress) + i
+		dstAddress := 0xfe00 + i
+		cpu.mem.Write(dstAddress, cpu.mem.Read(srcAddress))
+	}
+}
+
 func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 	cpu := &CPU{
 		PC: 0x0,
@@ -213,6 +221,7 @@ func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 	cpu.L = PseudoRegisterLow{hwRegister: &cpu.HL}
 
 	io_.MapRegister(io.DIV, cpu.readDIV, cpu.writeDIV)
+	io_.MapRegister(io.DMA, func() uint8 { return 0xff }, cpu.DMATransfert)
 
 	return cpu
 }
