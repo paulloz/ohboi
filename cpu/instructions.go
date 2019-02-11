@@ -67,5 +67,16 @@ func init() {
 			},
 			Cycles: 4,
 		},
+		op.CPL: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				cpu.A.Set(^cpu.A.Get())
+
+				cpu.SetNFlag(true)
+				cpu.SetHFlag(true)
+
+				return nil
+			},
+			Cycles: 4,
+		},
 	})
 }

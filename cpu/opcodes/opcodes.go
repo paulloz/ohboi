@@ -8,6 +8,7 @@ const (
 	EI = 0xfb
 
 	CCF = 0x3f
+	CPL = 0x2f
 
 	// LD n, nn
 	LD_B_N = 0x06
