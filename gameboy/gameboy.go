@@ -29,6 +29,8 @@ type GameBoy struct {
 	lcd    *lcd.LCD
 
 	timaClock uint32
+	tac       uint8
+	tima      uint8
 }
 
 func (gb *GameBoy) Panic(err error) {
@@ -66,32 +68,55 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 }
 
 func (gb *GameBoy) UpdateTimers(cycles uint32) {
-	// If Timer Enable (bit 2 of TAC is set)
-	if bits.Test(2, gb.io.Read(io.TAC)) {
-		// Retrieve frequency
-		timaClockFrequency := uint32(1024)
-		switch gb.io.Read(io.TAC) & 0x03 {
-		case 1:
-			timaClockFrequency = 16
-		case 2:
-			timaClockFrequency = 64
-		case 3:
-			timaClockFrequency = 256
-		}
+	if bits.Test(2, gb.tac) {
+		timaClockFrequency := gb.getTACFrequency()
 
 		gb.timaClock += cycles
 		for gb.timaClock >= timaClockFrequency {
 			gb.timaClock -= timaClockFrequency
 
-			tima := gb.io.Read(io.TIMA)
-			if tima < 0xff {
-				gb.io.Write(io.TIMA, tima+1)
+			if gb.tima < 0xff {
+				gb.tima++
 			} else {
-				gb.io.Write(io.TIMA, gb.io.Read(io.TMA))
+				gb.tima = gb.io.Read(io.TMA)
 				gb.cpu.RequestInterrupt(cpu.I_TIMER)
 			}
 		}
 	}
+}
+
+func (gb *GameBoy) GetTAC() uint8 {
+	return gb.tac
+}
+
+func (gb *GameBoy) getTACFrequency() uint32 {
+	switch gb.tac & 0x03 {
+	case 1:
+		return 16
+	case 2:
+		return 64
+	case 3:
+		return 256
+	default:
+		return 1024
+	}
+}
+
+func (gb *GameBoy) SetTAC(value uint8) {
+	oldFreq := gb.getTACFrequency()
+	gb.tac = 0xf8 | value
+	if gb.getTACFrequency() != oldFreq {
+		gb.timaClock = 0
+	}
+}
+
+func (gb *GameBoy) GetTIMA() uint8 {
+	return gb.tima
+}
+
+func (gb *GameBoy) SetTIMA(value uint8) {
+	gb.tima = value
+	gb.timaClock = 0
 }
 
 func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
@@ -131,11 +156,16 @@ func NewGameBoy() *GameBoy {
 
 	lcd := lcd.NewLCD(cpu, memory, io_)
 
-	return &GameBoy{
+	gb := &GameBoy{
 		apu:    apu,
 		cpu:    cpu,
 		io:     io_,
 		Memory: memory,
 		lcd:    lcd,
 	}
+
+	io_.MapRegister(io.TAC, gb.GetTAC, gb.SetTAC)
+	io_.MapRegister(io.TIMA, gb.GetTIMA, gb.SetTIMA)
+
+	return gb
 }
