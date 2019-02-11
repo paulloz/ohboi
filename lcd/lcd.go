@@ -129,48 +129,48 @@ func (lcd *LCD) getBackgroundConf(scanline uint8) (uint16, uint16, bool, uint16)
 		return uint16(0x8000), bgData, window, windowData
 	}
 
-	return uint16(0x8800), bgData, window, windowData
+	return uint16(0x9000), bgData, window, windowData
 }
 
 func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 	tileDataBaseAddr, bgData, window, windowData := lcd.getBackgroundConf(scanline)
 	winX := lcd.io.Read(io.WX) - 7
 	winY := lcd.io.Read(io.WY)
-
 	colorPalette := lcd.getPalette(io.BGP)
 
-	y := func() uint8 {
-		if window {
-			return scanline - winY
-		}
-		return lcd.io.Read(io.SCY) + scanline
-	}()
-	tileY := uint16(y / 8)
-	line := y % 8 * 2
 	for i := uint16(0); i < Width; i++ {
-		x, tileAddress := func() (uint16, uint16) {
-			if window && uint8(i) >= winX {
-				return i - uint16(winX), windowData
-			}
-			return uint16(lcd.io.Read(io.SCX)) + i, bgData
-		}()
+		var x, y, tileAddress, tileDataAddress uint16
+		var tileNumber int16
+
+		if window && uint8(i) >= winX {
+			x, tileAddress = i-uint16(winX), windowData
+		} else {
+			x, tileAddress = uint16(lcd.io.Read(io.SCX))+i, bgData
+		}
+
+		if window {
+			y = uint16(scanline - winY)
+		} else {
+			y = uint16(lcd.io.Read(io.SCY) + scanline)
+		}
 
 		tileX := x / 8
+		tileY := uint16(y / 8)
+		line := y % 8 * 2
 
 		tileAddress += (tileY * 32) + tileX
 
 		// TODO BG WRAP
 
-		tileDataAddress := func() uint16 {
-			if tileDataBaseAddr == 0x8800 {
-				// TODO signed shenanigans
-				// tileNumber := int16(int8(lcd.memory.VRAM[tileAddress-memory.VRAMAddr]))
-				// tileDataAddress = uint16(int32(tileDataAddress) + int32)
-			}
+		if tileDataAddress == 0x9000 {
+			// signed addressing
+			tileNumber = int16(int8(lcd.memory.Read(tileAddress)))
+		} else {
 			// unsigned addressing
-			return tileDataBaseAddr + (uint16(lcd.memory.Read(tileAddress)) * 16)
-		}()
+			tileNumber = int16(lcd.memory.Read(tileAddress))
+		}
 
+		tileDataAddress = uint16(int32(tileDataBaseAddr) + (int32(tileNumber) * 16))
 		tileData := lcd.memory.ReadWord(tileDataAddress + uint16(line))
 
 		bit := uint8((int8(x%8) - 7) * -1)
