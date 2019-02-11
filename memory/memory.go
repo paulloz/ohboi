@@ -45,12 +45,13 @@ func (mem *Memory) Read(address uint16) uint8 {
 		return 0xFF
 
 	case address >= OAMAddr:
+		// OAM
 		return mem.oam[address-OAMAddr]
 
 	case address >= EchoInternalRAMAddr:
-		echoedAddr := address - (EchoInternalRAMAddr - InternalRAMAddr)
-		value := mem.Read(echoedAddr)
-		return value
+		// Echo on WRAM
+		return mem.Read(EchoInternalRAMAddr - InternalRAMAddr)
+
 	case address >= InternalRAMAddr:
 		// Work RAM
 		return mem.wRAM[address-InternalRAMAddr]
@@ -88,39 +89,41 @@ func (mem *Memory) Write(address uint16, value uint8) {
 	switch {
 	case address >= 0xFFFF:
 		mem.io.Write(io.IE, value)
-		return
+
 	case address >= InternalRAM2Addr:
 		// High RAM
 		mem.hRAM[address-InternalRAM2Addr] = value
-		return
+
 	case address >= IOPortsAddr:
 		mem.io.Write(uint8(address&0xff), value)
-		return
+
 	case address >= 0xFEA0:
 		// Not usable
-		return
+
 	case address >= OAMAddr:
+		// OAM
 		mem.oam[address-OAMAddr] = value
-		return
+
 	case address >= EchoInternalRAMAddr:
+		// Echo to WRAM
 		mem.Write(address-(EchoInternalRAMAddr-InternalRAMAddr), value)
-		return
+
 	case address >= InternalRAMAddr:
 		// Work RAM
 		mem.wRAM[address-InternalRAMAddr] = value
-		return
+
 	case address >= SwitchableRAMAddr:
 		// Cartridge RAM
 		mem.cartridge.Write(address, value)
-		return
+
 	case address >= VRAMAddr:
 		// Video RAM
 		mem.vRAM[address-VRAMAddr] = value
-		return
+
 	default:
 		// Cartridge ROM
 		mem.cartridge.Write(address, value)
-		return
+
 	}
 }
 
