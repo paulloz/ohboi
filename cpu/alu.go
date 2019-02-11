@@ -206,7 +206,7 @@ func newDecrementRegister(register GetterSetter) Instruction {
 			register.Set(cpu, final)
 
 			cpu.SetZFlag(final == 0)
-			cpu.SetNFlag(false)
+			cpu.SetNFlag(true)
 			cpu.SetHFlag(bits.HalfCarryCheck(initial, 1))
 
 			return nil
