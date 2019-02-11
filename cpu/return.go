@@ -17,8 +17,8 @@ func init() {
 
 		op.RET_C: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.Pop()
 				if cpu.GetCFlag() {
+					addr := cpu.Pop()
 					cpu.PC = addr
 				}
 				return nil
@@ -28,8 +28,8 @@ func init() {
 
 		op.RET_NC: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.Pop()
 				if !cpu.GetCFlag() {
+					addr := cpu.Pop()
 					cpu.PC = addr
 				}
 				return nil
@@ -39,8 +39,8 @@ func init() {
 
 		op.RET_Z: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.Pop()
 				if cpu.GetZFlag() {
+					addr := cpu.Pop()
 					cpu.PC = addr
 				}
 				return nil
@@ -50,8 +50,8 @@ func init() {
 
 		op.RET_NZ: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.Pop()
 				if !cpu.GetZFlag() {
+					addr := cpu.Pop()
 					cpu.PC = addr
 				}
 				return nil
