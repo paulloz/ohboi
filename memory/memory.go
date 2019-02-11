@@ -30,8 +30,8 @@ type Memory struct {
 func (mem *Memory) Read(address uint16) uint8 {
 	switch {
 	case address >= 0xFFFF:
-		// TODO: Implement Interrupt Enable Register
-		return 0xFF
+		// IE
+		return mem.io.Read(io.IE)
 
 	case address >= InternalRAM2Addr:
 		// High RAM
