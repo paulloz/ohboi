@@ -18,6 +18,7 @@ type tDebugger struct {
 	uiregisters *widgets.Paragraph
 	uinext      *widgets.Paragraph
 	uistack     *widgets.Paragraph
+	uiio        *widgets.Paragraph
 
 	stepByStep bool
 
@@ -38,6 +39,7 @@ func init() {
 		uiregisters: widgets.NewParagraph(),
 		uinext:      widgets.NewParagraph(),
 		uistack:     widgets.NewParagraph(),
+		uiio:        widgets.NewParagraph(),
 
 		stepByStep: true,
 		stepper:    make(chan int),
@@ -54,15 +56,18 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 		debugger.uiregisters.Title = "CPU Registers"
 		debugger.uiregisters.SetRect(10, 0, 30, 12)
 
-		debugger.uinext.SetRect(30, 0, 50, 12)
+		debugger.uinext.SetRect(30, 0, 70, 12)
 
 		debugger.uistack.Title = "Stack"
 		debugger.uistack.SetRect(30, 12, 50, 36)
+
+		debugger.uiio.SetRect(10, 12, 30, 36)
 
 		ui.Render(debugger.uifps)
 		ui.Render(debugger.uiregisters)
 		ui.Render(debugger.uinext)
 		ui.Render(debugger.uistack)
+		ui.Render(debugger.uiio)
 
 		ticker := time.NewTicker(time.Second / FPS).C
 		uiEvents := ui.PollEvents()
@@ -90,9 +95,17 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 				// uifps.Text = fmt.Sprintf("%02d", fps)
 				debugger.uiregisters.Text = gb.cpu.Dump()
 
-				next := fmt.Sprintf(" -> 0x%02x\n", gb.memory.Read(pc))
+				name := ""
+				if opCodeNames[gb.Memory.Read(pc)] != "" {
+					name = opCodeNames[gb.Memory.Read(pc)]
+				}
+				next := fmt.Sprintf(" -> 0x%02x %s\n", gb.Memory.Read(pc), name)
 				for i := uint16(1); i < 10; i++ {
-					next += fmt.Sprintf("    0x%02x\n", gb.memory.Read(pc+i))
+					name = ""
+					if opCodeNames[gb.Memory.Read(pc+i)] != "" {
+						name = opCodeNames[gb.Memory.Read(pc+i)]
+					}
+					next += fmt.Sprintf("    0x%02x %s\n", gb.Memory.Read(pc+i), name)
 				}
 				debugger.uinext.Text = next
 
@@ -102,14 +115,23 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 					if i == gb.cpu.SP.Get() {
 						prefix = " =>"
 					}
-					stack += fmt.Sprintf("%s (0x%04x) 0x%02x\n", prefix, i, gb.memory.Read(i))
+					stack += fmt.Sprintf("%s (0x%04x) 0x%02x\n", prefix, i, gb.Memory.Read(i))
 				}
 				debugger.uistack.Text = stack
+
+				io := fmt.Sprintf("\nDIV : 0x%02x\n", gb.Memory.Read(0xff04))
+				io += fmt.Sprintf("IE  : 0x%02x\n", gb.Memory.Read(0xffff))
+				io += fmt.Sprintf("IF  : 0x%02x\n", gb.Memory.Read(0xff0f))
+				io += fmt.Sprintf("TIMA: 0x%02x\n", gb.Memory.Read(0xff05))
+				io += fmt.Sprintf("TAC : 0x%02x\n", gb.Memory.Read(0xff07))
+				io += fmt.Sprintf("\nClock : %d\n", gb.GETCLOCK())
+				debugger.uiio.Text = io
 
 				ui.Render(debugger.uifps)
 				ui.Render(debugger.uiregisters)
 				ui.Render(debugger.uinext)
 				ui.Render(debugger.uistack)
+				ui.Render(debugger.uiio)
 			}
 		}
 	}()

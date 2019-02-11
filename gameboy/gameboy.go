@@ -85,6 +85,11 @@ func (gb *GameBoy) UpdateTimers(cycles uint32) {
 	}
 }
 
+// DEBUG
+func (gb *GameBoy) GETCLOCK() uint32 {
+	return gb.timaClock
+}
+
 func (gb *GameBoy) GetTAC() uint8 {
 	return gb.tac
 }
