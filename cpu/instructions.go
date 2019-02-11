@@ -57,5 +57,15 @@ func init() {
 			},
 			Cycles: 4,
 		},
+		op.CCF: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				cpu.SetNFlag(false)
+				cpu.SetHFlag(false)
+				cpu.SetCFlag(!cpu.GetCFlag())
+
+				return nil
+			},
+			Cycles: 4,
+		},
 	})
 }
