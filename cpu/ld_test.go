@@ -199,7 +199,7 @@ func TestOpcodeLD_HL_SP_N(t *testing.T) {
 			cpu.SP.Set(0xff00)
 		},
 		checks: []check{
-			newRegister16Check("HL", cpu.RegisterHL, 0xff80),
+			newRegister16Check("HL", cpu.RegisterHL, 0xfe80),
 		},
 	})(t)
 }
