@@ -68,14 +68,14 @@ func newSub(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			a, b := cpu.A.Get(), src.Get(cpu)
-			sub := uint16(a) - uint16(b)
-			uint8Sub := uint8(sub)
-			cpu.A.Set(uint8Sub)
+			tot := a - b
 
-			cpu.SetZFlag(uint8Sub == 0)
+			cpu.A.Set(tot)
+
+			cpu.SetZFlag(tot == 0)
 			cpu.SetNFlag(true)
 			cpu.SetHFlag((a & 0x0f) < (b & 0x0f))
-			cpu.SetCFlag(sub >= 0)
+			cpu.SetCFlag(a < b)
 			return nil
 		},
 		Cycles: cycles,
@@ -85,19 +85,15 @@ func newSub(src Getter, cycles uint32) Instruction {
 func newSubC(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			var carry uint8
-			if cpu.F.Get()&CarryFlag != 0 {
-				carry = 1
-			}
-			a, b := cpu.A.Get(), src.Get(cpu)
-			sub := uint16(a) - uint16(b) - uint16(carry)
-			uint8Sub := uint8(sub)
-			cpu.A.Set(uint8Sub)
+			carry := int16(bits.FromBool(cpu.GetCFlag()))
+			a, b := int16(cpu.A.Get()), int16(src.Get(cpu))
+			sub := a - b - carry
+			cpu.A.Set(uint8(sub))
 
-			cpu.SetZFlag(uint8Sub == 0)
+			cpu.SetZFlag(cpu.A.Get() == 0)
 			cpu.SetNFlag(true)
-			cpu.SetHFlag((a & 0x0f) < (b&0x0f)+1)
-			cpu.SetCFlag(sub >= 0)
+			cpu.SetHFlag((a&0x0f)-(b&0x0f)-carry < 0)
+			cpu.SetCFlag(a < b)
 			return nil
 		},
 		Cycles: cycles,
