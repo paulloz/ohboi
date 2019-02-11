@@ -1,6 +1,5 @@
 package cartridge
 
-// MBC1 ...
 type MBC1 struct {
 	rom []uint8
 
@@ -15,9 +14,8 @@ type MBC1 struct {
 	activeRAMBankStart uint16
 }
 
-// NewMBC1 ...
 func NewMBC1(rom []uint8, ramSize uint16) *MBC1 {
-	return &MBC1{
+	mbc1 := &MBC1{
 		rom:     rom,
 		romBank: 1,
 
@@ -26,6 +24,10 @@ func NewMBC1(rom []uint8, ramSize uint16) *MBC1 {
 		isRAMBanking: false,
 		isRAMEnabled: false,
 	}
+
+	mbc1.bankROM(mbc1.romBank)
+
+	return mbc1
 }
 
 func (c *MBC1) Read(address uint16) uint8 {

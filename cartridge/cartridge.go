@@ -71,7 +71,6 @@ func (h *Header) validateChecksum(data []byte) error {
 	return nil
 }
 
-// NewCartridge ...
 func NewCartridge(filename string) (*Cartridge, error) {
 	cartridge := &Cartridge{}
 
