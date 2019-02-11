@@ -323,7 +323,8 @@ var RegisterSP = registerSP{}
 type addressSPN struct{}
 
 func (a addressSPN) Get(cpu *CPU) uint16 {
-	return cpu.SP.hilo + uint16(cpu.FetchByte())
+	rel := int(int8(cpu.FetchByte()))
+	return uint16(int(cpu.SP.hilo) + rel)
 }
 
 var AddressSPN = addressSPN{}
