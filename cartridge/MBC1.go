@@ -26,6 +26,7 @@ func NewMBC1(rom []uint8, ramSize uint16) *MBC1 {
 	}
 
 	mbc1.bankROM(mbc1.romBank)
+	mbc1.bankRAM(mbc1.ramBank)
 
 	return mbc1
 }

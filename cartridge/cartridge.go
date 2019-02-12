@@ -96,7 +96,7 @@ func NewCartridge(filename string) (*Cartridge, error) {
 		ramSize := uint16(0)
 		switch cartridge.RAMSize {
 		case RAMNone:
-			ramSize = 0
+			ramSize = 2 * 1024
 		case RAM2k:
 			ramSize = 2 * 1024
 		case RAM8k:
