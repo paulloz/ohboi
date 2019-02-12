@@ -8,7 +8,16 @@ import (
 func newSwap(reg GetterSetter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			reg.Set(cpu, ((reg.Get(cpu)&0xf)<<4)|((reg.Get(cpu)&0xf0)>>4))
+			lowerNibble := reg.Get(cpu) & 0x0f
+			upperNibble := ((reg.Get(cpu) & 0xf0) >> 4) & 0x0f
+
+			reg.Set(cpu, ((lowerNibble << 4) | upperNibble))
+
+			cpu.SetZFlag(reg.Get(cpu) == 0)
+			cpu.SetNFlag(false)
+			cpu.SetHFlag(false)
+			cpu.SetCFlag(false)
+
 			return nil
 		},
 		Cycles: cycles,
