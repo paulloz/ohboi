@@ -125,7 +125,7 @@ func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
 	gb.Memory.LoadCartridgeFromFile(filename)
 }
 
-func (gb *GameBoy) PowerOn() {
+func (gb *GameBoy) PowerOn(stop chan int) {
 	ticker := time.NewTicker(time.Second / FPS).C
 
 	debuggerStart(gb)
@@ -145,11 +145,13 @@ func (gb *GameBoy) PowerOn() {
 				start = time.Now()
 				frames = 0
 			}
+		case <-stop:
+			return
 		}
 	}
 }
 
-func NewGameBoy() *GameBoy {
+func NewGameBoy(skipBoot bool) *GameBoy {
 	io_ := io.NewIO()
 	apu := apu.NewAPU(io_)
 
@@ -168,6 +170,23 @@ func NewGameBoy() *GameBoy {
 
 	io_.MapRegister(io.TAC, gb.GetTAC, gb.SetTAC)
 	io_.MapRegister(io.TIMA, gb.GetTIMA, gb.SetTIMA)
+
+	if skipBoot {
+		io_.Write(0x50, 1)
+		cpu.PC = 0x100
+	}
+
+	return gb
+}
+
+func NewSerialTextGameBoy(skipBoot bool, f func(uint8)) *GameBoy {
+	gb := NewGameBoy(skipBoot)
+
+	gb.io.MapRegister(io.SC, func() uint8 { return 0xff }, func(v uint8) {
+		if v == 0x81 {
+			f(gb.io.Read(io.SB))
+		}
+	})
 
 	return gb
 }

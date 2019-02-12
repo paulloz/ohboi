@@ -26,12 +26,12 @@ func init() {
 func main() {
 	quitChan := make(chan int)
 
-	gameBoy = gameboy.NewGameBoy()
+	gameBoy = gameboy.NewGameBoy(true)
 
 	go func() {
 		if len(romFilename) > 0 {
 			gameBoy.InsertCartridgeFromFile(romFilename)
-			gameBoy.PowerOn()
+			gameBoy.PowerOn(quitChan)
 		}
 		quitChan <- 0
 	}()
