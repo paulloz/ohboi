@@ -92,7 +92,7 @@ func newSubC(src Getter, cycles uint32) Instruction {
 			cpu.SetZFlag(cpu.A.Get() == 0)
 			cpu.SetNFlag(true)
 			cpu.SetHFlag((a&0x0f)-(b&0x0f)-carry < 0)
-			cpu.SetCFlag(a < b)
+			cpu.SetCFlag(a < b+carry)
 			return nil
 		},
 		Cycles: cycles,
@@ -287,6 +287,7 @@ func init() {
 		op.SBC_A_H:  newSubC(RegisterH, 4),
 		op.SBC_A_L:  newSubC(RegisterL, 4),
 		op.SBC_A_HL: newSubC(AddressHL, 8),
+		op.SBC_A_N:  newSubC(Immediate, 8),
 
 		op.AND_A_A:  newAnd(RegisterA, 4),
 		op.AND_A_B:  newAnd(RegisterB, 4),

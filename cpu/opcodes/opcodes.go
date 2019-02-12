@@ -172,6 +172,7 @@ const (
 	SBC_A_H  = 0x9c
 	SBC_A_L  = 0x9d
 	SBC_A_HL = 0x9e
+	SBC_A_N  = 0xde
 
 	AND_A_A  = 0xa7
 	AND_A_B  = 0xa0
