@@ -31,7 +31,7 @@ func TestOpcodePOP_AF(t *testing.T) {
 			cpu.SP.Set(0xff80)
 		},
 		checks: []check{
-			newRegister16Check("AF", cpu.RegisterAF, 0xabcd),
+			newRegister16Check("AF", cpu.RegisterAF, 0xabc0),
 		},
 	})(t)
 }
