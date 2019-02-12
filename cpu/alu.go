@@ -28,14 +28,13 @@ func newAdd16(src Getter16, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
 			a, b := cpu.HL.Get(), src.Get(cpu)
-			sum := uint32(a) + uint32(b)
-			uint16Sum := uint16(sum)
-			cpu.HL.Set(uint16Sum)
 
-			cpu.SetZFlag(uint16Sum == 0)
+			sum := uint32(a) + uint32(b)
+			cpu.HL.Set(a + b)
+
 			cpu.SetNFlag(false)
-			cpu.SetHFlag(((a&0xfff)+(b&0xfff))&0x1000 != 0)
-			cpu.SetCFlag(sum >= 256)
+			cpu.SetHFlag(((a & 0xfff) + (b & 0xfff)) > 0xfff)
+			cpu.SetCFlag(sum > 0xffff)
 			return nil
 		},
 		Cycles: cycles,

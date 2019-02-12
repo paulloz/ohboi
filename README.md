@@ -10,10 +10,7 @@ A simple GB emulator written for fun in Go.
     * Needs ADD SP, r8
   * [ ] 04-op r,imm
     * Needs SBC A, n8
-  * [ ] 05-op rp
-    * ADD HL,BC fails
-    * ADD HL,DE fails
-    * ADD HL,HL fails
+  * [x] 05-op rp
   * [x] 06-ld r,r
   * [ ] 07-jr,jp,call,ret,rst
     * Seems like it gets stuck in an infinite loop
