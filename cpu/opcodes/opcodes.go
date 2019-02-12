@@ -9,6 +9,7 @@ const (
 
 	CCF = 0x3f
 	CPL = 0x2f
+	SCF = 0x37
 
 	// LD n, nn
 	LD_B_N = 0x06
