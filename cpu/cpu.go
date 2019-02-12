@@ -33,6 +33,8 @@ type CPU struct {
 	SP Register
 	PC uint16
 
+	isHalted bool
+
 	divCycles uint32
 	div       uint8
 
@@ -67,6 +69,10 @@ func (cpu *CPU) FetchWord() uint16 {
 }
 
 func (cpu *CPU) ExecuteOpCode() (uint32, error) {
+	if cpu.isHalted {
+		return InstructionSet[op.NOOP].Cycles, nil
+	}
+
 	opcode := cpu.FetchByte()
 
 	var instruction Instruction
@@ -152,7 +158,7 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 		return 0
 	}
 
-	if !cpu.interruptsMasterEnable {
+	if !cpu.interruptsMasterEnable && !cpu.isHalted {
 		return 0
 	}
 
@@ -165,6 +171,11 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 		if bits.Test(b, interruptFlag) {
 			// And this interrupt is enabled
 			if bits.Test(b, interruptEnable) {
+				if cpu.isHalted {
+					cpu.isHalted = false
+					return 0
+				}
+
 				// Service the interrupt:
 				cpu.interruptsMasterEnable = false // Clear IME
 
@@ -200,6 +211,8 @@ func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 		DE: NewRegister(0x01b0),
 		HL: NewRegister(0x01b0),
 		SP: NewRegister(0xfffe),
+
+		isHalted: false,
 
 		divCycles: 0,
 		div:       0,

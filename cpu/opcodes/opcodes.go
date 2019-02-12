@@ -11,6 +11,8 @@ const (
 	CPL = 0x2f
 	SCF = 0x37
 
+	HALT = 0x76
+
 	// LD n, nn
 	LD_B_N = 0x06
 	LD_C_N = 0x0e

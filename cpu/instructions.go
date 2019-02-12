@@ -43,6 +43,13 @@ var NoopInstruction = Instruction{
 func init() {
 	RegisterInstructions(map[uint8]Instruction{
 		op.NOOP: NoopInstruction,
+		op.HALT: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				cpu.isHalted = true
+				return nil
+			},
+			Cycles: 4,
+		},
 		op.DI: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				cpu.DisableInterrupts()
