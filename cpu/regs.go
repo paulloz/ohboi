@@ -321,15 +321,6 @@ func (r registerSP) Set(cpu *CPU, v uint16) {
 
 var RegisterSP = registerSP{}
 
-type addressSPN struct{}
-
-func (a addressSPN) Get(cpu *CPU) uint16 {
-	rel := int(int8(cpu.FetchByte()))
-	return uint16(int(cpu.SP.hilo) + rel)
-}
-
-var AddressSPN = addressSPN{}
-
 type registerPC struct{}
 
 func (r registerPC) Get(cpu *CPU) uint16 {

@@ -355,5 +355,25 @@ func init() {
 		op.XOR_L:  newXorA(RegisterL),
 		op.XOR_HL: newXorA(AddressHL),
 		op.XOR_N:  newXorA(Immediate),
+
+		op.ADD_SP_N: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				in := int32(cpu.SP.hilo)
+				rel := int32(int8(cpu.FetchByte()))
+
+				result := in + rel
+				cpu.SP.Set(uint16(result))
+
+				overflowTest := (in ^ rel ^ (result & 0xffff))
+
+				cpu.SetZFlag(false)
+				cpu.SetNFlag(false)
+				cpu.SetHFlag((overflowTest & 0x10) == 0x10)
+				cpu.SetCFlag((overflowTest & 0x100) == 0x100)
+
+				return nil
+			},
+			Cycles: 16,
+		},
 	})
 }

@@ -131,8 +131,26 @@ func init() {
 		op.LD_HL_NN: newLoadRegister16(RegisterHL, Immediate16, 12),
 		op.LD_SP_NN: newLoadRegister16(RegisterSP, Immediate16, 12),
 
-		op.LD_SP_HL:   newLoadRegister16(RegisterSP, RegisterHL, 8),
-		op.LD_HL_SP_N: newLoadRegister16(RegisterHL, AddressSPN, 12),
-		op.LD_NN_SP:   newLoadRegister16(AddressImmediate16, RegisterSP, 20),
+		op.LD_SP_HL: newLoadRegister16(RegisterSP, RegisterHL, 8),
+		op.LD_NN_SP: newLoadRegister16(AddressImmediate16, RegisterSP, 20),
+		op.LD_HL_SP_N: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				in := int32(cpu.SP.hilo)
+				rel := int32(int8(cpu.FetchByte()))
+
+				result := in + rel
+				cpu.HL.Set(uint16(result))
+
+				overflowTest := (in ^ rel ^ (result & 0xffff))
+
+				cpu.SetZFlag(false)
+				cpu.SetNFlag(false)
+				cpu.SetHFlag((overflowTest & 0x10) == 0x10)
+				cpu.SetCFlag((overflowTest & 0x100) == 0x100)
+
+				return nil
+			},
+			Cycles: 16,
+		},
 	})
 }

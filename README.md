@@ -6,8 +6,7 @@ A simple GB emulator written for fun in Go.
   * [ ] 01-special
     * Needs DAA
   * [x] 02-interrupts
-  * [ ] 03-op sp,hl
-    * Needs ADD SP, r8
+  * [x] 03-op sp,hl
   * [ ] 04-op r,imm
     * Needs SBC A, n8
   * [x] 05-op rp

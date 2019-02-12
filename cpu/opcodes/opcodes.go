@@ -257,6 +257,8 @@ const (
 	ADD_HL_HL = 0x29
 	ADD_HL_SP = 0x39
 
+	ADD_SP_N = 0xe8
+
 	// Swaps
 	SWAP_A  = 0x37
 	SWAP_B  = 0x30
