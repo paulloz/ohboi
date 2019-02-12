@@ -8,7 +8,7 @@ import (
 func newReset(offset uint8) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			cpu.Push(cpu.PC - 1)
+			cpu.Push(cpu.PC)
 			cpu.PC = uint16(offset)
 			return nil
 		},
