@@ -36,5 +36,6 @@ func main() {
 		quitChan <- 0
 	}()
 
-	os.Exit(gui.GUIStart(gameBoy, quitChan))
+	guiOptions := gui.GUIOptions{VRAMViewer: false}
+	os.Exit(gui.GUIStart(guiOptions, gameBoy, quitChan))
 }

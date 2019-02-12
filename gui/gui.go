@@ -20,6 +20,10 @@ type guiModule interface {
 	render()
 }
 
+type GUIOptions struct {
+	VRAMViewer bool
+}
+
 var (
 	modules []guiModule
 )
@@ -55,8 +59,10 @@ func addModule(m guiModule) {
 	modules[id].initialize(id)
 }
 
-func guiRun(gb *gameboy.GameBoy, quitChan chan int) int {
-	addModule(newVRAMViewer())
+func guiRun(options GUIOptions, gb *gameboy.GameBoy, quitChan chan int) int {
+	if options.VRAMViewer {
+		addModule(newVRAMViewer())
+	}
 
 	ticker := time.NewTicker(time.Second / 10).C
 	for {
@@ -86,11 +92,11 @@ func guiRun(gb *gameboy.GameBoy, quitChan chan int) int {
 	}
 }
 
-func GUIStart(gb *gameboy.GameBoy, quitChan chan int) int {
+func GUIStart(options GUIOptions, gb *gameboy.GameBoy, quitChan chan int) int {
 	exitCode := 0
 
 	sdl.Main(func() {
-		exitCode = guiRun(gb, quitChan)
+		exitCode = guiRun(options, gb, quitChan)
 	})
 
 	return exitCode
