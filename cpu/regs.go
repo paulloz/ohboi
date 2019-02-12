@@ -159,6 +159,7 @@ func (r registerAF) Get(cpu *CPU) uint16 {
 }
 
 func (r registerAF) Set(cpu *CPU, v uint16) {
+	v = (cpu.AF.Get() & 0x000f) | (v & 0xfff0)
 	cpu.AF.Set(v)
 }
 
