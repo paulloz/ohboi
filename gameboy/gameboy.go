@@ -146,9 +146,14 @@ func (gb *GameBoy) PowerOn(stop chan int) {
 				frames = 0
 			}
 		case <-stop:
+			gb.PowerOff()
 			return
 		}
 	}
+}
+
+func (gb *GameBoy) PowerOff() {
+	gb.lcd.Destroy()
 }
 
 func NewGameBoy(skipBoot bool) *GameBoy {

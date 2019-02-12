@@ -59,6 +59,12 @@ func (sdl2 *sdl2) Initialize(windowName string) {
 	sdl2.screenRect = &sdl.Rect{W: Width, H: Height}
 }
 
+func (sdl2 *sdl2) Destroy() {
+	sdl2.texture.Destroy()
+	sdl2.renderer.Destroy()
+	sdl2.window.Destroy()
+}
+
 func NewSDL2() *sdl2 {
 	return &sdl2{}
 }
