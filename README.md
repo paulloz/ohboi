@@ -28,6 +28,6 @@ A simple GB emulator written for fun in Go.
 
 ## Resources
 
-* [http://bgb.bircd.org/pandocs.htm](http://bgb.bircd.org/pandocs.htm)
-* [http://www.codeslinger.co.uk/pages/projects/gameboy/beginning.html](http://www.codeslinger.co.uk/pages/projects/gameboy/beginning.html)
+* [http://gbdev.gg8.se/wiki/articles/Pan_Docs]()
 * [http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
+* [https://rednex.github.io/rgbds/gbz80.7.html](https://rednex.github.io/rgbds/gbz80.7.html)
