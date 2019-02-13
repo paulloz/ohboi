@@ -11,11 +11,13 @@ import (
 
 var (
 	romFilename string
+	vramViewer  bool
 	gameBoy     *gameboy.GameBoy
 )
 
 func init() {
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
+	flag.BoolVar(&vramViewer, "vramViewer", false, "enable VRAM viewer")
 	flag.Parse()
 
 	if len(romFilename) <= 0 {
@@ -36,6 +38,6 @@ func main() {
 		quitChan <- 0
 	}()
 
-	guiOptions := gui.GUIOptions{VRAMViewer: false}
+	guiOptions := gui.GUIOptions{VRAMViewer: vramViewer}
 	os.Exit(gui.GUIStart(guiOptions, gameBoy, quitChan))
 }
