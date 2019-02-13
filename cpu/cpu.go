@@ -197,7 +197,7 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 
 func (cpu *CPU) DMATransfert(baseSrcAddress uint8) {
 	for i := uint16(0); i < 0xa0; i++ {
-		srcAddress := uint16(baseSrcAddress) + i
+		srcAddress := uint16(baseSrcAddress)<<8 + i
 		dstAddress := 0xfe00 + i
 		cpu.mem.Write(dstAddress, cpu.mem.Read(srcAddress))
 	}
