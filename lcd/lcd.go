@@ -162,7 +162,7 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 
 		// TODO BG WRAP
 
-		if tileDataAddress == 0x9000 {
+		if tileDataBaseAddr == 0x9000 {
 			// signed addressing
 			tileNumber = int16(int8(lcd.memory.Read(tileAddress)))
 		} else {
