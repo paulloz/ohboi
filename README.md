@@ -2,7 +2,7 @@ A simple GB emulator written for fun in Go.
 
 ## Current Blargg's Gameboy hardware test ROMs status
 
-* cpu_instrs
+* [x] cpu_instrs
   * [x] 01-special
   * [x] 02-interrupts
   * [x] 03-op sp,hl
@@ -14,6 +14,17 @@ A simple GB emulator written for fun in Go.
   * [x] 09-op r,r
   * [x] 10-bit ops
   * [x] 11-op a,(hl)
+* instr_timing
+  * Failed #255
+* interrupt_time
+  * Failed
+* mem_timing
+  * 01-read_timing
+    * Seems like it's getting stuck in a loop
+  * 02-write_timing
+    * Seems like it's getting stuck in a loop
+  * 03-modify_timing
+    * Seems like it's getting stuck in a loop
 
 ## Resources
 
