@@ -95,5 +95,40 @@ func init() {
 			},
 			Cycles: 4,
 		},
+		op.DAA: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				a := int16(cpu.A.Get())
+
+				if !cpu.GetNFlag() {
+					if cpu.GetHFlag() || ((a & 0x0f) > 9) {
+						a += 6
+					}
+					if cpu.GetCFlag() || (a > 0x9f) {
+						a += 0x60
+					}
+				} else {
+					if cpu.GetHFlag() {
+						a -= 6
+						if !cpu.GetCFlag() {
+							a &= 0xff
+						}
+					}
+					if cpu.GetCFlag() {
+						a -= 0x60
+					}
+				}
+
+				cpu.A.Set(uint8(a & 0xff))
+
+				cpu.SetZFlag(cpu.A.Get() == 0)
+				if a&0x100 != 0 {
+					cpu.SetCFlag(true)
+				}
+				cpu.SetHFlag(false)
+
+				return nil
+			},
+			Cycles: 4,
+		},
 	})
 }
