@@ -21,6 +21,7 @@ const (
 type backend interface {
 	Initialize(string)
 	Render([Width * Height]color)
+	Destroy()
 }
 
 type LCD struct {
@@ -231,6 +232,10 @@ func (lcd *LCD) Update(cycles uint32) {
 
 func (lcd *LCD) RenderFrame() {
 	lcd.backend.Render(lcd.renderData)
+}
+
+func (lcd *LCD) Destroy() {
+	lcd.backend.Destroy()
 }
 
 func NewLCD(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *LCD {

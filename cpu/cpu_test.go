@@ -3,176 +3,49 @@ package cpu_test
 import (
 	"testing"
 
-	"github.com/paulloz/ohboi/cartridge"
-	"github.com/paulloz/ohboi/cpu"
-	op "github.com/paulloz/ohboi/cpu/opcodes"
-	"github.com/paulloz/ohboi/io"
-	"github.com/paulloz/ohboi/memory"
+	"github.com/paulloz/ohboi/test"
 )
 
-type testScenario struct {
-	bytecode []byte
-	instr    uint
-	cycles   uint32
-	setup    func(*cpu.CPU, *memory.Memory)
-	checks   []check
+func TestRom01Special(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/01-special.gb", t)
 }
 
-func newTestCPU(scenario testScenario) func(t *testing.T) {
-	return func(t *testing.T) {
-		data := make([]byte, 256+len(scenario.bytecode))
-		copy(data[256:], scenario.bytecode)
-
-		rom := cartridge.NewROM(data)
-
-		io := io.NewIO()
-
-		memory := memory.NewMemory(io)
-		memory.LoadCartridge(&cartridge.Cartridge{MBC: rom})
-
-		cpu := cpu.NewCPU(memory, io)
-		cpu.PC = 0x100
-
-		if scenario.setup != nil {
-			scenario.setup(cpu, memory)
-		}
-
-		cycles := uint32(0)
-		for instr := uint(0); instr < scenario.instr; instr++ {
-			c, err := cpu.ExecuteOpCode()
-			if err != nil {
-				t.Error(err)
-			}
-			cycles += c
-		}
-
-		if scenario.cycles != 0 {
-			if cycles != scenario.cycles {
-				t.Errorf("Expected to take %d cycles, got %d", scenario.cycles, cycles)
-			}
-		}
-
-		for _, check := range scenario.checks {
-			check.Check(t, cpu, memory)
-		}
-	}
+func TestRom02Interrupts(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/02-interrupts.gb", t)
 }
 
-type check interface {
-	Check(*testing.T, *cpu.CPU, *memory.Memory)
+func TestRom03OPSPHL(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/03-op sp,hl.gb", t)
 }
 
-type memoryCheck struct {
-	address uint16
-	value   uint8
+func TestRom04OPRIMM(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/04-op r,imm.gb", t)
 }
 
-func (c memoryCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	b := mem.Read(c.address)
-	if b != c.value {
-		t.Errorf("Expected memory 0x%x to contain 0x%x. got 0x%x", c.address, c.value, b)
-	}
+func TestRom05OPRP(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/05-op rp.gb", t)
 }
 
-func newMemoryCheck(address uint16, value uint8) memoryCheck {
-	return memoryCheck{address: address, value: value}
+func TestRom06LDRR(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/06-ld r,r.gb", t)
 }
 
-type memoryWordCheck struct {
-	address uint16
-	value   uint16
+func TestRom07JRJPCALLRETRST(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/07-jr,jp,call,ret,rst.gb", t)
 }
 
-func (c memoryWordCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	word := mem.ReadWord(c.address)
-	if word != c.value {
-		t.Errorf("Expected memory 0x%x to contain 0x%x. got 0x%x", c.address, c.value, word)
-	}
+func TestRom08MISC(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/08-misc instrs.gb", t)
 }
 
-func newMemoryWordCheck(address uint16, value uint16) memoryWordCheck {
-	return memoryWordCheck{address: address, value: value}
+func TestRom09OPRR(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/09-op r,r.gb", t)
 }
 
-type pcCheck struct{ value uint16 }
-
-func (c pcCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	if cpu.PC != c.value {
-		t.Errorf("Expected PC to contain 0x%x, got 0x%x", c.value, cpu.PC)
-	}
+func TestRom10BIT(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/10-bit ops.gb", t)
 }
 
-func newPCCheck(value uint16) pcCheck {
-	return pcCheck{value: value}
-}
-
-type registerCheck struct {
-	name  string
-	g     cpu.Getter
-	value uint8
-}
-
-func (c registerCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	if c.g.Get(cpu) != c.value {
-		t.Errorf("Expected %s to contain 0x%x, got 0x%x", c.name, c.value, c.g.Get(cpu))
-	}
-}
-
-func newRegisterCheck(name string, g cpu.Getter, value uint8) registerCheck {
-	return registerCheck{value: value, g: g, name: name}
-}
-
-type register16Check struct {
-	name  string
-	g     cpu.Getter16
-	value uint16
-}
-
-func (c register16Check) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	if c.g.Get(cpu) != c.value {
-		t.Errorf("Expected %s to contain 0x%x, got 0x%x", c.name, c.value, c.g.Get(cpu))
-	}
-}
-
-func newRegister16Check(name string, g cpu.Getter16, value uint16) register16Check {
-	return register16Check{value: value, g: g, name: name}
-}
-
-type carryFlagSetCheck struct{}
-
-func (c carryFlagSetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	if !cpu.GetCFlag() {
-		t.Errorf("Expected C flag to be set")
-	}
-}
-
-type carryFlagResetCheck struct{}
-
-func (c carryFlagResetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	if cpu.GetCFlag() {
-		t.Errorf("Expected C flag to be reset")
-	}
-}
-
-type zeroFlagSetCheck struct{}
-
-func (c zeroFlagSetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	if !cpu.GetZFlag() {
-		t.Errorf("Expected Z flag to be set")
-	}
-}
-
-type zeroFlagResetCheck struct{}
-
-func (c zeroFlagResetCheck) Check(t *testing.T, cpu *cpu.CPU, mem *memory.Memory) {
-	if cpu.GetZFlag() {
-		t.Errorf("Expected Z flag to be reset")
-	}
-}
-
-func TestOpcodeNoop(t *testing.T) {
-	newTestCPU(testScenario{
-		bytecode: []byte{op.NOOP},
-		instr:    1,
-	})(t)
+func TestRom11OPA(t *testing.T) {
+	test.ExecuteROMTest("cpu_instrs/individual/11-op a,(hl).gb", t)
 }
