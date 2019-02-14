@@ -111,7 +111,7 @@ func (m *vramViewer) initialize(id int) {
 			X: 0,
 			Y: 0,
 			W: (m.nTiles.x * m.tileSize.x) + (m.tileSize.x * 2) + m.previewSize.x,
-			H: m.nTiles.y * m.tileSize.y,
+			H: m.nTiles.y * m.tileSize.y * 2,
 		}
 
 		m.previewRect = sdl.Rect{
@@ -142,7 +142,7 @@ func (m *vramViewer) initialize(id int) {
 	m.renderer.SetScale(m.scale, m.scale)
 
 	sdl.Do(func() {
-		for i := int32(0); i < m.nTiles.x*m.nTiles.y; i++ {
+		for i := int32(0); i < m.nTiles.x*m.nTiles.y*2; i++ {
 			tile, err := m.renderer.CreateTexture(sdl.PIXELFORMAT_RGB888, sdl.TEXTUREACCESS_STREAMING, m.tileSize.x, m.tileSize.y)
 			if err != nil {
 				panic(err)
@@ -162,7 +162,7 @@ func (m *vramViewer) destroy() {
 func newVRAMViewer() *vramViewer {
 	return &vramViewer{
 		scale:       2.0,
-		nTiles:      point{x: 16, y: 18},
+		nTiles:      point{x: 16, y: 16},
 		tileSize:    point{x: 8, y: 8},
 		previewSize: point{x: 32, y: 32},
 	}
