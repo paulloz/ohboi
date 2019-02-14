@@ -214,7 +214,9 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 
 			tileData := lcd.memory.ReadWord(tileDataAddress + (uint16(line) % 8 * 2))
 			shade := ((tileData >> bit & 1) << 1) | (tileData >> (bit + 8) & 1)
-			lcd.workData[int(scanline)*Width+int(x)] = palette[shade]
+			if shade > 0 {
+				lcd.workData[int(scanline)*Width+int(x)] = palette[shade]
+			}
 			x++
 		}
 
