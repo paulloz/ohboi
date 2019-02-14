@@ -12,6 +12,7 @@ import (
 
 var (
 	romFilename string
+	colorTheme  string
 	vramViewer  bool
 	skipBoot    bool
 	gameBoy     *gameboy.GameBoy
@@ -22,6 +23,7 @@ func init() {
 	flag.BoolVar(&vramViewer, "vramViewer", false, "enable VRAM viewer")
 	flag.BoolVar(&skipBoot, "skipBoot", true, "skip boot")
 	flag.IntVar(&lcd.Scale, "scale", 2, "scale")
+	flag.StringVar(&colorTheme, "theme", "green", "color theme (grey, green)")
 	flag.Parse()
 
 	if len(romFilename) <= 0 {
@@ -31,6 +33,13 @@ func init() {
 
 func main() {
 	quitChan := make(chan int)
+
+	switch colorTheme {
+	case "green":
+		lcd.CurrentPalette = lcd.Greens
+	case "sgb":
+		lcd.CurrentPalette = lcd.SuperGameboy
+	}
 
 	gameBoy = gameboy.NewGameBoy(skipBoot)
 
