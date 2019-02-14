@@ -225,8 +225,6 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 		}
 
 		displayed++
-
-		return
 	}
 }
 
