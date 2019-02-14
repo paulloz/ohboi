@@ -38,12 +38,12 @@ func newSDL2(samples uint16) *sdl2 {
 
 	want = &sdl.AudioSpec{
 		Freq:     consts.APUSampleRate,
-		Format:   sdl.AUDIO_S16LSB,
+		Format:   sdl.AUDIO_U8,
 		Channels: 2,
 		Samples:  samples,
 	}
 
-	dev, err = sdl.OpenAudioDevice("", false, want, have, sdl.AUDIO_ALLOW_FORMAT_CHANGE)
+	dev, err = sdl.OpenAudioDevice("", false, want, have, 0)
 	if err != nil {
 		panic(err)
 	}
