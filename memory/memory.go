@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	VRAMAddr            = 0x8000
-	SwitchableRAMAddr   = 0xa000
-	InternalRAMAddr     = 0xc000
-	EchoInternalRAMAddr = 0xe000
-	OAMAddr             = 0xfe00
-	IOPortsAddr         = 0xff00
-	InternalRAM2Addr    = 0xff80
+	VRAMAddr            uint16 = 0x8000
+	SwitchableRAMAddr   uint16 = 0xa000
+	InternalRAMAddr     uint16 = 0xc000
+	EchoInternalRAMAddr uint16 = 0xe000
+	OAMAddr             uint16 = 0xfe00
+	IOPortsAddr         uint16 = 0xff00
+	InternalRAM2Addr    uint16 = 0xff80
 )
 
 type Memory struct {

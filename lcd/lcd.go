@@ -2,6 +2,7 @@ package lcd
 
 import (
 	"os"
+	"sort"
 
 	"github.com/paulloz/ohboi/bits"
 	"github.com/paulloz/ohboi/cpu"
@@ -15,7 +16,9 @@ const (
 
 	Scale = 2
 
-	ScanlineFrequency = 456
+	ScanlineFrequency   = 456
+	SpritesCount        = 40
+	MaxDisplayedSprites = 10
 )
 
 type backend interface {
@@ -132,6 +135,105 @@ func (lcd *LCD) getBackgroundConf(scanline uint8) (uint16, uint16, bool, uint16)
 	return uint16(0x9000), bgData, window, windowData
 }
 
+type Sprite struct {
+	X, Y    uint8
+	Pattern uint8
+	Flags   uint8
+}
+
+type SpriteList [40]Sprite
+
+func (l *SpriteList) Len() int {
+	return 40
+}
+
+func (l *SpriteList) Swap(i, j int) {
+	tmp := l[i]
+	l[i] = l[j]
+	l[j] = tmp
+}
+
+func (l *SpriteList) Less(i, j int) bool {
+	switch {
+	case l[i].X < l[j].X:
+		return true
+	case l[i].X == l[j].X:
+		return i < j
+	default:
+		return false
+	}
+}
+func (lcd *LCD) drawSprites(scanline uint8) {
+	var palette [4]Color
+	var sprites SpriteList
+
+	for i := uint16(0); i < SpritesCount; i++ {
+		sprites[i] = Sprite{
+			Y:       lcd.memory.Read(memory.OAMAddr + i*4),
+			X:       lcd.memory.Read(memory.OAMAddr + i*4 + 1),
+			Pattern: lcd.memory.Read(memory.OAMAddr + i*4 + 2),
+			Flags:   lcd.memory.Read(memory.OAMAddr + i*4 + 3),
+		}
+	}
+	sort.Sort(&sprites)
+
+	spriteHeight := uint8(8)
+	patternMask := uint8(0xff)
+	if lcd.io.ReadBit(io.STAT, 2) {
+		spriteHeight = 16
+		patternMask = 0xfe
+	}
+
+	x, displayed := int16(0), 0
+	for i := uint16(0); i < SpritesCount && displayed < MaxDisplayedSprites; i++ {
+		sprite := &sprites[i]
+		spriteY := int16(sprite.Y) - 16
+
+		if (sprite.X == 0 && sprite.Y == 0) ||
+			(int16(scanline) < spriteY) ||
+			(int16(scanline) >= spriteY+int16(spriteHeight)) {
+			continue
+		}
+
+		if x = int16(sprite.X - 8); x >= Width {
+			break
+		}
+
+		if bits.Test(4, sprite.Flags) {
+			palette = lcd.getPalette(io.OBP1)
+		} else {
+			palette = lcd.getPalette(io.OBP0)
+		}
+
+		tileDataAddress := memory.VRAMAddr + uint16(sprite.Pattern&patternMask)*16
+		flipX := bits.Test(5, sprite.Flags)
+		flipY := bits.Test(6, sprite.Flags)
+
+		line := scanline - (sprite.Y - 16)
+		if flipY {
+			line = spriteHeight - line - 1
+		}
+
+		for j := uint8(0); j < 8 && x >= 0 && x < Width; j++ {
+			var bit uint8
+			if flipX {
+				bit = j
+			} else {
+				bit = 7 - j
+			}
+
+			tileData := lcd.memory.ReadWord(tileDataAddress + (uint16(line) % 8 * 2))
+			shade := ((tileData >> bit & 1) << 1) | (tileData >> (bit + 8) & 1)
+			lcd.workData[int(scanline)*Width+int(x)] = palette[shade]
+			x++
+		}
+
+		displayed++
+
+		return
+	}
+}
+
 func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 	tileDataBaseAddr, bgData, window, windowData := lcd.getBackgroundConf(scanline)
 	winX := lcd.io.Read(io.WX) - 7
@@ -187,7 +289,8 @@ func (lcd *LCD) drawScanline(scanline uint8) {
 		lcd.drawBackgroundTiles(scanline)
 	}
 
-	if bits.Test(5, lcdc) {
+	if bits.Test(1, lcdc) {
+		lcd.drawSprites(scanline)
 	}
 }
 
