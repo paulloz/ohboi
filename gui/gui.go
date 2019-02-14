@@ -103,7 +103,7 @@ func GUIStart(options GUIOptions, gb *gameboy.GameBoy, quitChan chan int) int {
 }
 
 func init() {
-	err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_EVENTS | sdl.INIT_TIMER)
+	err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_EVENTS | sdl.INIT_TIMER | sdl.INIT_AUDIO)
 	if err != nil {
 		panic(err)
 	}

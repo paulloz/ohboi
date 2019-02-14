@@ -48,6 +48,7 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 		currentInstrCycles += opCycles
 
 		gb.lcd.Update(currentInstrCycles)
+		gb.apu.Update(currentInstrCycles)
 
 		gb.cpu.UpdateDIV(currentInstrCycles)
 		gb.UpdateTimers(currentInstrCycles)
@@ -149,6 +150,7 @@ func (gb *GameBoy) PowerOn(stop chan int) {
 
 func (gb *GameBoy) PowerOff() {
 	gb.lcd.Destroy()
+	gb.apu.Destroy()
 }
 
 func NewGameBoy(skipBoot bool) *GameBoy {

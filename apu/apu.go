@@ -1,13 +1,127 @@
 package apu
 
 import (
+	"github.com/paulloz/ohboi/bits"
+	"github.com/paulloz/ohboi/consts"
 	"github.com/paulloz/ohboi/io"
+)
+
+type backend interface {
+	Output([BufferSize]byte)
+	Destroy()
+}
+
+const (
+	BufferSize = 1024
 )
 
 type APU struct {
 	io *io.IO
+
+	backend backend
+
+	cycles uint32
+
+	buffer         [BufferSize]byte
+	bufferIterator int
+
+	channels []channel
+	active   bool
+
+	volume struct {
+		left  float64
+		right float64
+	}
 }
 
-func NewAPU(io *io.IO) *APU {
-	return &APU{io: io}
+func (apu *APU) Update(cycles uint32) {
+	apu.cycles += cycles
+
+	if apu.cycles >= consts.CPUCyclesPerAPUSample {
+		// SAMPLE TIME!
+
+		apu.cycles -= consts.CPUCyclesPerAPUSample
+
+		var value uint16
+
+		for _, channel := range apu.channels {
+			value += channel.Sample()
+		}
+
+		value /= uint16(len(apu.channels))
+
+		volume := (apu.volume.left + apu.volume.right) / 2 // not sure this division is right
+
+		apu.buffer[apu.bufferIterator] = byte(float64(value) * volume)
+
+		apu.bufferIterator++
+		if apu.bufferIterator >= BufferSize {
+			// Buffer is full, send it and start over
+
+			apu.backend.Output(apu.buffer)
+			apu.bufferIterator = 0
+			apu.buffer = [BufferSize]byte{}
+		}
+	}
+}
+
+func (apu *APU) Destroy() {
+	apu.backend.Destroy()
+}
+
+func (apu *APU) ReadNR52() uint8 {
+	val := bits.FromBool(apu.active) << 7
+	for i := uint8(0); i < 4; i++ {
+		val |= bits.FromBool(apu.channels[i].IsActive()) << i
+	}
+	return val
+}
+
+func (apu *APU) WriteNR52(val uint8) {
+	// only bit 7 is writable
+	apu.active = bits.Test(7, val)
+}
+
+func (apu *APU) ReadNR50() uint8 {
+	// TODO
+	return 0xf
+}
+
+func (apu *APU) WriteNR50(val uint8) {
+	// volume is defined on 3 bits for a value between 0 and 7
+	apu.volume.left = float64(((val >> 4) & 0x07)) / 7
+	apu.volume.right = float64((val & 0x07)) / 7
+}
+
+func NewAPU(io_ *io.IO) *APU {
+	// TODO chan1 should probably extend chan2 as it's basically behaving
+	//		the same way with other shenanigans on top
+	chan1 := newChannel2()
+	chan2 := newChannel2()
+
+	apu := &APU{
+		io: io_,
+
+		backend: newSDL2(BufferSize),
+
+		channels: []channel{
+			chan1,
+			chan2,
+		},
+	}
+
+	io_.MapRegister(io.NR52, apu.ReadNR52, apu.WriteNR52)
+	io_.MapRegister(io.NR50, apu.ReadNR50, apu.WriteNR50)
+
+	// chan1 ports
+	io_.MapRegister(io.NR13, chan1.ReadNR23, chan1.WriteNR23)
+	io_.MapRegister(io.NR14, chan1.ReadNR24, chan1.WriteNR24)
+
+	// chan2 ports
+	io_.MapRegister(io.NR23, chan2.ReadNR23, chan2.WriteNR23)
+	io_.MapRegister(io.NR24, chan2.ReadNR24, chan2.WriteNR24)
+
+	io_.Write(io.NR50, 0x77)
+
+	return apu
 }
