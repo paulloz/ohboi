@@ -10,6 +10,7 @@ type channel interface {
 	Sample() uint16
 
 	IsActive() bool
+	SetActive(bool)
 }
 
 type basechannel struct {
@@ -43,4 +44,8 @@ func (c *basechannel) Sample() (sample uint16) {
 
 func (c *basechannel) IsActive() bool {
 	return c.active
+}
+
+func (c *basechannel) SetActive(b bool) {
+	c.active = b
 }

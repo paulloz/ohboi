@@ -32,6 +32,8 @@ type APU struct {
 		left  float64
 		right float64
 	}
+
+	nr51 uint8
 }
 
 func (apu *APU) Update(cycles uint32) {
@@ -69,6 +71,30 @@ func (apu *APU) Destroy() {
 	apu.backend.Destroy()
 }
 
+func (apu *APU) ReadNR50() uint8 {
+	// TODO
+	return 0xf
+}
+
+func (apu *APU) WriteNR50(val uint8) {
+	// volume is defined on 3 bits for a value between 0 and 7
+	apu.volume.left = float64(((val >> 4) & 0x07)) / 7
+	apu.volume.right = float64((val & 0x07)) / 7
+}
+
+func (apu *APU) ReadNR51() uint8 {
+	return apu.nr51
+}
+
+func (apu *APU) WriteNR51(val uint8) {
+	apu.nr51 = val
+
+	n := uint8(len(apu.channels))
+	for i := uint8(0); i < n; i++ {
+		apu.channels[i].SetActive(bits.Test(i, apu.nr51) || bits.Test(i, apu.nr51))
+	}
+}
+
 func (apu *APU) ReadNR52() uint8 {
 	val := bits.FromBool(apu.active) << 7
 	for i := uint8(0); i < 4; i++ {
@@ -80,17 +106,6 @@ func (apu *APU) ReadNR52() uint8 {
 func (apu *APU) WriteNR52(val uint8) {
 	// only bit 7 is writable
 	apu.active = bits.Test(7, val)
-}
-
-func (apu *APU) ReadNR50() uint8 {
-	// TODO
-	return 0xf
-}
-
-func (apu *APU) WriteNR50(val uint8) {
-	// volume is defined on 3 bits for a value between 0 and 7
-	apu.volume.left = float64(((val >> 4) & 0x07)) / 7
-	apu.volume.right = float64((val & 0x07)) / 7
 }
 
 func NewAPU(io_ *io.IO) *APU {
@@ -110,8 +125,9 @@ func NewAPU(io_ *io.IO) *APU {
 		},
 	}
 
-	io_.MapRegister(io.NR52, apu.ReadNR52, apu.WriteNR52)
 	io_.MapRegister(io.NR50, apu.ReadNR50, apu.WriteNR50)
+	io_.MapRegister(io.NR51, apu.ReadNR51, apu.WriteNR51)
+	io_.MapRegister(io.NR52, apu.ReadNR52, apu.WriteNR52)
 
 	// chan1 ports
 	io_.MapRegister(io.NR13, chan1.ReadNR23, chan1.WriteNR23)
