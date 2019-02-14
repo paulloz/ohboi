@@ -5,17 +5,13 @@ import (
 	"sort"
 
 	"github.com/paulloz/ohboi/bits"
+	"github.com/paulloz/ohboi/consts"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
 )
 
 const (
-	Width  = 160
-	Height = 144
-
-	Scale = 2
-
 	ScanlineFrequency   = 456
 	SpritesCount        = 40
 	MaxDisplayedSprites = 10
@@ -23,7 +19,7 @@ const (
 
 type backend interface {
 	Initialize(string)
-	Render([Width * Height]Color)
+	Render([consts.ScreenWidth * consts.ScreenHeight]Color)
 	Destroy()
 }
 
@@ -37,8 +33,8 @@ type LCD struct {
 	scanlineCounter   uint32
 	lastDrawnScanline uint8
 
-	workData   [Width * Height]Color
-	renderData [Width * Height]Color
+	workData   [consts.ScreenWidth * consts.ScreenHeight]Color
+	renderData [consts.ScreenWidth * consts.ScreenHeight]Color
 }
 
 func (lcd *LCD) setLCDSTAT() {
@@ -185,7 +181,7 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 			continue
 		}
 
-		if x = int16(sprite.X - 8); x >= Width {
+		if x = int16(sprite.X - 8); x >= consts.ScreenWidth {
 			break
 		}
 
@@ -204,7 +200,7 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 			line = spriteHeight - line - 1
 		}
 
-		for j := uint8(0); j < 8 && x >= 0 && x < Width; j++ {
+		for j := uint8(0); j < 8 && x >= 0 && x < consts.ScreenWidth; j++ {
 			var bit uint8
 			if flipX {
 				bit = j
@@ -215,7 +211,8 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 			tileData := lcd.memory.ReadWord(tileDataAddress + (uint16(line) % 8 * 2))
 			shade := ((tileData >> bit & 1) << 1) | (tileData >> (bit + 8) & 1)
 			if shade > 0 {
-				lcd.workData[int(scanline)*Width+int(x)] = palette[shade]
+				index := (int(scanline) * consts.ScreenWidth) + int(x)
+				lcd.workData[index] = palette[shade]
 			}
 			x++
 		}
@@ -232,7 +229,7 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 	winY := lcd.io.Read(io.WY)
 	colorPalette := lcd.getPalette(io.BGP)
 
-	for i := uint16(0); i < Width; i++ {
+	for i := uint16(0); i < consts.ScreenWidth; i++ {
 		var x, y, tileAddress, tileDataAddress uint16
 		var tileNumber int16
 
@@ -270,7 +267,8 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 		bit := uint8((int8(x%8) - 7) * -1)
 		shade := ((tileData >> bit & 1) << 1) | (tileData >> (bit + 8) & 1)
 
-		lcd.workData[int(scanline)*Width+int(i)] = colorPalette[shade]
+		index := (int(scanline) * consts.ScreenWidth) + int(i)
+		lcd.workData[index] = colorPalette[shade]
 	}
 }
 
@@ -287,7 +285,7 @@ func (lcd *LCD) drawScanline(scanline uint8) {
 }
 
 func (lcd *LCD) clearScreen() {
-	for i := 0; i < Width*Height; i++ {
+	for i := 0; i < (consts.ScreenWidth * consts.ScreenHeight); i++ {
 		lcd.workData[i] = Greys[0]
 	}
 }
@@ -302,7 +300,7 @@ func (lcd *LCD) Update(cycles uint32) {
 
 	lcd.scanlineCounter += cycles
 	if lcd.scanlineCounter >= ScanlineFrequency {
-		lcd.scanlineCounter = 0
+		lcd.scanlineCounter -= ScanlineFrequency
 
 		ly := lcd.io.Read(io.LY) + 1
 		lcd.io.Write(io.LY, ly)
@@ -343,7 +341,7 @@ func NewLCD(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *LCD {
 		io:     io_,
 
 		scanlineCounter:   0,
-		lastDrawnScanline: Height,
+		lastDrawnScanline: consts.ScreenHeight,
 	}
 
 	lcd.clearScreen()

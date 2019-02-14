@@ -5,18 +5,12 @@ import (
 
 	"github.com/paulloz/ohboi/apu"
 	"github.com/paulloz/ohboi/bits"
+	"github.com/paulloz/ohboi/consts"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/joypad"
 	"github.com/paulloz/ohboi/lcd"
 	"github.com/paulloz/ohboi/memory"
-)
-
-// Speed constants
-const (
-	ClockSpeed     = uint32(4194304)  // Cycles per second
-	FPS            = 60               // We want to run at 60FPS
-	CyclesPerFrame = ClockSpeed / FPS // Cycles per frame
 )
 
 type GameBoy struct {
@@ -43,7 +37,7 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 
 	gb.joypad.Update()
 
-	for cycles = 0; cycles < CyclesPerFrame; {
+	for cycles = 0; cycles < consts.CPUCyclesPerFrame; {
 		debuggerStep()
 
 		// Execute instruction
@@ -130,12 +124,11 @@ func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
 }
 
 func (gb *GameBoy) PowerOn(stop chan int) {
-	ticker := time.NewTicker(time.Second / FPS).C
+	ticker := time.NewTicker(time.Second / consts.FPS).C
 
 	debuggerStart(gb)
 
 	start := time.Now()
-	frames := 0
 
 	pendingCycles := uint32(0)
 
@@ -144,10 +137,8 @@ func (gb *GameBoy) PowerOn(stop chan int) {
 		case <-ticker:
 			_, pendingCycles = gb.Update(pendingCycles)
 
-			frames++
 			if time.Since(start) > time.Second {
 				start = time.Now()
-				frames = 0
 			}
 		case <-stop:
 			gb.PowerOff()
