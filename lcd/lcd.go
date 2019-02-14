@@ -16,9 +16,6 @@ var (
 )
 
 const (
-	Width  = 160
-	Height = 144
-
 	ScanlineFrequency   = 456
 	SpritesCount        = 40
 	MaxDisplayedSprites = 10
@@ -42,6 +39,7 @@ type LCD struct {
 
 	workData   [consts.ScreenWidth * consts.ScreenHeight]Color
 	renderData [consts.ScreenWidth * consts.ScreenHeight]Color
+	pixels     [consts.ScreenWidth * consts.ScreenHeight]uint8
 }
 
 func (lcd *LCD) setLCDSTAT() {
@@ -199,8 +197,9 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 		}
 
 		tileDataAddress := memory.VRAMAddr + uint16(sprite.Pattern&patternMask)*16
-		flipX := bits.Test(5, sprite.Flags)
-		flipY := bits.Test(6, sprite.Flags)
+		priority := bits.Test(7, sprite.Flags)
+		flipX := bits.Test(6, sprite.Flags)
+		flipY := bits.Test(5, sprite.Flags)
 
 		line := scanline - (sprite.Y - 16)
 		if flipY {
@@ -216,11 +215,13 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 			}
 
 			tileData := lcd.memory.ReadWord(tileDataAddress + (uint16(line) % 8 * 2))
-			shade := ((tileData >> bit & 1) << 1) | (tileData >> (bit + 8) & 1)
-			if shade > 0 {
-				index := (int(scanline) * consts.ScreenWidth) + int(x)
-				lcd.workData[index] = palette[shade]
+			shade := ((tileData >> bit & 1) | (tileData>>(bit+8)&1)<<1)
+
+			if shade != 0 && (!priority || lcd.pixels[int(scanline)*consts.ScreenWidth+int(x)] == 0) {
+				offset := int(scanline)*consts.ScreenWidth + int(x)
+				lcd.workData[offset] = palette[shade]
 			}
+
 			x++
 		}
 
@@ -270,10 +271,10 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 		tileData := lcd.memory.ReadWord(tileDataAddress + uint16(line))
 
 		bit := uint8((int8(x%8) - 7) * -1)
-		shade := ((tileData >> bit & 1) << 1) | (tileData >> (bit + 8) & 1)
+		shade := (tileData >> bit & 1) | ((tileData >> (bit + 8) & 1) << 1)
 
-		index := (int(scanline) * consts.ScreenWidth) + int(i)
-		lcd.workData[index] = colorPalette[shade]
+		lcd.workData[int(scanline)*consts.ScreenWidth+int(i)] = colorPalette[shade]
+		lcd.pixels[int(scanline)*consts.ScreenWidth+int(i)] = uint8(shade)
 	}
 }
 
@@ -291,7 +292,7 @@ func (lcd *LCD) drawScanline(scanline uint8) {
 
 func (lcd *LCD) clearScreen() {
 	for i := 0; i < (consts.ScreenWidth * consts.ScreenHeight); i++ {
-		lcd.workData[i] = Greys[0]
+		lcd.workData[i] = CurrentPalette[0]
 	}
 }
 
