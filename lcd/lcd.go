@@ -169,7 +169,7 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 
 	spriteHeight := uint8(8)
 	patternMask := uint8(0xff)
-	if lcd.io.ReadBit(io.STAT, 2) {
+	if lcd.io.ReadBit(io.LDCD, 2) {
 		spriteHeight = 16
 		patternMask = 0xfe
 	}
