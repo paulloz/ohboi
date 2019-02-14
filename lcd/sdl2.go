@@ -12,18 +12,14 @@ type sdl2 struct {
 }
 
 func (sdl2 *sdl2) Render(pixels [Width * Height]Color) {
-	buffer, _, err := sdl2.texture.Lock(sdl2.screenRect)
+	buffer := [len(pixels)]uint32{}
+	for i, pixel := range pixels {
+		buffer[i] = (uint32(pixel.R) << 24) | (uint32(pixel.G) << 16) | (uint32(pixel.B) << 8) | 0xff
+	}
+	err := sdl2.texture.UpdateRGBA(sdl2.screenRect, buffer[:], Width)
 	if err != nil {
 		panic(err)
 	}
-
-	for i, pixel := range pixels {
-		buffer[i*4] = pixel.R
-		buffer[i*4+1] = pixel.G
-		buffer[i*4+2] = pixel.B
-	}
-
-	sdl2.texture.Unlock()
 
 	sdl2.renderer.Clear()
 	sdl2.renderer.Copy(sdl2.texture, sdl2.screenRect, sdl2.screenRect)
@@ -48,7 +44,7 @@ func (sdl2 *sdl2) Initialize(windowName string) {
 	fScale := float32(Scale)
 	renderer.SetScale(fScale, fScale)
 
-	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB888, sdl.TEXTUREACCESS_STREAMING, Width, Height)
+	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGBA8888, sdl.TEXTUREACCESS_STREAMING, Width, Height)
 	if err != nil {
 		panic(err)
 	}
