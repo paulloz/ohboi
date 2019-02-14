@@ -7,17 +7,21 @@ import (
 
 	"github.com/paulloz/ohboi/gameboy"
 	"github.com/paulloz/ohboi/gui"
+	"github.com/paulloz/ohboi/lcd"
 )
 
 var (
 	romFilename string
 	vramViewer  bool
+	skipBoot    bool
 	gameBoy     *gameboy.GameBoy
 )
 
 func init() {
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
 	flag.BoolVar(&vramViewer, "vramViewer", false, "enable VRAM viewer")
+	flag.BoolVar(&skipBoot, "skipBoot", true, "skip boot")
+	flag.IntVar(&lcd.Scale, "scale", 2, "scale")
 	flag.Parse()
 
 	if len(romFilename) <= 0 {
@@ -28,7 +32,7 @@ func init() {
 func main() {
 	quitChan := make(chan int)
 
-	gameBoy = gameboy.NewGameBoy(true)
+	gameBoy = gameboy.NewGameBoy(skipBoot)
 
 	go func() {
 		if len(romFilename) > 0 {

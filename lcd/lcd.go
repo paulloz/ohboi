@@ -11,7 +11,14 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
+var (
+	Scale = 2
+)
+
 const (
+	Width  = 160
+	Height = 144
+
 	ScanlineFrequency   = 456
 	SpritesCount        = 40
 	MaxDisplayedSprites = 10
