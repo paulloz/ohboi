@@ -104,16 +104,6 @@ func (lcd *LCD) setLCDSTAT() {
 	lcd.io.Write(io.STAT, stat)
 }
 
-func (lcd *LCD) getPalette(ioAddr uint8) [4]Color {
-	palette := lcd.io.Read(ioAddr)
-	colorPalette := [4]Color{}
-	for i := uint8(0); i < 8; i += 2 {
-		shade := (palette >> i) & 3
-		colorPalette[i/2] = Greys[shade]
-	}
-	return colorPalette
-}
-
 func (lcd *LCD) getBackgroundConf(scanline uint8) (uint16, uint16, bool, uint16) {
 	lcdc := lcd.io.Read(io.LDCD)
 
