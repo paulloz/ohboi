@@ -42,11 +42,18 @@ func (m *vramViewer) update(gb *gameboy.GameBoy, events []sdl.Event) {
 		}
 	}
 
+	greys := [4][3]uint8{
+		{255, 255, 255},
+		{170, 170, 170},
+		{85, 85, 85},
+		{0, 0, 0},
+	}
+
 	palette := gb.Memory.Read(0xff47)
 	c := [4][3]uint8{}
 	for i := uint8(0); i < 8; i += 2 {
-		shade := (palette >> i) & 0xff
-		c[i/2] = [3]uint8{shade, shade, shade}
+		shade := (palette >> i) & 3
+		c[i/2] = greys[shade]
 	}
 
 	sdl.Do(func() {

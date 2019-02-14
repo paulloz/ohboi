@@ -20,7 +20,7 @@ const (
 
 type backend interface {
 	Initialize(string)
-	Render([Width * Height]color)
+	Render([Width * Height]Color)
 	Destroy()
 }
 
@@ -34,8 +34,8 @@ type LCD struct {
 	scanlineCounter   uint32
 	lastDrawnScanline uint8
 
-	workData   [Width * Height]color
-	renderData [Width * Height]color
+	workData   [Width * Height]Color
+	renderData [Width * Height]Color
 }
 
 func (lcd *LCD) setLCDSTAT() {
@@ -101,12 +101,12 @@ func (lcd *LCD) setLCDSTAT() {
 	lcd.io.Write(io.STAT, stat)
 }
 
-func (lcd *LCD) getPalette(ioAddr uint8) [4]color {
+func (lcd *LCD) getPalette(ioAddr uint8) [4]Color {
 	palette := lcd.io.Read(ioAddr)
-	colorPalette := [4]color{}
+	colorPalette := [4]Color{}
 	for i := uint8(0); i < 8; i += 2 {
-		shade := (palette >> i) & 0xff
-		colorPalette[i/2] = newColor(shade, shade, shade)
+		shade := (palette >> i) & 3
+		colorPalette[i/2] = Greys[shade]
 	}
 	return colorPalette
 }
@@ -192,10 +192,8 @@ func (lcd *LCD) drawScanline(scanline uint8) {
 }
 
 func (lcd *LCD) clearScreen() {
-	palette := lcd.io.Read(io.BGP)
-	shade := palette & 0xff
 	for i := 0; i < Width*Height; i++ {
-		lcd.workData[i] = newColor(shade, shade, shade)
+		lcd.workData[i] = Greys[0]
 	}
 }
 

@@ -11,16 +11,16 @@ type sdl2 struct {
 	screenRect *sdl.Rect
 }
 
-func (sdl2 *sdl2) Render(pixels [Width * Height]color) {
+func (sdl2 *sdl2) Render(pixels [Width * Height]Color) {
 	buffer, _, err := sdl2.texture.Lock(sdl2.screenRect)
 	if err != nil {
 		panic(err)
 	}
 
 	for i, pixel := range pixels {
-		buffer[i*4] = pixel.r
-		buffer[i*4+1] = pixel.g
-		buffer[i*4+2] = pixel.b
+		buffer[i*4] = pixel.R
+		buffer[i*4+1] = pixel.G
+		buffer[i*4+2] = pixel.B
 	}
 
 	sdl2.texture.Unlock()
