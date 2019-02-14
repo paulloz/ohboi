@@ -7,6 +7,7 @@ import (
 	"github.com/paulloz/ohboi/bits"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
+	"github.com/paulloz/ohboi/joypad"
 	"github.com/paulloz/ohboi/lcd"
 	"github.com/paulloz/ohboi/memory"
 )
@@ -24,6 +25,7 @@ type GameBoy struct {
 	io     *io.IO
 	Memory *memory.Memory
 	lcd    *lcd.LCD
+	joypad *joypad.Joypad
 
 	timaClock uint32
 	tac       uint8
@@ -38,6 +40,8 @@ func (gb *GameBoy) Panic(err error) {
 func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 	var cycles uint32
 	var currentInstrCycles = pendingCycles
+
+	gb.joypad.Update()
 
 	for cycles = 0; cycles < CyclesPerFrame; {
 		debuggerStep()
@@ -165,12 +169,15 @@ func NewGameBoy(skipBoot bool) *GameBoy {
 
 	lcd := lcd.NewLCD(cpu, memory, io_)
 
+	joypad := joypad.NewJoypad(cpu, io_)
+
 	gb := &GameBoy{
 		apu:    apu,
 		cpu:    cpu,
 		io:     io_,
 		Memory: memory,
 		lcd:    lcd,
+		joypad: joypad,
 	}
 
 	io_.MapRegister(io.TAC, gb.GetTAC, gb.SetTAC)
