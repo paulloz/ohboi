@@ -39,7 +39,7 @@ func newSDL2(samples uint16) *sdl2 {
 	want = &sdl.AudioSpec{
 		Freq:     consts.APUSampleRate,
 		Format:   sdl.AUDIO_U8,
-		Channels: 2,
+		Channels: 1,
 		Samples:  samples,
 	}
 

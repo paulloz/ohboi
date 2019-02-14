@@ -6,7 +6,7 @@ const (
 	CPUClockSpeed     = uint32(4194304)     // Cycles per second
 	CPUCyclesPerFrame = CPUClockSpeed / FPS // Cycles per frame
 
-	APUSampleRate         = 44100
+	APUSampleRate         = 44032
 	CPUCyclesPerAPUSample = CPUClockSpeed / APUSampleRate
 
 	ScreenWidth  = 160
