@@ -43,6 +43,7 @@ func (c *channel2) updateFrequency() {
 
 func newChannel2() *channel2 {
 	c := &channel2{}
-	c.active = true
+	c.active.left = false
+	c.active.right = false
 	return c
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type backend interface {
-	Output([BufferSize]byte)
+	Output([BufferSize * 2]byte)
 	Destroy()
 }
 
@@ -22,7 +22,7 @@ type APU struct {
 
 	cycles uint32
 
-	buffer         [BufferSize]byte
+	buffer         [BufferSize * 2]byte
 	bufferIterator int
 
 	channels []channel
@@ -44,25 +44,32 @@ func (apu *APU) Update(cycles uint32) {
 
 		apu.cycles -= consts.CPUCyclesPerAPUSample
 
-		var value uint16
+		var valueLeft uint16
+		var valueRight uint16
 
 		for _, channel := range apu.channels {
-			value += channel.Sample()
+			value := channel.Sample()
+			if channel.IsActiveLeft() {
+				valueLeft += value
+			}
+			if channel.IsActiveRight() {
+				valueRight += value
+			}
 		}
 
-		value /= uint16(len(apu.channels))
+		valueLeft /= uint16(len(apu.channels))
+		valueRight /= uint16(len(apu.channels))
 
-		volume := (apu.volume.left + apu.volume.right) / 2 // not sure this division is right
+		apu.buffer[apu.bufferIterator] = byte(float64(valueLeft) * apu.volume.left)         // left
+		apu.buffer[(apu.bufferIterator + 1)] = byte(float64(valueRight) * apu.volume.right) // right
 
-		apu.buffer[apu.bufferIterator] = byte(float64(value) * volume)
-
-		apu.bufferIterator++
-		if apu.bufferIterator >= BufferSize {
+		apu.bufferIterator += 2
+		if apu.bufferIterator >= (BufferSize * 2) {
 			// Buffer is full, send it and start over
 
 			apu.backend.Output(apu.buffer)
 			apu.bufferIterator = 0
-			apu.buffer = [BufferSize]byte{}
+			apu.buffer = [BufferSize * 2]byte{}
 		}
 	}
 }
@@ -91,7 +98,7 @@ func (apu *APU) WriteNR51(val uint8) {
 
 	n := uint8(len(apu.channels))
 	for i := uint8(0); i < n; i++ {
-		apu.channels[i].SetActive(bits.Test(i, apu.nr51) || bits.Test(i, apu.nr51))
+		apu.channels[i].SetActive(bits.Test(i+4, apu.nr51), bits.Test(i, apu.nr51))
 	}
 }
 

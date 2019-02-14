@@ -10,7 +10,9 @@ type channel interface {
 	Sample() uint16
 
 	IsActive() bool
-	SetActive(bool)
+	IsActiveLeft() bool
+	IsActiveRight() bool
+	SetActive(bool, bool)
 }
 
 type basechannel struct {
@@ -19,13 +21,16 @@ type basechannel struct {
 
 	time float64
 
-	active bool
+	active struct {
+		left  bool
+		right bool
+	}
 }
 
 func (c *basechannel) Sample() (sample uint16) {
 	c.time += (c.frequency * (math.Pi * 2)) / consts.APUSampleRate
 
-	if c.active {
+	if c.IsActive() {
 		/*
 		 * 12.5% ( _-------_-------_------- ) -> duty = 0.75
 		 * 25%   ( __------__------__------ ) -> duty = 0.5
@@ -43,9 +48,18 @@ func (c *basechannel) Sample() (sample uint16) {
 }
 
 func (c *basechannel) IsActive() bool {
-	return c.active
+	return c.active.left || c.active.right
 }
 
-func (c *basechannel) SetActive(b bool) {
-	c.active = b
+func (c *basechannel) IsActiveLeft() bool {
+	return c.active.left
+}
+
+func (c *basechannel) IsActiveRight() bool {
+	return c.active.right
+}
+
+func (c *basechannel) SetActive(left bool, right bool) {
+	c.active.left = left
+	c.active.right = right
 }
