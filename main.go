@@ -16,19 +16,29 @@ var (
 	vramViewer  bool
 	skipBoot    bool
 	gameBoy     *gameboy.GameBoy
+	breakpoint  string
 )
 
 func init() {
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
-	flag.BoolVar(&vramViewer, "vramViewer", false, "enable VRAM viewer")
-	flag.BoolVar(&skipBoot, "skipBoot", true, "skip boot")
+	flag.BoolVar(&vramViewer, "vramviewer", false, "enable VRAM viewer")
+	flag.BoolVar(&skipBoot, "skipboot", true, "skip boot")
 	flag.IntVar(&lcd.Scale, "scale", 2, "scale")
 	flag.StringVar(&colorTheme, "theme", "green", "color theme (grey, green)")
+	flag.StringVar(&breakpoint, "breakpoint", "", "breakpoint")
 	flag.Parse()
 
 	if len(romFilename) <= 0 {
 		fmt.Println("No cardbridge inserted...")
 	}
+}
+
+type Const struct {
+	value uint8
+}
+
+func (c *Const) Get() uint8 {
+	return c.value
 }
 
 func main() {
@@ -42,6 +52,11 @@ func main() {
 	}
 
 	gameBoy = gameboy.NewGameBoy(skipBoot)
+
+	if breakpoint != "" {
+		gameboy.AddBreakpoint(breakpoint)
+		gameboy.StepByStep(false)
+	}
 
 	go func() {
 		if len(romFilename) > 0 {
