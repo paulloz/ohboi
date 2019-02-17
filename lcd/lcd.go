@@ -198,8 +198,8 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 
 		tileDataAddress := memory.VRAMAddr + uint16(sprite.Pattern&patternMask)*16
 		priority := bits.Test(7, sprite.Flags)
-		flipX := bits.Test(6, sprite.Flags)
-		flipY := bits.Test(5, sprite.Flags)
+		flipY := bits.Test(6, sprite.Flags)
+		flipX := bits.Test(5, sprite.Flags)
 
 		line := scanline - (sprite.Y - 16)
 		if flipY {
@@ -242,7 +242,7 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 		if window && uint8(i) >= winX {
 			x, tileAddress = i-uint16(winX), windowData
 		} else {
-			x, tileAddress = uint16(lcd.io.Read(io.SCX))+i, bgData
+			x, tileAddress = (uint16(lcd.io.Read(io.SCX))+i)%256, bgData
 		}
 
 		if window {
