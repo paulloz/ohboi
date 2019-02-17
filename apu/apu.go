@@ -11,6 +11,10 @@ type backend interface {
 	Destroy()
 }
 
+var (
+	Backend string
+)
+
 const (
 	BufferSize = 1024
 )
@@ -116,6 +120,14 @@ func (apu *APU) WriteNR52(val uint8) {
 }
 
 func NewAPU(io_ *io.IO) *APU {
+	var backend backend
+	switch Backend {
+	case "sdl2":
+		backend = newSDL2(BufferSize)
+	default:
+		backend = &dummy{}
+	}
+
 	// TODO chan1 should probably extend chan2 as it's basically behaving
 	//		the same way with other shenanigans on top
 	chan1 := newChannel2()
@@ -124,7 +136,7 @@ func NewAPU(io_ *io.IO) *APU {
 	apu := &APU{
 		io: io_,
 
-		backend: newSDL2(BufferSize),
+		backend: backend,
 
 		channels: []channel{
 			chan1,
