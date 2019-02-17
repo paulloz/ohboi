@@ -93,7 +93,7 @@ func NewCartridge(filename string) (*Cartridge, error) {
 	case ROMOnlyType:
 		cartridge.MBC = &ROM{rom: data}
 	case MBC1Type, MBC1RAMType, MBC1RAMBatteryType:
-		ramSize := uint16(0)
+		ramSize, bankMask := uint16(0), uint8(0)
 		switch cartridge.RAMSize {
 		case RAMNone:
 			ramSize = 0 * 1024
@@ -102,11 +102,23 @@ func NewCartridge(filename string) (*Cartridge, error) {
 		case RAM8k:
 			ramSize = 8 * 1024
 		case RAM32k:
-			ramSize = 32 * 1024
+			ramSize, bankMask = 32*1024, 3
 		default:
 			return nil, fmt.Errorf("Unsupported RAM size: %d\n", cartridge.RAMSize)
 		}
-		cartridge.MBC = NewMBC1(data, ramSize)
+
+		var romBanks uint8
+		switch cartridge.ROMSize {
+		case 0x52:
+			romBanks = 72
+		case 0x53:
+			romBanks = 80
+		case 0x54:
+			romBanks = 96
+		default:
+			romBanks = 2 << cartridge.ROMSize
+		}
+		cartridge.MBC = NewMBC1(data, romBanks, ramSize, bankMask)
 	default:
 		return nil, fmt.Errorf("Unsupported cartridge type: %X", cartridge.Type)
 	}
