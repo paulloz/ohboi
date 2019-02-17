@@ -38,7 +38,13 @@ func (c *MBC1) Read(address uint16) uint8 {
 		return c.rom[address-0x4000+c.activeRomBankStart]
 	}
 
-	return c.ram[address-0xA000+c.activeRAMBankStart]
+	if c.isRAMEnabled {
+		if addr := address - 0xA000 + c.activeRAMBankStart; addr < uint16(len(c.ram)) {
+			return c.ram[addr]
+		}
+	}
+
+	return 0xff
 }
 
 func (c *MBC1) Write(address uint16, value uint8) {
@@ -59,7 +65,9 @@ func (c *MBC1) Write(address uint16, value uint8) {
 		}
 	} else if address >= 0xA000 && address <= 0xBFFF { // Writing to RAM
 		if c.isRAMEnabled {
-			c.ram[address-0xA000+c.activeRAMBankStart] = value
+			if addr := address - 0xA000 + c.activeRAMBankStart; addr < uint16(len(c.ram)) {
+				c.ram[address-0xA000+c.activeRAMBankStart] = value
+			}
 		}
 	}
 }
