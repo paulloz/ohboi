@@ -233,7 +233,7 @@ func (ppu *PPU) drawSprites(scanline uint8) {
 
 func (ppu *PPU) drawBackgroundTiles(scanline uint8) {
 	tileDataBaseAddr, bgData, window, windowData := ppu.getBackgroundConf(scanline)
-	winX := ppu.io.Read(io.WX) - 7
+	winX := int16(ppu.io.Read(io.WX)) - 7
 	winY := ppu.io.Read(io.WY)
 	colorPalette := ppu.getPalette(io.BGP)
 
@@ -241,10 +241,10 @@ func (ppu *PPU) drawBackgroundTiles(scanline uint8) {
 		var x, y, tileAddress, tileDataAddress uint16
 		var tileNumber int16
 
-		if window && uint8(i) >= winX {
+		if window && int16(i) >= winX {
 			x, tileAddress = i-uint16(winX), windowData
 		} else {
-			x, tileAddress = (uint16(ppu.io.Read(io.SCX))+i)%256, bgData
+			x, tileAddress = ((uint16(ppu.io.Read(io.SCX)) + i) % 256), bgData
 		}
 
 		if window {
