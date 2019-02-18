@@ -1,8 +1,6 @@
 package lcd
 
 import (
-	"os"
-
 	"github.com/veandco/go-sdl2/sdl"
 
 	"github.com/paulloz/ohboi/consts"
@@ -30,22 +28,7 @@ func (sdl2 *sdl2) Render(pixels [consts.ScreenWidth * consts.ScreenHeight]Color)
 	sdl2.renderer.Present()
 }
 
-func (s *sdl2) run() {
-	for {
-		event := sdl.WaitEvent()
-		switch event.(type) {
-		case *sdl.QuitEvent:
-			os.Exit(0)
-		}
-	}
-}
-
 func (sdl2 *sdl2) Initialize(windowName string) {
-	err := sdl.Init(sdl.INIT_EVERYTHING)
-	if err != nil {
-		panic(err)
-	}
-
 	width := int32(consts.ScreenWidth * consts.RenderScale)
 	height := int32(consts.ScreenHeight * consts.RenderScale)
 	window, err := sdl.CreateWindow(windowName, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, width, height, sdl.WINDOW_SHOWN)
@@ -69,8 +52,6 @@ func (sdl2 *sdl2) Initialize(windowName string) {
 	sdl2.renderer = renderer
 	sdl2.texture = texture
 	sdl2.screenRect = &sdl.Rect{W: consts.ScreenWidth, H: consts.ScreenHeight}
-
-	go sdl2.run()
 }
 
 func (sdl2 *sdl2) Destroy() {

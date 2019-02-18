@@ -72,6 +72,11 @@ func guiRun(options GUIOptions, gb *gameboy.GameBoy, quitChan chan int) int {
 			sdl.Do(func() {
 				for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 					events = append(events, event)
+
+					switch event.(type) {
+					case *sdl.QuitEvent:
+						quitChan <- 0
+					}
 				}
 			})
 
