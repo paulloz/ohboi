@@ -111,7 +111,7 @@ func (apu *APU) ReadNR52() uint8 {
 	for i := uint8(0); i < 4; i++ {
 		val |= bits.FromBool(apu.channels[i].IsActive()) << i
 	}
-	return val
+	return val | 0x70
 }
 
 func (apu *APU) WriteNR52(val uint8) {
@@ -144,6 +144,7 @@ func NewAPU(io_ *io.IO) *APU {
 		},
 	}
 
+	// Make sure the mapped registers handle unused bits
 	io_.MapRegister(io.NR50, apu.ReadNR50, apu.WriteNR50)
 	io_.MapRegister(io.NR51, apu.ReadNR51, apu.WriteNR51)
 	io_.MapRegister(io.NR52, apu.ReadNR52, apu.WriteNR52)

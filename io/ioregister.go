@@ -58,18 +58,22 @@ const (
 )
 
 type MemoryRegister struct {
-	value uint8
+	value  uint8
+	unused uint8
 }
 
 func (r *MemoryRegister) Read() uint8 {
-	return r.value
+	return r.value | r.unused
 }
 
 func (r *MemoryRegister) Write(value uint8) {
-	r.value = value
+	r.value = value &^ r.unused
 }
 
-func newMemoryRegister(value uint8) *MemoryRegister {
+func newMemoryRegister(value uint8, unused ...uint8) *MemoryRegister {
+	if len(unused) > 0 {
+		return &MemoryRegister{value: value, unused: unused[0]}
+	}
 	return &MemoryRegister{value: value}
 }
 
