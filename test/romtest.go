@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/paulloz/ohboi/config"
 	"github.com/paulloz/ohboi/gameboy"
 )
 
@@ -15,7 +16,8 @@ func ExecuteROMTest(rom string, t *testing.T) []string {
 	totalTime := 0
 	ticker := time.NewTicker(time.Second).C
 
-	gb := gameboy.NewSerialTextGameBoy(true, func(v uint8) {
+	config.Get().Emulation.SkipBoot = true
+	gb := gameboy.NewSerialTextGameBoy(func(v uint8) {
 		output += fmt.Sprintf("%c", v)
 		if strings.Contains(output, "Failed") || strings.Contains(output, "Passed") {
 			totalTime = 1000

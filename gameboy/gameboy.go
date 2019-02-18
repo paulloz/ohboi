@@ -5,6 +5,7 @@ import (
 
 	"github.com/paulloz/ohboi/apu"
 	"github.com/paulloz/ohboi/bits"
+	"github.com/paulloz/ohboi/config"
 	"github.com/paulloz/ohboi/consts"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
@@ -153,7 +154,7 @@ func (gb *GameBoy) PowerOff() {
 	gb.apu.Destroy()
 }
 
-func NewGameBoy(skipBoot bool) *GameBoy {
+func NewGameBoy() *GameBoy {
 	io_ := io.NewIO()
 	apu := apu.NewAPU(io_)
 
@@ -176,7 +177,7 @@ func NewGameBoy(skipBoot bool) *GameBoy {
 	io_.MapRegister(io.TAC, gb.GetTAC, gb.SetTAC)
 	io_.MapRegister(io.TIMA, gb.GetTIMA, gb.SetTIMA)
 
-	if skipBoot {
+	if config.Get().Emulation.SkipBoot {
 		io_.Write(0x50, 1)
 		cpu.PC = 0x100
 	}
@@ -184,8 +185,8 @@ func NewGameBoy(skipBoot bool) *GameBoy {
 	return gb
 }
 
-func NewSerialTextGameBoy(skipBoot bool, f func(uint8)) *GameBoy {
-	gb := NewGameBoy(skipBoot)
+func NewSerialTextGameBoy(f func(uint8)) *GameBoy {
+	gb := NewGameBoy()
 
 	gb.io.MapRegister(io.SC, func() uint8 { return 0xff }, func(v uint8) {
 		if v == 0x81 {

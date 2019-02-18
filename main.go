@@ -15,7 +15,6 @@ var (
 	romFilename string
 	colorTheme  string
 	vramViewer  bool
-	skipBoot    bool
 	gameBoy     *gameboy.GameBoy
 	breakpoint  string
 )
@@ -24,9 +23,10 @@ func init() {
 	// Audio options
 	config.Get().Audio.Enabled = *flag.Bool("audio", false, "emulate audio")
 
+	// Emulation options
+	config.Get().Emulation.SkipBoot = *flag.Bool("skipboot", true, "skip boot")
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
 	flag.BoolVar(&vramViewer, "vramviewer", false, "enable VRAM viewer")
-	flag.BoolVar(&skipBoot, "skipboot", true, "skip boot")
 	flag.IntVar(&ppu.Scale, "scale", 2, "scale")
 	flag.StringVar(&colorTheme, "theme", "green", "color theme (grey, green)")
 	flag.StringVar(&breakpoint, "breakpoint", "", "breakpoint")
@@ -55,7 +55,7 @@ func main() {
 		ppu.CurrentPalette = ppu.SuperGameboy
 	}
 
-	gameBoy = gameboy.NewGameBoy(skipBoot)
+	gameBoy = gameboy.NewGameBoy()
 
 	if breakpoint != "" {
 		gameboy.AddBreakpoint(breakpoint)
