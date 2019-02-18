@@ -22,7 +22,7 @@ A simple GB emulator written for fun in Go.
 |instr/daa                       |                                                           |:heavy_check_mark:      |
 |interrupts/is_push              |`R1: not cancelled`                                        |:heavy_multiplication_x:|
 |oam_dma/basic                   |                                                           |:heavy_check_mark:      |
-|oam_dma/reg_read                |`Fail: r1`                                                 |:heavy_multiplication_x:|
+|oam_dma/reg_read                |                                                           |:heavy_check_mark:      |
 |oam_dma/sources-dmgABCmgbS      |`Fail: $E000`                                              |:heavy_multiplication_x:|
 |ppu/hblank_ly_scx_timing-GS     |`TEST FAILED`                                              |:heavy_multiplication_x:|
 |ppu/intr_1_2_timing-GS          |`D: 14!, E: 15!`                                           |:heavy_multiplication_x:|

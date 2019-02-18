@@ -25,6 +25,8 @@ type Memory struct {
 	hRAM [0x80]uint8
 
 	wRAM [0x2000]uint8 // 2 4KB banks
+
+	lastWrite uint8
 }
 
 func (mem *Memory) Read(address uint16) uint8 {
@@ -125,6 +127,12 @@ func (mem *Memory) Write(address uint16, value uint8) {
 		mem.cartridge.Write(address, value)
 
 	}
+
+	mem.lastWrite = value
+}
+
+func (mem *Memory) LastWrittenValue() uint8 {
+	return mem.lastWrite
 }
 
 func (mem *Memory) LoadCartridge(cartridge *cartridge.Cartridge) {
