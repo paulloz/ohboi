@@ -119,6 +119,7 @@ func (cpu *CPU) readDIV() uint8 {
 func (cpu *CPU) writeDIV(val uint8) {
 	cpu.div = 0
 	cpu.divCycles = 0
+	cpu.mem.Write((0xff00 | io.TIMA), cpu.mem.Read(io.TMA))
 }
 
 func (cpu *CPU) UpdateDIV(cycles uint32) {
@@ -184,7 +185,7 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 
 				// Push PC to Stack (8 cycles)
 				cpu.Push(cpu.PC)
-				// Set PC to interrupt handler address (4 cycles) */
+				// Set PC to interrupt handler address (4 cycles)
 				cpu.PC = interrupts[b]
 				// Execute 2 NOP (8 cycles)
 				return 20

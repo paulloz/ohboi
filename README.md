@@ -36,7 +36,7 @@ A simple GB emulator written for fun in Go.
 |ppu/stat_irq_blocking           |`TEST FAILED`                                              |:heavy_multiplication_x:|
 |ppu/stat_lyc_onoff              |Never finishes                                             |:heavy_multiplication_x:|
 |ppu/vblank_stat_intr-GS         |`B: 01!, D: 01!, E: 00!`                                   |:heavy_multiplication_x:|
-|timer/div_write                 |`FAIL: INTR`                                               |:heavy_multiplication_x:|
+|timer/div_write                 |                                                           |:heavy_check_mark:      |
 |timer/rapid_toggle              |`B: FF!, C: D9!`                                           |:heavy_multiplication_x:|
 |timer/tim00                     |`D: 04!`                                                   |:heavy_multiplication_x:|
 |timer/tim00_div_trigger         |`E: 05!`                                                   |:heavy_multiplication_x:|
