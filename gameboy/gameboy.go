@@ -9,8 +9,8 @@ import (
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/joypad"
-	"github.com/paulloz/ohboi/lcd"
 	"github.com/paulloz/ohboi/memory"
+	"github.com/paulloz/ohboi/ppu"
 )
 
 type GameBoy struct {
@@ -18,7 +18,7 @@ type GameBoy struct {
 	cpu    *cpu.CPU
 	io     *io.IO
 	Memory *memory.Memory
-	lcd    *lcd.LCD
+	ppu    *ppu.PPU
 	joypad *joypad.Joypad
 
 	timaClock uint32
@@ -47,7 +47,7 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 		}
 		currentInstrCycles += opCycles
 
-		gb.lcd.Update(currentInstrCycles)
+		gb.ppu.Update(currentInstrCycles)
 		gb.apu.Update(currentInstrCycles)
 
 		gb.cpu.UpdateDIV(currentInstrCycles)
@@ -58,7 +58,7 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 		cycles += currentInstrCycles
 	}
 
-	gb.lcd.RenderFrame()
+	gb.ppu.RenderFrame()
 
 	return cycles, currentInstrCycles
 }
@@ -149,7 +149,7 @@ func (gb *GameBoy) PowerOn(stop chan int) {
 }
 
 func (gb *GameBoy) PowerOff() {
-	gb.lcd.Destroy()
+	gb.ppu.Destroy()
 	gb.apu.Destroy()
 }
 
@@ -160,7 +160,7 @@ func NewGameBoy(skipBoot bool) *GameBoy {
 	memory := memory.NewMemory(io_)
 	cpu := cpu.NewCPU(memory, io_)
 
-	lcd := lcd.NewLCD(cpu, memory, io_)
+	ppu := ppu.NewPPU(cpu, memory, io_)
 
 	joypad := joypad.NewJoypad(cpu, io_)
 
@@ -169,7 +169,7 @@ func NewGameBoy(skipBoot bool) *GameBoy {
 		cpu:    cpu,
 		io:     io_,
 		Memory: memory,
-		lcd:    lcd,
+		ppu:    ppu,
 		joypad: joypad,
 	}
 

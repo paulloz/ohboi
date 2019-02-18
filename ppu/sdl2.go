@@ -1,4 +1,4 @@
-package lcd
+package ppu
 
 import (
 	"github.com/veandco/go-sdl2/sdl"

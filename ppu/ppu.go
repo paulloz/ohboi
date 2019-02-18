@@ -1,4 +1,4 @@
-package lcd
+package ppu
 
 import (
 	"os"
@@ -27,7 +27,7 @@ type backend interface {
 	Destroy()
 }
 
-type LCD struct {
+type PPU struct {
 	backend backend
 
 	cpu    *cpu.CPU
@@ -42,18 +42,18 @@ type LCD struct {
 	pixels     [consts.ScreenWidth * consts.ScreenHeight]uint8
 }
 
-func (lcd *LCD) setLCDSTAT() {
-	if !lcd.io.ReadBit(io.LDCD, 7) {
+func (ppu *PPU) setLCDSTAT() {
+	if !ppu.io.ReadBit(io.LDCD, 7) {
 		// Reset everything
-		lcd.scanlineCounter = 0
-		lcd.io.Write(io.LY, 0)
-		lcd.io.Write(io.STAT, 1<<2)
+		ppu.scanlineCounter = 0
+		ppu.io.Write(io.LY, 0)
+		ppu.io.Write(io.STAT, 1<<2)
 		return
 	}
 
-	ly := lcd.io.Read(io.LY)
+	ly := ppu.io.Read(io.LY)
 
-	stat := lcd.io.Read(io.STAT)
+	stat := ppu.io.Read(io.STAT)
 	modeChanged := func(currentMode uint8) func() bool {
 		return func() bool {
 			return currentMode != stat&0x3
@@ -65,19 +65,19 @@ func (lcd *LCD) setLCDSTAT() {
 		stat = bits.Reset(1, bits.Set(0, stat))
 		if bits.Test(4, stat) && modeChanged() {
 			// We changed mode and V-Blank STAT interrupt is enabled
-			lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+			ppu.cpu.RequestInterrupt(cpu.I_LCDSTAT)
 		}
 	} else {
 		// The end of V-Blank to begin of next V-Blank period takes 456 CPU cycles
 		// It is timed like this: Mode2 (80 cycles) -> Mode3 (170~240 cycles) -> Mode0 (remaining cycles)
-		if lcd.scanlineCounter < 80 {
+		if ppu.scanlineCounter < 80 {
 			// We're in Mode2, set mode bits to 11
 			stat = bits.Set(1, bits.Set(0, stat))
 			if bits.Test(5, stat) && modeChanged() {
 				// We changed mode and Mode2 interrupt is enabled
-				lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+				ppu.cpu.RequestInterrupt(cpu.I_LCDSTAT)
 			}
-		} else if lcd.scanlineCounter < 80+170 {
+		} else if ppu.scanlineCounter < 80+170 {
 			// We're in Mode3, set mode bits to 10, no interrupt for Mode3
 			stat = bits.Set(1, bits.Reset(0, stat))
 		} else {
@@ -85,35 +85,35 @@ func (lcd *LCD) setLCDSTAT() {
 			stat = bits.Reset(1, bits.Reset(0, stat))
 			if bits.Test(3, stat) && modeChanged() {
 				// We changed mode and Mode0 interrupt is enabled
-				lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+				ppu.cpu.RequestInterrupt(cpu.I_LCDSTAT)
 			}
 		}
 	}
 
 	// if LYC == LYC, must set bit 2 and request interrupt if bit 6 is set
 	// must reset bit 2 otherwise
-	lyc := lcd.io.Read(io.LYC)
+	lyc := ppu.io.Read(io.LYC)
 	if lyc == ly {
 		bits.Set(2, stat)
 		if bits.Test(6, stat) {
-			lcd.cpu.RequestInterrupt(cpu.I_LCDSTAT)
+			ppu.cpu.RequestInterrupt(cpu.I_LCDSTAT)
 		}
 	} else {
 		bits.Reset(2, stat)
 	}
 
-	lcd.io.Write(io.STAT, stat)
+	ppu.io.Write(io.STAT, stat)
 }
 
-func (lcd *LCD) getBackgroundConf(scanline uint8) (uint16, uint16, bool, uint16) {
-	lcdc := lcd.io.Read(io.LDCD)
+func (ppu *PPU) getBackgroundConf(scanline uint8) (uint16, uint16, bool, uint16) {
+	lcdc := ppu.io.Read(io.LDCD)
 
 	bgData := uint16(0x9800)
 	if bits.Test(3, lcdc) {
 		bgData = 0x9c00
 	}
 
-	window := bits.Test(5, lcdc) && scanline >= lcd.io.Read(io.WY)
+	window := bits.Test(5, lcdc) && scanline >= ppu.io.Read(io.WY)
 	windowData := uint16(0x9800)
 	if bits.Test(6, lcdc) {
 		windowData = 0x9c00
@@ -154,23 +154,23 @@ func (l *SpriteList) Less(i, j int) bool {
 		return false
 	}
 }
-func (lcd *LCD) drawSprites(scanline uint8) {
+func (ppu *PPU) drawSprites(scanline uint8) {
 	var palette [4]Color
 	var sprites SpriteList
 
 	for i := uint16(0); i < SpritesCount; i++ {
 		sprites[i] = Sprite{
-			Y:       lcd.memory.Read(memory.OAMAddr + i*4),
-			X:       lcd.memory.Read(memory.OAMAddr + i*4 + 1),
-			Pattern: lcd.memory.Read(memory.OAMAddr + i*4 + 2),
-			Flags:   lcd.memory.Read(memory.OAMAddr + i*4 + 3),
+			Y:       ppu.memory.Read(memory.OAMAddr + i*4),
+			X:       ppu.memory.Read(memory.OAMAddr + i*4 + 1),
+			Pattern: ppu.memory.Read(memory.OAMAddr + i*4 + 2),
+			Flags:   ppu.memory.Read(memory.OAMAddr + i*4 + 3),
 		}
 	}
 	sort.Sort(&sprites)
 
 	spriteHeight := uint8(8)
 	patternMask := uint8(0xff)
-	if lcd.io.ReadBit(io.LDCD, 2) {
+	if ppu.io.ReadBit(io.LDCD, 2) {
 		spriteHeight = 16
 		patternMask = 0xfe
 	}
@@ -191,9 +191,9 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 		}
 
 		if bits.Test(4, sprite.Flags) {
-			palette = lcd.getPalette(io.OBP1)
+			palette = ppu.getPalette(io.OBP1)
 		} else {
-			palette = lcd.getPalette(io.OBP0)
+			palette = ppu.getPalette(io.OBP0)
 		}
 
 		tileDataAddress := memory.VRAMAddr + uint16(sprite.Pattern&patternMask)*16
@@ -214,12 +214,12 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 				bit = 7 - j
 			}
 
-			tileData := lcd.memory.ReadWord(tileDataAddress + (uint16(line) * 2))
+			tileData := ppu.memory.ReadWord(tileDataAddress + (uint16(line) * 2))
 			shade := ((tileData >> bit & 1) | (tileData>>(bit+8)&1)<<1)
 
-			if shade != 0 && (!priority || lcd.pixels[int(scanline)*consts.ScreenWidth+int(x)] == 0) {
+			if shade != 0 && (!priority || ppu.pixels[int(scanline)*consts.ScreenWidth+int(x)] == 0) {
 				offset := int(scanline)*consts.ScreenWidth + int(x)
-				lcd.workData[offset] = palette[shade]
+				ppu.workData[offset] = palette[shade]
 			}
 
 			x++
@@ -229,11 +229,11 @@ func (lcd *LCD) drawSprites(scanline uint8) {
 	}
 }
 
-func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
-	tileDataBaseAddr, bgData, window, windowData := lcd.getBackgroundConf(scanline)
-	winX := lcd.io.Read(io.WX) - 7
-	winY := lcd.io.Read(io.WY)
-	colorPalette := lcd.getPalette(io.BGP)
+func (ppu *PPU) drawBackgroundTiles(scanline uint8) {
+	tileDataBaseAddr, bgData, window, windowData := ppu.getBackgroundConf(scanline)
+	winX := ppu.io.Read(io.WX) - 7
+	winY := ppu.io.Read(io.WY)
+	colorPalette := ppu.getPalette(io.BGP)
 
 	for i := uint16(0); i < consts.ScreenWidth; i++ {
 		var x, y, tileAddress, tileDataAddress uint16
@@ -242,13 +242,13 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 		if window && uint8(i) >= winX {
 			x, tileAddress = i-uint16(winX), windowData
 		} else {
-			x, tileAddress = (uint16(lcd.io.Read(io.SCX))+i)%256, bgData
+			x, tileAddress = (uint16(ppu.io.Read(io.SCX))+i)%256, bgData
 		}
 
 		if window {
 			y = uint16(scanline - winY)
 		} else {
-			y = uint16(lcd.io.Read(io.SCY) + scanline)
+			y = uint16(ppu.io.Read(io.SCY) + scanline)
 		}
 
 		tileX := x / 8
@@ -261,85 +261,85 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 
 		if tileDataBaseAddr == 0x9000 {
 			// signed addressing
-			tileNumber = int16(int8(lcd.memory.Read(tileAddress)))
+			tileNumber = int16(int8(ppu.memory.Read(tileAddress)))
 		} else {
 			// unsigned addressing
-			tileNumber = int16(lcd.memory.Read(tileAddress))
+			tileNumber = int16(ppu.memory.Read(tileAddress))
 		}
 
 		tileDataAddress = uint16(int32(tileDataBaseAddr) + (int32(tileNumber) * 16))
-		tileData := lcd.memory.ReadWord(tileDataAddress + uint16(line))
+		tileData := ppu.memory.ReadWord(tileDataAddress + uint16(line))
 
 		bit := uint8((int8(x%8) - 7) * -1)
 		shade := (tileData >> bit & 1) | ((tileData >> (bit + 8) & 1) << 1)
 
-		lcd.workData[int(scanline)*consts.ScreenWidth+int(i)] = colorPalette[shade]
-		lcd.pixels[int(scanline)*consts.ScreenWidth+int(i)] = uint8(shade)
+		ppu.workData[int(scanline)*consts.ScreenWidth+int(i)] = colorPalette[shade]
+		ppu.pixels[int(scanline)*consts.ScreenWidth+int(i)] = uint8(shade)
 	}
 }
 
-func (lcd *LCD) drawScanline(scanline uint8) {
-	lcdc := lcd.io.Read(io.LDCD)
+func (ppu *PPU) drawScanline(scanline uint8) {
+	lcdc := ppu.io.Read(io.LDCD)
 
 	if bits.Test(0, lcdc) {
-		lcd.drawBackgroundTiles(scanline)
+		ppu.drawBackgroundTiles(scanline)
 	}
 
 	if bits.Test(1, lcdc) {
-		lcd.drawSprites(scanline)
+		ppu.drawSprites(scanline)
 	}
 }
 
-func (lcd *LCD) clearScreen() {
+func (ppu *PPU) clearScreen() {
 	for i := 0; i < (consts.ScreenWidth * consts.ScreenHeight); i++ {
-		lcd.workData[i] = CurrentPalette[0]
+		ppu.workData[i] = CurrentPalette[0]
 	}
 }
 
-func (lcd *LCD) Update(cycles uint32) {
-	lcd.setLCDSTAT()
+func (ppu *PPU) Update(cycles uint32) {
+	ppu.setLCDSTAT()
 
-	if !lcd.io.ReadBit(io.LDCD, 7) {
+	if !ppu.io.ReadBit(io.LDCD, 7) {
 		// If LCD is disabled
 		return
 	}
 
-	lcd.scanlineCounter += cycles
-	if lcd.scanlineCounter >= ScanlineFrequency {
-		lcd.scanlineCounter -= ScanlineFrequency
+	ppu.scanlineCounter += cycles
+	if ppu.scanlineCounter >= ScanlineFrequency {
+		ppu.scanlineCounter -= ScanlineFrequency
 
-		ly := lcd.io.Read(io.LY) + 1
-		lcd.io.Write(io.LY, ly)
+		ly := ppu.io.Read(io.LY) + 1
+		ppu.io.Write(io.LY, ly)
 
 		if ly > 153 {
-			lcd.io.Write(io.LY, 0)
-			copy(lcd.renderData[:], lcd.workData[:])
-			lcd.clearScreen()
+			ppu.io.Write(io.LY, 0)
+			copy(ppu.renderData[:], ppu.workData[:])
+			ppu.clearScreen()
 		} else if ly >= 144 {
-			lcd.cpu.RequestInterrupt(cpu.I_VBLANK)
+			ppu.cpu.RequestInterrupt(cpu.I_VBLANK)
 		} else {
-			if lcd.lastDrawnScanline != ly {
+			if ppu.lastDrawnScanline != ly {
 				// TODO: Maybe we should draw at the beginning of H-Blank?
-				lcd.drawScanline(ly)
-				lcd.lastDrawnScanline = ly
+				ppu.drawScanline(ly)
+				ppu.lastDrawnScanline = ly
 			}
 		}
 	}
 }
 
-func (lcd *LCD) RenderFrame() {
-	lcd.backend.Render(lcd.renderData)
+func (ppu *PPU) RenderFrame() {
+	ppu.backend.Render(ppu.renderData)
 }
 
-func (lcd *LCD) Destroy() {
-	lcd.backend.Destroy()
+func (ppu *PPU) Destroy() {
+	ppu.backend.Destroy()
 }
 
-func NewLCD(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *LCD {
+func NewPPU(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *PPU {
 	backend := NewSDL2()
 	backend.Initialize(os.Args[0])
 
-	lcd := &LCD{
+	ppu := &PPU{
 		backend: backend,
 
 		cpu:    cpu,
@@ -350,8 +350,8 @@ func NewLCD(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *LCD {
 		lastDrawnScanline: consts.ScreenHeight,
 	}
 
-	lcd.clearScreen()
-	copy(lcd.renderData[:], lcd.workData[:])
+	ppu.clearScreen()
+	copy(ppu.renderData[:], ppu.workData[:])
 
-	return lcd
+	return ppu
 }

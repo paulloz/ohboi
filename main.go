@@ -8,7 +8,7 @@ import (
 	"github.com/paulloz/ohboi/apu"
 	"github.com/paulloz/ohboi/gameboy"
 	"github.com/paulloz/ohboi/gui"
-	"github.com/paulloz/ohboi/lcd"
+	"github.com/paulloz/ohboi/ppu"
 )
 
 var (
@@ -26,7 +26,7 @@ func init() {
 	flag.BoolVar(&vramViewer, "vramviewer", false, "enable VRAM viewer")
 	flag.BoolVar(&skipBoot, "skipboot", true, "skip boot")
 	flag.BoolVar(&audio, "audio", false, "emulate audio")
-	flag.IntVar(&lcd.Scale, "scale", 2, "scale")
+	flag.IntVar(&ppu.Scale, "scale", 2, "scale")
 	flag.StringVar(&colorTheme, "theme", "green", "color theme (grey, green)")
 	flag.StringVar(&breakpoint, "breakpoint", "", "breakpoint")
 	flag.Parse()
@@ -49,9 +49,9 @@ func main() {
 
 	switch colorTheme {
 	case "green":
-		lcd.CurrentPalette = lcd.Greens
+		ppu.CurrentPalette = ppu.Greens
 	case "sgb":
-		lcd.CurrentPalette = lcd.SuperGameboy
+		ppu.CurrentPalette = ppu.SuperGameboy
 	}
 
 	if audio {

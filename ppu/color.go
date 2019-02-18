@@ -1,4 +1,4 @@
-package lcd
+package ppu
 
 type Color struct {
 	R uint8
@@ -33,8 +33,8 @@ func NewColor(r uint8, g uint8, b uint8) Color {
 	return Color{R: r, G: g, B: b}
 }
 
-func (lcd *LCD) getPalette(ioAddr uint8) [4]Color {
-	palette := lcd.io.Read(ioAddr)
+func (ppu *PPU) getPalette(ioAddr uint8) [4]Color {
+	palette := ppu.io.Read(ioAddr)
 	colorPalette := [4]Color{}
 	for i := uint8(0); i < 8; i += 2 {
 		shade := (palette >> i) & 3
