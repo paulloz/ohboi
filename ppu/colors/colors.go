@@ -29,8 +29,6 @@ var SuperGameboy = Palette{
 	{R: 0x33, G: 0x1e, B: 0x50},
 }
 
-var CurrentPalette = Greys
-
 func NewColor(r uint8, g uint8, b uint8) Color {
 	return Color{R: r, G: g, B: b}
 }

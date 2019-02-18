@@ -9,11 +9,11 @@ import (
 	"github.com/paulloz/ohboi/gameboy"
 	"github.com/paulloz/ohboi/gui"
 	"github.com/paulloz/ohboi/ppu"
+	"github.com/paulloz/ohboi/ppu/colors"
 )
 
 var (
 	romFilename string
-	colorTheme  string
 	vramViewer  bool
 	gameBoy     *gameboy.GameBoy
 	breakpoint  string
@@ -26,9 +26,17 @@ func init() {
 	// Emulation options
 	config.Get().Emulation.SkipBoot = *flag.Bool("skipboot", true, "skip boot")
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
+
+	// Video options
+	switch *flag.String("theme", "green", "color theme (grey, green)") {
+	case "green":
+		config.Get().Video.ColorTheme = colors.Greens
+	case "sgb":
+		config.Get().Video.ColorTheme = colors.SuperGameboy
+	}
+
 	flag.BoolVar(&vramViewer, "vramviewer", false, "enable VRAM viewer")
 	flag.IntVar(&ppu.Scale, "scale", 2, "scale")
-	flag.StringVar(&colorTheme, "theme", "green", "color theme (grey, green)")
 	flag.StringVar(&breakpoint, "breakpoint", "", "breakpoint")
 	flag.Parse()
 
@@ -47,13 +55,6 @@ func (c *Const) Get() uint8 {
 
 func main() {
 	quitChan := make(chan int)
-
-	switch colorTheme {
-	case "green":
-		ppu.CurrentPalette = ppu.Greens
-	case "sgb":
-		ppu.CurrentPalette = ppu.SuperGameboy
-	}
 
 	gameBoy = gameboy.NewGameBoy()
 

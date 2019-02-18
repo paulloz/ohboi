@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/paulloz/ohboi/bits"
+	"github.com/paulloz/ohboi/config"
 	"github.com/paulloz/ohboi/consts"
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
@@ -296,14 +297,14 @@ func (ppu *PPU) getPalette(ioAddr uint8) colors.Palette {
 	colorPalette := colors.Palette{}
 	for i := uint8(0); i < 8; i += 2 {
 		shade := (palette >> i) & 3
-		colorPalette[i/2] = colors.CurrentPalette[shade]
+		colorPalette[i/2] = config.Get().Video.ColorTheme[shade]
 	}
 	return colorPalette
 }
 
 func (ppu *PPU) clearScreen() {
 	for i := 0; i < (consts.ScreenWidth * consts.ScreenHeight); i++ {
-		ppu.workData[i] = colors.CurrentPalette[0]
+		ppu.workData[i] = config.Get().Video.ColorTheme[0]
 	}
 }
 
