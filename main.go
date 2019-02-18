@@ -22,15 +22,17 @@ func init() {
 	conf := config.Get()
 
 	// Audio options
-	conf.Audio.Enabled = *flag.Bool("audio", conf.Audio.Enabled, "emulate audio")
+	flag.BoolVar(&conf.Audio.Enabled, "audio", conf.Audio.Enabled, "emulate audio")
 
 	// Emulation options
-	conf.Emulation.SkipBoot = *flag.Bool("skipboot", conf.Emulation.SkipBoot, "skip boot")
+	flag.BoolVar(&conf.Emulation.SkipBoot, "skipboot", conf.Emulation.SkipBoot, "skip boot")
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
 
 	// Video options
-	conf.Video.Scale = *flag.Float64("scale", conf.Video.Scale, "scale")
-	switch *flag.String("theme", "", "color theme (sgb, green)") {
+	var theme string
+	flag.Float64Var(&conf.Video.Scale, "scale", conf.Video.Scale, "scale")
+	flag.StringVar(&theme, "theme", "", "color theme (sgb, green)")
+	switch theme {
 	case "green":
 		conf.Video.ColorTheme = colors.Greens
 	case "sgb":
