@@ -155,8 +155,10 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 
 	if cpu.interruptsMasterEnabling {
 		cpu.interruptsMasterEnabling = false
-		cpu.interruptsMasterEnable = true
-		return 0
+		if !cpu.interruptsMasterEnable {
+			cpu.interruptsMasterEnable = true
+			return 0
+		}
 	}
 
 	if !cpu.interruptsMasterEnable && !cpu.isHalted {

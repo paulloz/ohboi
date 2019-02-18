@@ -56,7 +56,7 @@ A simple GB emulator written for fun in Go.
 |call_timing2                    |`B: 81!, C: 81!, D: 81!`                                   |:heavy_multiplication_x:|
 |di_timing-GS                    |`FAIL: ROUND 2`                                            |:heavy_multiplication_x:|
 |div_timing                      |                                                           |:heavy_check_mark:      |
-|ei_sequence                     |`C: A2!`                                                   |:heavy_multiplication_x:|
+|ei_sequence                     |                                                           |:heavy_check_mark:      |
 |ei_timing                       |                                                           |:heavy_check_mark:      |
 |halt_ime0_ei                    |                                                           |:heavy_check_mark:      |
 |halt_ime0_nointr_timing         |`D: 11!, E: 12!`                                           |:heavy_multiplication_x:|
