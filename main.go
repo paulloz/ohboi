@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/paulloz/ohboi/apu"
+	"github.com/paulloz/ohboi/config"
 	"github.com/paulloz/ohboi/gameboy"
 	"github.com/paulloz/ohboi/gui"
 	"github.com/paulloz/ohboi/ppu"
@@ -16,16 +16,17 @@ var (
 	colorTheme  string
 	vramViewer  bool
 	skipBoot    bool
-	audio       bool
 	gameBoy     *gameboy.GameBoy
 	breakpoint  string
 )
 
 func init() {
+	// Audio options
+	config.Get().Audio.Enabled = *flag.Bool("audio", false, "emulate audio")
+
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
 	flag.BoolVar(&vramViewer, "vramviewer", false, "enable VRAM viewer")
 	flag.BoolVar(&skipBoot, "skipboot", true, "skip boot")
-	flag.BoolVar(&audio, "audio", false, "emulate audio")
 	flag.IntVar(&ppu.Scale, "scale", 2, "scale")
 	flag.StringVar(&colorTheme, "theme", "green", "color theme (grey, green)")
 	flag.StringVar(&breakpoint, "breakpoint", "", "breakpoint")
@@ -52,12 +53,6 @@ func main() {
 		ppu.CurrentPalette = ppu.Greens
 	case "sgb":
 		ppu.CurrentPalette = ppu.SuperGameboy
-	}
-
-	if audio {
-		apu.Backend = "sdl2"
-	} else {
-		apu.Backend = ""
 	}
 
 	gameBoy = gameboy.NewGameBoy(skipBoot)
