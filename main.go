@@ -19,20 +19,22 @@ var (
 )
 
 func init() {
+	conf := config.Get()
+
 	// Audio options
-	config.Get().Audio.Enabled = *flag.Bool("audio", false, "emulate audio")
+	conf.Audio.Enabled = *flag.Bool("audio", conf.Audio.Enabled, "emulate audio")
 
 	// Emulation options
-	config.Get().Emulation.SkipBoot = *flag.Bool("skipboot", true, "skip boot")
+	conf.Emulation.SkipBoot = *flag.Bool("skipboot", conf.Emulation.SkipBoot, "skip boot")
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
 
 	// Video options
-	config.Get().Video.Scale = *flag.Float64("scale", 2, "scale")
-	switch *flag.String("theme", "green", "color theme (grey, green)") {
+	conf.Video.Scale = *flag.Float64("scale", conf.Video.Scale, "scale")
+	switch *flag.String("theme", "", "color theme (sgb, green)") {
 	case "green":
-		config.Get().Video.ColorTheme = colors.Greens
+		conf.Video.ColorTheme = colors.Greens
 	case "sgb":
-		config.Get().Video.ColorTheme = colors.SuperGameboy
+		conf.Video.ColorTheme = colors.SuperGameboy
 	}
 
 	flag.BoolVar(&vramViewer, "vramviewer", false, "enable VRAM viewer")

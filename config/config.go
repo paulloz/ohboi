@@ -27,9 +27,24 @@ var (
 	instance *config
 )
 
+func init() {
+	initConfig()
+}
+
+func initConfig() {
+	instance = &config{
+		Audio:     audioconfig{Enabled: false},
+		Emulation: emulationconfig{SkipBoot: true},
+		Video: videoconfig{
+			ColorTheme: colors.Greens,
+			Scale:      2,
+		},
+	}
+}
+
 func Get() *config {
 	if instance == nil {
-		instance = &config{}
+		initConfig()
 	}
 
 	return instance
