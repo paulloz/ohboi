@@ -9,6 +9,7 @@ import (
 	"github.com/paulloz/ohboi/cpu"
 	"github.com/paulloz/ohboi/io"
 	"github.com/paulloz/ohboi/memory"
+	"github.com/paulloz/ohboi/ppu/colors"
 )
 
 var (
@@ -23,7 +24,7 @@ const (
 
 type backend interface {
 	Initialize(string)
-	Render([consts.ScreenWidth * consts.ScreenHeight]Color)
+	Render([consts.ScreenWidth * consts.ScreenHeight]colors.Color)
 	Destroy()
 }
 
@@ -37,8 +38,8 @@ type PPU struct {
 	scanlineCounter   uint32
 	lastDrawnScanline uint8
 
-	workData   [consts.ScreenWidth * consts.ScreenHeight]Color
-	renderData [consts.ScreenWidth * consts.ScreenHeight]Color
+	workData   [consts.ScreenWidth * consts.ScreenHeight]colors.Color
+	renderData [consts.ScreenWidth * consts.ScreenHeight]colors.Color
 	pixels     [consts.ScreenWidth * consts.ScreenHeight]uint8
 }
 
@@ -155,7 +156,7 @@ func (l *SpriteList) Less(i, j int) bool {
 	}
 }
 func (ppu *PPU) drawSprites(scanline uint8) {
-	var palette [4]Color
+	var palette colors.Palette
 	var sprites SpriteList
 
 	for i := uint16(0); i < SpritesCount; i++ {
@@ -290,9 +291,19 @@ func (ppu *PPU) drawScanline(scanline uint8) {
 	}
 }
 
+func (ppu *PPU) getPalette(ioAddr uint8) colors.Palette {
+	palette := ppu.io.Read(ioAddr)
+	colorPalette := colors.Palette{}
+	for i := uint8(0); i < 8; i += 2 {
+		shade := (palette >> i) & 3
+		colorPalette[i/2] = colors.CurrentPalette[shade]
+	}
+	return colorPalette
+}
+
 func (ppu *PPU) clearScreen() {
 	for i := 0; i < (consts.ScreenWidth * consts.ScreenHeight); i++ {
-		ppu.workData[i] = CurrentPalette[0]
+		ppu.workData[i] = colors.CurrentPalette[0]
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 
 	"github.com/paulloz/ohboi/consts"
+	"github.com/paulloz/ohboi/ppu/colors"
 )
 
 type sdl2 struct {
@@ -13,7 +14,7 @@ type sdl2 struct {
 	screenRect *sdl.Rect
 }
 
-func (sdl2 *sdl2) Render(pixels [consts.ScreenWidth * consts.ScreenHeight]Color) {
+func (sdl2 *sdl2) Render(pixels [consts.ScreenWidth * consts.ScreenHeight]colors.Color) {
 	buffer := [len(pixels)]uint32{}
 	for i, pixel := range pixels {
 		buffer[i] = (uint32(pixel.R) << 24) | (uint32(pixel.G) << 16) | (uint32(pixel.B) << 8) | 0xff
