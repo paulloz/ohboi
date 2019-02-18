@@ -257,7 +257,7 @@ func (lcd *LCD) drawBackgroundTiles(scanline uint8) {
 
 		tileAddress += (tileY * 32) + tileX
 
-		// TODO BG WRAP
+		// TODO: BG WRAP
 
 		if tileDataBaseAddr == 0x9000 {
 			// signed addressing
@@ -319,7 +319,7 @@ func (lcd *LCD) Update(cycles uint32) {
 			lcd.cpu.RequestInterrupt(cpu.I_VBLANK)
 		} else {
 			if lcd.lastDrawnScanline != ly {
-				// TODO Maybe we should draw at the beginning of H-Blank?
+				// TODO: Maybe we should draw at the beginning of H-Blank?
 				lcd.drawScanline(ly)
 				lcd.lastDrawnScanline = ly
 			}

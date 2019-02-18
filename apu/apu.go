@@ -83,7 +83,7 @@ func (apu *APU) Destroy() {
 }
 
 func (apu *APU) ReadNR50() uint8 {
-	// TODO
+	// TODO:
 	return 0xf
 }
 
@@ -128,7 +128,7 @@ func NewAPU(io_ *io.IO) *APU {
 		backend = &dummy{}
 	}
 
-	// TODO chan1 should probably extend chan2 as it's basically behaving
+	// TODO: chan1 should probably extend chan2 as it's basically behaving
 	//		the same way with other shenanigans on top
 	chan1 := newChannel2()
 	chan2 := newChannel2()
@@ -141,6 +141,8 @@ func NewAPU(io_ *io.IO) *APU {
 		channels: []channel{
 			chan1,
 			chan2,
+			newChannel2(),
+			newChannel2(),
 		},
 	}
 
