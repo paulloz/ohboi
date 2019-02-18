@@ -8,7 +8,6 @@ import (
 	"github.com/paulloz/ohboi/config"
 	"github.com/paulloz/ohboi/gameboy"
 	"github.com/paulloz/ohboi/gui"
-	"github.com/paulloz/ohboi/ppu"
 	"github.com/paulloz/ohboi/ppu/colors"
 )
 
@@ -28,6 +27,7 @@ func init() {
 	flag.StringVar(&romFilename, "rom", "", "path to the rom file")
 
 	// Video options
+	config.Get().Video.Scale = *flag.Float64("scale", 2, "scale")
 	switch *flag.String("theme", "green", "color theme (grey, green)") {
 	case "green":
 		config.Get().Video.ColorTheme = colors.Greens
@@ -36,7 +36,6 @@ func init() {
 	}
 
 	flag.BoolVar(&vramViewer, "vramviewer", false, "enable VRAM viewer")
-	flag.IntVar(&ppu.Scale, "scale", 2, "scale")
 	flag.StringVar(&breakpoint, "breakpoint", "", "breakpoint")
 	flag.Parse()
 

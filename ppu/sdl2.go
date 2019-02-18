@@ -3,6 +3,7 @@ package ppu
 import (
 	"github.com/veandco/go-sdl2/sdl"
 
+	"github.com/paulloz/ohboi/config"
 	"github.com/paulloz/ohboi/consts"
 	"github.com/paulloz/ohboi/ppu/colors"
 )
@@ -30,8 +31,10 @@ func (sdl2 *sdl2) Render(pixels [consts.ScreenWidth * consts.ScreenHeight]colors
 }
 
 func (sdl2 *sdl2) Initialize(windowName string) {
-	width := int32(consts.ScreenWidth * consts.RenderScale)
-	height := int32(consts.ScreenHeight * consts.RenderScale)
+	scale := float32(config.Get().Video.Scale)
+
+	width := int32(consts.ScreenWidth * scale)
+	height := int32(consts.ScreenHeight * scale)
 	window, err := sdl.CreateWindow(windowName, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, width, height, sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
@@ -41,8 +44,7 @@ func (sdl2 *sdl2) Initialize(windowName string) {
 	if err != nil {
 		panic(err)
 	}
-	fScale := float32(consts.RenderScale)
-	renderer.SetScale(fScale, fScale)
+	renderer.SetScale(scale, scale)
 
 	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGBA8888, sdl.TEXTUREACCESS_STREAMING, consts.ScreenWidth, consts.ScreenHeight)
 	if err != nil {

@@ -11,6 +11,4 @@ const (
 
 	ScreenWidth  = 160
 	ScreenHeight = 144
-
-	RenderScale = 2
 )
