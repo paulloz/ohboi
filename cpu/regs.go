@@ -122,6 +122,30 @@ func (r registerL) Set(cpu *CPU, v uint8) {
 
 var RegisterL = registerL{}
 
+type registerS struct{}
+
+func (r registerS) Get(cpu *CPU) uint8 {
+	return cpu.SP.Hi()
+}
+
+func (r registerS) Set(cpu *CPU, v uint8) {
+	cpu.SP.SetHi(v)
+}
+
+var RegisterS = registerS{}
+
+type registerP struct{}
+
+func (r registerP) Get(cpu *CPU) uint8 {
+	return cpu.SP.Lo()
+}
+
+func (r registerP) Set(cpu *CPU, v uint8) {
+	cpu.SP.SetLo(v)
+}
+
+var RegisterP = registerP{}
+
 type immediate struct{}
 
 func (i immediate) Get(cpu *CPU) uint8 {
@@ -129,6 +153,16 @@ func (i immediate) Get(cpu *CPU) uint8 {
 }
 
 var Immediate = immediate{}
+
+type immediateOperand struct {
+	v uint8
+}
+
+func (i immediateOperand) Get(cpu *CPU) uint8 {
+	return i.v
+}
+
+var ImmediateOperand = &immediateOperand{}
 
 type immediate16 struct{}
 
@@ -283,6 +317,43 @@ func (i addressImmediate) Set(cpu *CPU, v uint8) {
 
 var AddressImmediate = addressImmediate{}
 
+type addressImmediateOperand struct {
+	lo, hi uint8
+}
+
+func (o *addressImmediateOperand) Get(cpu *CPU) uint8 {
+	return cpu.mem.Read(uint16(o.hi)<<8 | uint16(o.lo))
+}
+
+func (o *addressImmediateOperand) Set(cpu *CPU, v uint8) {
+	cpu.mem.Write(uint16(o.hi)<<8|uint16(o.lo), v)
+}
+
+func (o *addressImmediateOperand) Lo() GetterSetter {
+	return o
+}
+
+func (o *addressImmediateOperand) Hi() GetterSetter {
+	return &addressHighImmediateOperand{
+		hi: &o.hi,
+		lo: &o.lo,
+	}
+}
+
+var AddressImmediateOperand = &addressImmediateOperand{}
+
+type addressHighImmediateOperand struct {
+	hi, lo *uint8
+}
+
+func (o *addressHighImmediateOperand) Get(cpu *CPU) uint8 {
+	return cpu.mem.Read(uint16(*o.hi)<<8 | uint16(*o.lo) + 1)
+}
+
+func (o *addressHighImmediateOperand) Set(cpu *CPU, v uint8) {
+	cpu.mem.Write(uint16(*o.hi)<<8|uint16(*o.lo)+1, v)
+}
+
 type addressImmediate16 struct{}
 
 func (i addressImmediate16) Get(cpu *CPU) uint16 {
@@ -308,6 +379,20 @@ func (a addressFF00N) Set(cpu *CPU, v uint8) {
 }
 
 var AddressFF00N = addressFF00N{}
+
+type addressFF00NOperand struct {
+	v uint8
+}
+
+func (a addressFF00NOperand) Get(cpu *CPU) uint8 {
+	return cpu.mem.Read((0xff00 + uint16(a.v)))
+}
+
+func (a addressFF00NOperand) Set(cpu *CPU, v uint8) {
+	cpu.mem.Write((0xff00 + uint16(a.v)), v)
+}
+
+var AddressFF00NOperand = &addressFF00NOperand{}
 
 type registerSP struct{}
 
