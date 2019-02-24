@@ -20,6 +20,8 @@ type Getter interface {
 
 type Setter16 interface {
 	Set(*CPU, uint16)
+	SetHigh(*CPU, uint8)
+	SetLow(*CPU, uint8)
 }
 
 type Getter16 interface {
@@ -197,6 +199,14 @@ func (r registerAF) Set(cpu *CPU, v uint16) {
 	cpu.AF.Set(v)
 }
 
+func (r registerAF) SetHigh(cpu *CPU, v uint8) {
+	cpu.A.Set(v)
+}
+
+func (r registerAF) SetLow(cpu *CPU, v uint8) {
+	cpu.F.Set(v&0xf0 | cpu.F.Get()&0xf)
+}
+
 var RegisterAF = registerAF{}
 
 type registerBC struct{}
@@ -207,6 +217,14 @@ func (r registerBC) Get(cpu *CPU) uint16 {
 
 func (r registerBC) Set(cpu *CPU, v uint16) {
 	cpu.BC.Set(v)
+}
+
+func (r registerBC) SetHigh(cpu *CPU, v uint8) {
+	cpu.B.Set(v)
+}
+
+func (r registerBC) SetLow(cpu *CPU, v uint8) {
+	cpu.C.Set(v)
 }
 
 var RegisterBC = registerBC{}
@@ -233,6 +251,14 @@ func (r registerDE) Set(cpu *CPU, v uint16) {
 	cpu.DE.Set(v)
 }
 
+func (r registerDE) SetHigh(cpu *CPU, v uint8) {
+	cpu.D.Set(v)
+}
+
+func (r registerDE) SetLow(cpu *CPU, v uint8) {
+	cpu.E.Set(v)
+}
+
 var RegisterDE = registerDE{}
 
 type addressDE struct{}
@@ -255,6 +281,14 @@ func (r registerHL) Get(cpu *CPU) uint16 {
 
 func (r registerHL) Set(cpu *CPU, v uint16) {
 	cpu.HL.Set(v)
+}
+
+func (r registerHL) SetHigh(cpu *CPU, v uint8) {
+	cpu.H.Set(v)
+}
+
+func (r registerHL) SetLow(cpu *CPU, v uint8) {
+	cpu.L.Set(v)
 }
 
 var RegisterHL = registerHL{}
@@ -366,6 +400,14 @@ func (i addressImmediate16) Set(cpu *CPU, v uint16) {
 	cpu.mem.WriteWord(uint16(hi)<<8|uint16(lo), v)
 }
 
+func (i addressImmediate16) SetHigh(cpu *CPU, v uint8) {
+	panic("addressImmediate16 does not support SetHigh")
+}
+
+func (i addressImmediate16) SetLow(cpu *CPU, v uint8) {
+	panic("addressImmediate16 does not support SetLow")
+}
+
 var AddressImmediate16 = addressImmediate16{}
 
 type addressFF00N struct{}
@@ -402,6 +444,14 @@ func (r registerSP) Get(cpu *CPU) uint16 {
 
 func (r registerSP) Set(cpu *CPU, v uint16) {
 	cpu.SP.Set(v)
+}
+
+func (r registerSP) SetHigh(cpu *CPU, v uint8) {
+	cpu.SP.Set((uint16(v) << 8) | (cpu.SP.Get() & 0x00ff))
+}
+
+func (r registerSP) SetLow(cpu *CPU, v uint8) {
+	cpu.SP.Set(uint16(v) | (cpu.SP.Get() & 0xff00))
 }
 
 var RegisterSP = registerSP{}

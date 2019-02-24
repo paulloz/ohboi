@@ -134,9 +134,20 @@ func (cpu *CPU) Push(v uint16) {
 	cpu.mem.WriteWord(cpu.SP.Get(), v)
 }
 
+func (cpu *CPU) PushByte(v uint8) {
+	cpu.SP.hilo -= 1
+	cpu.mem.Write(cpu.SP.Get(), v)
+}
+
 func (cpu *CPU) Pop() uint16 {
 	value := cpu.mem.ReadWord(cpu.SP.Get())
 	cpu.SP.hilo += 2
+	return value
+}
+
+func (cpu *CPU) PopByte() uint8 {
+	value := cpu.mem.Read(cpu.SP.Get())
+	cpu.SP.hilo += 1
 	return value
 }
 
