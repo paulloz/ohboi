@@ -52,7 +52,7 @@ func (mem *Memory) Read(address uint16) uint8 {
 
 	case address >= EchoInternalRAMAddr:
 		// Echo on WRAM
-		return mem.Read(EchoInternalRAMAddr - InternalRAMAddr)
+		return mem.Read(address - EchoInternalRAMAddr + InternalRAMAddr)
 
 	case address >= InternalRAMAddr:
 		// Work RAM
@@ -108,7 +108,7 @@ func (mem *Memory) Write(address uint16, value uint8) {
 
 	case address >= EchoInternalRAMAddr:
 		// Echo to WRAM
-		mem.Write(address-(EchoInternalRAMAddr-InternalRAMAddr), value)
+		mem.Write(address-EchoInternalRAMAddr+InternalRAMAddr, value)
 
 	case address >= InternalRAMAddr:
 		// Work RAM
