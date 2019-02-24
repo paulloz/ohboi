@@ -42,7 +42,7 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 		debuggerStep()
 
 		// Execute instruction
-		opCycles, err := gb.cpu.ExecuteOpCode()
+		opCycles, err := gb.cpu.NextCycle()
 		if err != nil {
 			gb.Panic(err)
 		}
@@ -50,13 +50,15 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 
 		gb.ppu.Update(currentInstrCycles)
 		gb.apu.Update(currentInstrCycles)
-
 		gb.cpu.UpdateDIV(currentInstrCycles)
+
 		gb.UpdateTimers(currentInstrCycles)
 		cycles += currentInstrCycles
 
-		currentInstrCycles = gb.cpu.ManageInterrupts()
-		cycles += currentInstrCycles
+		if len(gb.cpu.MicroInstructions) == 0 {
+			currentInstrCycles = gb.cpu.ManageInterrupts()
+			cycles += currentInstrCycles
+		}
 	}
 
 	gb.ppu.RenderFrame()

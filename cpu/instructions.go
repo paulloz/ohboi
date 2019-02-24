@@ -5,9 +5,31 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
+type MicroInstruction func(cpu *CPU, mem *memory.Memory) error
+
+func (m MicroInstruction) Combine(m2 MicroInstruction) MicroInstruction {
+	return func(cpu *CPU, mem *memory.Memory) error {
+		if err := m(cpu, mem); err != nil {
+			return err
+		}
+		return m2(cpu, mem)
+	}
+}
+
 type Instruction struct {
-	Handler func(cpu *CPU, mem *memory.Memory) error
-	Cycles  uint32
+	Handler           func(cpu *CPU, mem *memory.Memory) error
+	Cycles            uint32
+	MicroInstructions []MicroInstruction
+}
+
+func (i Instruction) Handle(cpu *CPU, mem *memory.Memory) error {
+	return i.Handler(cpu, mem)
+}
+
+func NewInstruction(micros ...MicroInstruction) Instruction {
+	return Instruction{
+		MicroInstructions: micros,
+	}
 }
 
 var InstructionSet map[uint8]Instruction
@@ -33,16 +55,20 @@ func RegisterExtInstructions(instructions map[uint8]Instruction) {
 	}
 }
 
-var NoopInstruction = Instruction{
-	Handler: func(cpu *CPU, mem *memory.Memory) error {
-		return nil
-	},
-	Cycles: 4,
+func DecodeInstruction(cpu *CPU, mem *memory.Memory) error {
+	return nil
+}
+
+func NoopInstruction(cpu *CPU, mem *memory.Memory) error {
+	return nil
 }
 
 func init() {
 	RegisterInstructions(map[uint8]Instruction{
-		op.NOOP: NoopInstruction,
+		op.NOOP: Instruction{
+			Handler: NoopInstruction,
+			Cycles:  4,
+		},
 		op.HALT: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				cpu.isHalted = true

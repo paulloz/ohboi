@@ -70,7 +70,7 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 	instructionSize := func(opcodeName string) int {
 		if strings.Contains(opcodeName, ",nn") || strings.Contains(opcodeName, " nn") {
 			return 3
-		} else if strings.Contains(opcodeName, ",n") {
+		} else if strings.Contains(opcodeName, ",n") || strings.Contains(opcodeName, "ff00n") {
 			return 2
 		}
 		return 1
@@ -262,7 +262,7 @@ func debuggerStep() {
 	cpu := debugger.gb.cpu
 	if debugger.stepByStep {
 		<-debugger.stepper
-	} else if (debugger.stepPC == int(cpu.PC)) || (debugger.stepPC == int(cpu.PC)+1) {
+	} else if debugger.stepPC == int(cpu.PC) {
 		<-debugger.stepper
 	} else {
 		parameters := make(map[string]interface{})

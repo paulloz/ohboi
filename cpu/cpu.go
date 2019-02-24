@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/paulloz/ohboi/bits"
@@ -42,6 +43,8 @@ type CPU struct {
 	interruptsMasterEnabling  bool
 	interruptsMasterDisabling bool
 
+	MicroInstructions []MicroInstruction
+
 	mem *memory.Memory
 	io  *io.IO
 }
@@ -68,6 +71,26 @@ func (cpu *CPU) FetchWord() uint16 {
 	return cpu.mem.ReadWord(cpu.AdvancePC())
 }
 
+var ClearPipeline = errors.New("ClearPipeline")
+
+func (cpu *CPU) execMicro(microInstruction MicroInstruction) error {
+	err := microInstruction(cpu, cpu.mem)
+	if err == ClearPipeline {
+		cpu.MicroInstructions = cpu.MicroInstructions[:0]
+	}
+	return nil
+}
+
+func (cpu *CPU) NextCycle() (uint32, error) {
+	if len(cpu.MicroInstructions) > 0 {
+		microInstruction := cpu.MicroInstructions[0]
+		cpu.MicroInstructions = cpu.MicroInstructions[1:]
+		return 4, cpu.execMicro(microInstruction)
+	} else {
+		return cpu.ExecuteOpCode()
+	}
+}
+
 func (cpu *CPU) ExecuteOpCode() (uint32, error) {
 	if cpu.isHalted {
 		return InstructionSet[op.NOOP].Cycles, nil
@@ -89,6 +112,11 @@ func (cpu *CPU) ExecuteOpCode() (uint32, error) {
 		if !ok {
 			return 0, fmt.Errorf("opcode %X not implemented", opcode)
 		}
+	}
+
+	if len(instruction.MicroInstructions) > 0 {
+		cpu.MicroInstructions = instruction.MicroInstructions[1:]
+		return 4, cpu.execMicro(instruction.MicroInstructions[0])
 	}
 
 	return instruction.Cycles, instruction.Handler(cpu, cpu.mem)
