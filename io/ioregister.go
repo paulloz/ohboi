@@ -55,6 +55,8 @@ const (
 	OBP1 = 0x49
 	WY   = 0x4a
 	WX   = 0x4b
+
+	BOOTROM = 0x50
 )
 
 type MemoryRegister struct {

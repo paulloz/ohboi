@@ -68,7 +68,7 @@ func (mem *Memory) Read(address uint16) uint8 {
 
 	default:
 		// Cartridge ROM
-		if mem.io.Read(0x50) == 0 && address < uint16(len(bootRom)) {
+		if mem.io.Read(io.BOOTROM) == 0 && address < uint16(len(bootRom)) {
 			return bootRom[address]
 		}
 

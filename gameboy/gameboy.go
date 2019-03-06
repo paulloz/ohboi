@@ -178,7 +178,7 @@ func NewGameBoy() *GameBoy {
 	io_.MapRegister(io.TIMA, gb.GetTIMA, gb.SetTIMA)
 
 	if config.Get().Emulation.SkipBoot {
-		io_.Write(0x50, 1)
+		io_.Write(io.BOOTROM, 1)
 		cpu.PC = 0x100
 	}
 

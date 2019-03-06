@@ -113,5 +113,7 @@ func NewIO() *IO {
 	io.registers[WY] = newMemoryRegister(0)
 	io.registers[WX] = newMemoryRegister(0)
 
+	io.registers[BOOTROM] = newMemoryRegister(0)
+
 	return io
 }
