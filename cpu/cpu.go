@@ -38,6 +38,7 @@ type CPU struct {
 
 	divCycles uint32
 	div       uint8
+	resetDIV  bool
 
 	interruptsMasterEnable    bool
 	interruptsMasterEnabling  bool
@@ -156,17 +157,25 @@ func (cpu *CPU) readDIV() uint8 {
 }
 
 func (cpu *CPU) writeDIV(val uint8) {
-	cpu.div = 0
-	cpu.divCycles = 0
-	cpu.mem.Write((0xff00 | io.TIMA), cpu.mem.Read(io.TMA))
+	cpu.resetDIV = true
+	cpu.io.Write(io.TIMA, cpu.io.Read(io.TMA))
 }
 
 func (cpu *CPU) UpdateDIV(cycles uint32) {
 	cpu.divCycles += cycles
 
 	for cpu.divCycles >= 256 {
+		if cpu.resetDIV {
+			cpu.io.Write(io.TIMA, cpu.io.Read(io.TIMA)+1)
+		}
 		cpu.divCycles -= 256
 		cpu.div++
+	}
+
+	if cpu.resetDIV {
+		cpu.div = 0
+		cpu.divCycles = 0
+		cpu.resetDIV = false
 	}
 }
 
