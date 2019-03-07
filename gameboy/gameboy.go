@@ -160,6 +160,10 @@ func (gb *GameBoy) PowerOff() {
 	gb.apu.Destroy()
 }
 
+func (gb *GameBoy) GetCPU() *cpu.CPU {
+	return gb.cpu
+}
+
 func NewGameBoy() *GameBoy {
 	io_ := io.NewIO()
 	apu := apu.NewAPU(io_)

@@ -79,6 +79,18 @@ func newMemoryRegister(value uint8, unused ...uint8) *MemoryRegister {
 	return &MemoryRegister{value: value}
 }
 
+type zeroRegister struct {
+}
+
+func (r *zeroRegister) Read() uint8 {
+	return 0
+}
+
+func (r *zeroRegister) Write(value uint8) {
+}
+
+var ZeroRegister = &zeroRegister{}
+
 type MappedRegister struct {
 	getter func() uint8
 	setter func(uint8)

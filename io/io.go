@@ -115,5 +115,15 @@ func NewIO() *IO {
 
 	io.registers[BOOTROM] = newMemoryRegister(0)
 
+	/*
+		// Undocumented GBC registers for GBC
+		io.registers[0x72] = newMemoryRegister(0)
+		io.registers[0x73] = newMemoryRegister(0)
+		io.registers[0x74] = newMemoryRegister(0, 0xff)
+		io.registers[0x75] = newMemoryRegister(0, 0x8f)
+		io.registers[0x76] = ZeroRegister
+		io.registers[0x77] = ZeroRegister
+	*/
+
 	return io
 }
