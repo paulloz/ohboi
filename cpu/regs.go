@@ -179,11 +179,11 @@ var Immediate16 = immediate16{}
 type addressC struct{}
 
 func (a addressC) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(0xff00 + uint16(cpu.C.Get()))
+	return cpu.Read(0xff00 + uint16(cpu.C.Get()))
 }
 
 func (a addressC) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write((0xff00 + uint16(cpu.C.Get())), v)
+	cpu.Write((0xff00 + uint16(cpu.C.Get())), v)
 }
 
 var AddressC = addressC{}
@@ -232,11 +232,11 @@ var RegisterBC = registerBC{}
 type addressBC struct{}
 
 func (a addressBC) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(cpu.BC.hilo)
+	return cpu.Read(cpu.BC.hilo)
 }
 
 func (a addressBC) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(cpu.BC.hilo, v)
+	cpu.Write(cpu.BC.hilo, v)
 }
 
 var AddressBC = addressBC{}
@@ -264,11 +264,11 @@ var RegisterDE = registerDE{}
 type addressDE struct{}
 
 func (a addressDE) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(cpu.DE.hilo)
+	return cpu.Read(cpu.DE.hilo)
 }
 
 func (a addressDE) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(cpu.DE.hilo, v)
+	cpu.Write(cpu.DE.hilo, v)
 }
 
 var AddressDE = addressDE{}
@@ -296,11 +296,11 @@ var RegisterHL = registerHL{}
 type addressHL struct{}
 
 func (a addressHL) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(cpu.HL.hilo)
+	return cpu.Read(cpu.HL.hilo)
 }
 
 func (a addressHL) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(cpu.HL.hilo, v)
+	cpu.Write(cpu.HL.hilo, v)
 }
 
 var AddressHL = addressHL{}
@@ -308,13 +308,13 @@ var AddressHL = addressHL{}
 type addressHLDec struct{}
 
 func (a addressHLDec) Get(cpu *CPU) uint8 {
-	value := cpu.mem.Read(cpu.HL.hilo)
+	value := cpu.Read(cpu.HL.hilo)
 	cpu.HL.hilo--
 	return value
 }
 
 func (a addressHLDec) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(cpu.HL.hilo, v)
+	cpu.Write(cpu.HL.hilo, v)
 	cpu.HL.hilo--
 }
 
@@ -323,13 +323,13 @@ var AddressHLDec = addressHLDec{}
 type addressHLInc struct{}
 
 func (a addressHLInc) Get(cpu *CPU) uint8 {
-	value := cpu.mem.Read(cpu.HL.hilo)
+	value := cpu.Read(cpu.HL.hilo)
 	cpu.HL.hilo++
 	return value
 }
 
 func (a addressHLInc) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(cpu.HL.hilo, v)
+	cpu.Write(cpu.HL.hilo, v)
 	cpu.HL.hilo++
 }
 
@@ -340,13 +340,13 @@ type addressImmediate struct{}
 func (i addressImmediate) Get(cpu *CPU) uint8 {
 	lo := cpu.FetchByte()
 	hi := cpu.FetchByte()
-	return cpu.mem.Read(uint16(hi)<<8 | uint16(lo))
+	return cpu.Read(uint16(hi)<<8 | uint16(lo))
 }
 
 func (i addressImmediate) Set(cpu *CPU, v uint8) {
 	lo := cpu.FetchByte()
 	hi := cpu.FetchByte()
-	cpu.mem.Write(uint16(hi)<<8|uint16(lo), v)
+	cpu.Write(uint16(hi)<<8|uint16(lo), v)
 }
 
 var AddressImmediate = addressImmediate{}
@@ -356,11 +356,11 @@ type addressImmediateOperand struct {
 }
 
 func (o *addressImmediateOperand) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(uint16(o.hi)<<8 | uint16(o.lo))
+	return cpu.Read(uint16(o.hi)<<8 | uint16(o.lo))
 }
 
 func (o *addressImmediateOperand) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(uint16(o.hi)<<8|uint16(o.lo), v)
+	cpu.Write(uint16(o.hi)<<8|uint16(o.lo), v)
 }
 
 func (o *addressImmediateOperand) Lo() GetterSetter {
@@ -381,23 +381,23 @@ type addressHighImmediateOperand struct {
 }
 
 func (o *addressHighImmediateOperand) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(uint16(*o.hi)<<8 | uint16(*o.lo) + 1)
+	return cpu.Read(uint16(*o.hi)<<8 | uint16(*o.lo) + 1)
 }
 
 func (o *addressHighImmediateOperand) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write(uint16(*o.hi)<<8|uint16(*o.lo)+1, v)
+	cpu.Write(uint16(*o.hi)<<8|uint16(*o.lo)+1, v)
 }
 
 type addressImmediate16 struct{}
 
 func (i addressImmediate16) Get(cpu *CPU) uint16 {
-	return cpu.mem.ReadWord(cpu.FetchWord())
+	return cpu.ReadWord(cpu.FetchWord())
 }
 
 func (i addressImmediate16) Set(cpu *CPU, v uint16) {
 	lo := cpu.FetchByte()
 	hi := cpu.FetchByte()
-	cpu.mem.WriteWord(uint16(hi)<<8|uint16(lo), v)
+	cpu.WriteWord(uint16(hi)<<8|uint16(lo), v)
 }
 
 func (i addressImmediate16) SetHigh(cpu *CPU, v uint8) {
@@ -413,11 +413,11 @@ var AddressImmediate16 = addressImmediate16{}
 type addressFF00N struct{}
 
 func (a addressFF00N) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read(0xff00 + uint16(cpu.FetchByte()))
+	return cpu.Read(0xff00 + uint16(cpu.FetchByte()))
 }
 
 func (a addressFF00N) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write((0xff00 + uint16(cpu.FetchByte())), v)
+	cpu.Write((0xff00 + uint16(cpu.FetchByte())), v)
 }
 
 var AddressFF00N = addressFF00N{}
@@ -427,11 +427,11 @@ type addressFF00NOperand struct {
 }
 
 func (a addressFF00NOperand) Get(cpu *CPU) uint8 {
-	return cpu.mem.Read((0xff00 + uint16(a.v)))
+	return cpu.Read((0xff00 + uint16(a.v)))
 }
 
 func (a addressFF00NOperand) Set(cpu *CPU, v uint8) {
-	cpu.mem.Write((0xff00 + uint16(a.v)), v)
+	cpu.Write((0xff00 + uint16(a.v)), v)
 }
 
 var AddressFF00NOperand = &addressFF00NOperand{}

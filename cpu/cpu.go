@@ -48,6 +48,10 @@ type CPU struct {
 
 	mem *memory.Memory
 	io  *io.IO
+
+	dmaCycles         uint16
+	dmaBaseSrcAddress uint16
+	resetDMA          bool
 }
 
 func (cpu *CPU) Dump() string {
@@ -64,6 +68,10 @@ func (cpu *CPU) Dump() string {
 }
 
 func (cpu *CPU) FetchByte() uint8 {
+	if cpu.IsDMA() && cpu.dmaCycles > 0 && cpu.PC >= memory.OAMAddr && cpu.PC < 0xfea0 {
+		cpu.AdvancePC()
+		return 0xff
+	}
 	return cpu.mem.Read(cpu.AdvancePC())
 }
 
@@ -132,12 +140,12 @@ func (cpu *CPU) AdvancePC() uint16 {
 
 func (cpu *CPU) Push(v uint16) {
 	cpu.SP.hilo -= 2
-	cpu.mem.WriteWord(cpu.SP.Get(), v)
+	cpu.WriteWord(cpu.SP.Get(), v)
 }
 
 func (cpu *CPU) PushByte(v uint8) {
 	cpu.SP.hilo -= 1
-	cpu.mem.Write(cpu.SP.Get(), v)
+	cpu.Write(cpu.SP.Get(), v)
 }
 
 func (cpu *CPU) Pop() uint16 {
@@ -147,7 +155,7 @@ func (cpu *CPU) Pop() uint16 {
 }
 
 func (cpu *CPU) PopByte() uint8 {
-	value := cpu.mem.Read(cpu.SP.Get())
+	value := cpu.Read(cpu.SP.Get())
 	cpu.SP.hilo += 1
 	return value
 }
@@ -183,6 +191,42 @@ func (cpu *CPU) RequestInterrupt(interrupt uint8) {
 	if interrupt >= I_VBLANK && interrupt <= I_JOYPAD {
 		cpu.io.SetBit(io.IF, interrupt)
 	}
+}
+
+func (cpu *CPU) Write(addr uint16, value uint8) {
+	if !cpu.canAccess(addr) {
+		return
+	}
+	cpu.mem.Write(addr, value)
+}
+
+func (cpu *CPU) canAccess(addr uint16) bool {
+	if cpu.IsDMA() && cpu.dmaCycles > 0 && addr >= memory.OAMAddr && addr < 0xfea0 {
+		return false
+	}
+	return true
+}
+
+func (cpu *CPU) Read(addr uint16) uint8 {
+	if !cpu.canAccess(addr) {
+		return 0xff
+	}
+	return cpu.mem.Read(addr)
+}
+
+func (cpu *CPU) ReadWord(addr uint16) uint16 {
+	if !cpu.canAccess(addr) {
+		return 0xffff
+	}
+	return cpu.mem.ReadWord(addr)
+}
+
+func (cpu *CPU) WriteWord(addr, value uint16) {
+	if !cpu.canAccess(addr) {
+		return
+	}
+	cpu.mem.Write(addr, uint8(value&0xff))
+	cpu.mem.Write(addr+1, uint8(value>>8))
 }
 
 func (cpu *CPU) EnableInterrupts() {
@@ -246,19 +290,45 @@ func (cpu *CPU) ManageInterrupts() uint32 {
 	return 0
 }
 
-func (cpu *CPU) DMATransfert(baseSrcAddress uint8) {
-	for i := uint16(0); i < 0xa0; i++ {
-		if baseSrcAddress >= 0xe0 {
-			baseSrcAddress = baseSrcAddress - 0xe0 + 0xc0
+func (cpu *CPU) IsDMA() bool {
+	return cpu.dmaCycles < 0xa1
+}
+
+func (cpu *CPU) UpdateDMA(cycles uint32) {
+	for cycles >= 4 && cpu.IsDMA() {
+		if cpu.resetDMA {
+			cpu.dmaCycles = 0
+			cpu.resetDMA = false
+			cycles -= 4
+			continue
 		}
-		srcAddress := (uint16(baseSrcAddress) << 8) + i
-		dstAddress := 0xfe00 + i
-		cpu.mem.Write(dstAddress, cpu.mem.Read(srcAddress))
+
+		if cpu.dmaCycles > 0 && cpu.dmaCycles <= 0xa0 {
+			srcAddress := (uint16(cpu.dmaBaseSrcAddress) << 8) + cpu.dmaCycles - 1
+			dstAddress := 0xfe00 + cpu.dmaCycles - 1
+			cpu.mem.Write(dstAddress, cpu.mem.Read(srcAddress))
+		}
+
+		cpu.dmaCycles++
+		cycles -= 4
 	}
 }
 
+func (cpu *CPU) DMATransfert(baseSrcAddress uint8) {
+	if baseSrcAddress >= 0xe0 {
+		baseSrcAddress = baseSrcAddress - 0xe0 + 0xc0
+	}
+	cpu.dmaBaseSrcAddress = uint16(baseSrcAddress)
+	cpu.dmaCycles = 0
+	cpu.resetDMA = true
+}
+
 func (cpu *CPU) ReadDMA() uint8 {
-	return cpu.mem.LastWrittenValue()
+	return uint8(cpu.dmaBaseSrcAddress)
+}
+
+func (cpu *CPU) DMACycles() uint16 {
+	return cpu.dmaCycles
 }
 
 func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
@@ -274,6 +344,8 @@ func NewCPU(mem *memory.Memory, io_ *io.IO) *CPU {
 
 		divCycles: 0,
 		div:       0,
+
+		dmaCycles: 0xa3,
 
 		interruptsMasterEnable:    true,
 		interruptsMasterEnabling:  false,

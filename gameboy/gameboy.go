@@ -54,10 +54,12 @@ func (gb *GameBoy) Update(pendingCycles uint32) (uint32, uint32) {
 		cycles += opCycles
 
 		gb.cpu.UpdateDIV(opCycles)
+		gb.cpu.UpdateDMA(opCycles)
 
 		if len(gb.cpu.MicroInstructions) == 0 {
 			currentInstrCycles = gb.cpu.ManageInterrupts()
 			gb.cpu.UpdateDIV(currentInstrCycles)
+			gb.cpu.UpdateDMA(currentInstrCycles)
 			cycles += currentInstrCycles
 			gb.UpdateTimers(currentInstrCycles)
 		}

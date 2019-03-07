@@ -71,7 +71,7 @@ A simple GB emulator written for fun in Go.
 |ld_hl_sp_e_timing               |Graphical artifacts on screen, can't read results          |:heavy_multiplication_x:|
 |oam_dma_restart                 |`C: FF!`                                                   |:heavy_multiplication_x:|
 |oam_dma_start                   |`B: D7!, C: 01!, D: D7!`                                   |:heavy_multiplication_x:|
-|oam_dma_timing                  |`C: FF!`                                                   |:heavy_multiplication_x:|
+|oam_dma_timing                  |`C: FF!`                                                   |:heavy_check_mark:     :|
 |pop_timing                      |                                                           |:heavy_check_mark:      |
 |push_timing                     |`D: 81!`                                                   |:heavy_multiplication_x:|
 |rapid_di_ei                     |`B: 00!, C: 00!, D: 01!`                                   |:heavy_multiplication_x:|
