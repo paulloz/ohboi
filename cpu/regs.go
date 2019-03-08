@@ -374,6 +374,10 @@ func (o *addressImmediateOperand) Hi() GetterSetter {
 	}
 }
 
+func (o *addressImmediateOperand) Address() uint16 {
+	return uint16(o.hi)<<8 | uint16(o.lo)
+}
+
 var AddressImmediateOperand = &addressImmediateOperand{}
 
 type addressHighImmediateOperand struct {

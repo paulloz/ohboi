@@ -131,6 +131,10 @@ func (cpu *CPU) ExecuteOpCode() (uint32, error) {
 	return instruction.Cycles, instruction.Handler(cpu, cpu.mem)
 }
 
+func (cpu *CPU) Jump(nn uint16) {
+	cpu.PC = nn
+}
+
 // AdvancePC returns PC value and increments it
 func (cpu *CPU) AdvancePC() uint16 {
 	n := cpu.PC
@@ -182,7 +186,7 @@ func (cpu *CPU) UpdateDIV(cycles uint32) {
 
 	if cpu.resetDIV {
 		cpu.div = 0
-		cpu.divCycles = 0
+		cpu.divCycles = 4
 		cpu.resetDIV = false
 	}
 }

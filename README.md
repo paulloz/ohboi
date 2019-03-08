@@ -58,7 +58,7 @@ A simple GB emulator written for fun in Go.
 |call_timing                     |Never finishes                                             |:heavy_multiplication_x:|
 |call_timing2                    |`B: 81!, C: 81!, D: 81!`                                   |:heavy_multiplication_x:|
 |di_timing-GS                    |`FAIL: ROUND 2`                                            |:heavy_multiplication_x:|
-|div_timing                      |                                                           |:heavy_multiplication_x:|
+|div_timing                      |                                                           |:heavy_check_mark:      |
 |ei_sequence                     |                                                           |:heavy_check_mark:      |
 |ei_timing                       |                                                           |:heavy_check_mark:      |
 |halt_ime0_ei                    |                                                           |:heavy_check_mark:      |
@@ -67,13 +67,13 @@ A simple GB emulator written for fun in Go.
 |halt_ime1_timing2-GS            |`B: 11!, C: 12!, D: 11!, E: 12!`                           |:heavy_multiplication_x:|
 |if_ie_registers                 |                                                           |:heavy_check_mark:      |
 |intr_timing                     |`D: 00!`                                                   |:heavy_multiplication_x:|
-|jp_timing                       |Never finishes                                             |:heavy_multiplication_x:|
+|jp_timing                       |                                                           |:heavy_check_mark:      |
 |jp_cc_timing                    |Never finishes                                             |:heavy_multiplication_x:|
 |ld_hl_sp_e_timing               |Graphical artifacts on screen, can't read results          |:heavy_multiplication_x:|
 |oam_dma_restart                 |`C: FF!`                                                   |:heavy_multiplication_x:|
 |oam_dma_start                   |`B: D7!, C: 01!, D: D7!`                                   |:heavy_multiplication_x:|
-|oam_dma_timing                  |                                                           |:heavy_check_mark:     :|
-|pop_timing                      |`C: 01!, E: 01!`                                           |:heavy_multiplication_x:|
+|oam_dma_timing                  |                                                           |:heavy_check_mark:      |
+|pop_timing                      |                                                           |:heavy_check_mark:      |
 |push_timing                     |`D: 81!`                                                   |:heavy_multiplication_x:|
 |rapid_di_ei                     |`B: 00!, C: 00!, D: 01!`                                   |:heavy_multiplication_x:|
 |ret_cc_timing                   |Graphical artifacts on screen, can't read results          |:heavy_multiplication_x:|
