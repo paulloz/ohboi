@@ -6,6 +6,21 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
+func Add(src Getter) MicroInstruction {
+	return func(cpu *CPU, mem *memory.Memory) error {
+		a, b := cpu.A.Get(), src.Get(cpu)
+		sum := uint16(a) + uint16(b)
+		uint8Sum := uint8(sum)
+		cpu.A.Set(uint8Sum)
+
+		cpu.SetZFlag(uint8Sum == 0)
+		cpu.SetNFlag(false)
+		cpu.SetHFlag(((a&0xf)+(b&0xf))&0x10 != 0)
+		cpu.SetCFlag(sum >= 256)
+		return nil
+	}
+}
+
 func newAdd(src Getter, cycles uint32) Instruction {
 	return Instruction{
 		Handler: func(cpu *CPU, mem *memory.Memory) error {
@@ -244,15 +259,15 @@ func newXorA(src Getter) Instruction {
 
 func init() {
 	RegisterInstructions(map[uint8]Instruction{
-		op.ADD_A_A:  newAdd(RegisterA, 4),
-		op.ADD_A_B:  newAdd(RegisterB, 4),
-		op.ADD_A_C:  newAdd(RegisterC, 4),
-		op.ADD_A_D:  newAdd(RegisterD, 4),
-		op.ADD_A_E:  newAdd(RegisterE, 4),
-		op.ADD_A_H:  newAdd(RegisterH, 4),
-		op.ADD_A_L:  newAdd(RegisterL, 4),
-		op.ADD_A_HL: newAdd(AddressHL, 8),
-		op.ADD_A_N:  newAdd(Immediate, 8),
+		op.ADD_A_A:  NewInstruction(Add(RegisterA)),
+		op.ADD_A_B:  NewInstruction(Add(RegisterB)),
+		op.ADD_A_C:  NewInstruction(Add(RegisterC)),
+		op.ADD_A_D:  NewInstruction(Add(RegisterD)),
+		op.ADD_A_E:  NewInstruction(Add(RegisterE)),
+		op.ADD_A_H:  NewInstruction(Add(RegisterH)),
+		op.ADD_A_L:  NewInstruction(Add(RegisterL)),
+		op.ADD_A_HL: NewInstruction(DecodeInstruction, Add(AddressHL)),
+		op.ADD_A_N:  NewInstruction(DecodeInstruction, FetchByte(&ImmediateOperand.v).Combine(Add(ImmediateOperand))),
 
 		op.ADD_HL_BC: newAdd16(RegisterBC, 8),
 		op.ADD_HL_DE: newAdd16(RegisterDE, 8),
@@ -357,10 +372,13 @@ func init() {
 		op.XOR_HL: newXorA(AddressHL),
 		op.XOR_N:  newXorA(Immediate),
 
-		op.ADD_SP_N: Instruction{
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
+		op.ADD_SP_N: NewInstruction(
+			DecodeInstruction,
+			FetchByte(&ImmediateOperand.v),
+			DecodeInstruction,
+			func(cpu *CPU, mem *memory.Memory) error {
 				in := int32(cpu.SP.hilo)
-				rel := int32(int8(cpu.FetchByte()))
+				rel := int32(int8(ImmediateOperand.v))
 
 				result := in + rel
 				cpu.SP.Set(uint16(result))
@@ -374,7 +392,6 @@ func init() {
 
 				return nil
 			},
-			Cycles: 16,
-		},
+		),
 	})
 }
