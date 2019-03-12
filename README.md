@@ -1,3 +1,5 @@
+![](tloz-la.gif)
+
 A simple GB emulator written for fun in Go.
 
 ## Current test ROMs status
