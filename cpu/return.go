@@ -5,68 +5,52 @@ import (
 	"github.com/paulloz/ohboi/memory"
 )
 
+func EnableInterrupts(cpu *CPU, mem *memory.Memory) error {
+	cpu.EnableInterrupts()
+	return nil
+}
+
+func PopByte(v *uint8) MicroInstruction {
+	return func(cpu *CPU, mem *memory.Memory) error {
+		*v = cpu.PopByte()
+		return nil
+	}
+}
+
+func newRetInstruction(condition func(cpu *CPU, mem *memory.Memory) bool, jmpCombine MicroInstruction) Instruction {
+	micros := []MicroInstruction{DecodeInstruction}
+
+	if condition != nil {
+		micros = append(micros, SkipIf(condition))
+	}
+
+	var jmp MicroInstruction = func(cpu *CPU, mem *memory.Memory) error {
+		cpu.PC = AddressImmediateOperand.Address()
+		return nil
+	}
+	if jmpCombine != nil {
+		jmp.Combine(jmpCombine)
+	}
+
+	micros = append(micros, PopByte(&AddressImmediateOperand.lo),
+		PopByte(&AddressImmediateOperand.hi),
+		jmp)
+
+	return NewInstruction(micros...)
+}
+
 func init() {
 	RegisterInstructions(map[uint8]Instruction{
-		op.RET: Instruction{
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				cpu.PC = cpu.Pop()
-				return nil
-			},
-			Cycles: 8,
-		},
+		op.RET: newRetInstruction(nil, nil),
 
-		op.RET_C: Instruction{
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				if cpu.GetCFlag() {
-					addr := cpu.Pop()
-					cpu.PC = addr
-				}
-				return nil
-			},
-			Cycles: 8,
-		},
+		op.RETI: newRetInstruction(nil, EnableInterrupts),
 
-		op.RET_NC: Instruction{
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				if !cpu.GetCFlag() {
-					addr := cpu.Pop()
-					cpu.PC = addr
-				}
-				return nil
-			},
-			Cycles: 8,
-		},
+		op.RET_C: newRetInstruction(func(cpu *CPU, mem *memory.Memory) bool { return cpu.GetCFlag() }, nil),
 
-		op.RET_Z: Instruction{
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				if cpu.GetZFlag() {
-					addr := cpu.Pop()
-					cpu.PC = addr
-				}
-				return nil
-			},
-			Cycles: 8,
-		},
+		op.RET_NC: newRetInstruction(func(cpu *CPU, mem *memory.Memory) bool { return !cpu.GetCFlag() }, nil),
 
-		op.RET_NZ: Instruction{
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				if !cpu.GetZFlag() {
-					addr := cpu.Pop()
-					cpu.PC = addr
-				}
-				return nil
-			},
-			Cycles: 8,
-		},
+		op.RET_Z: newRetInstruction(func(cpu *CPU, mem *memory.Memory) bool { return cpu.GetZFlag() }, nil),
 
-		op.RETI: Instruction{
-			Handler: func(cpu *CPU, mem *memory.Memory) error {
-				addr := cpu.Pop()
-				cpu.PC = addr
-				cpu.EnableInterrupts()
-				return nil
-			},
-			Cycles: 8,
-		},
+		op.RET_NZ: newRetInstruction(func(cpu *CPU, mem *memory.Memory) bool { return !cpu.GetZFlag() }, nil),
 	})
 }

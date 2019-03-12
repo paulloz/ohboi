@@ -6,14 +6,19 @@ import (
 )
 
 func newReset(offset uint8) Instruction {
-	return Instruction{
-		Handler: func(cpu *CPU, mem *memory.Memory) error {
-			cpu.Push(cpu.PC)
+	return NewInstruction(
+		DecodeInstruction,
+		NoopInstruction,
+		func(cpu *CPU, mem *memory.Memory) error {
+			cpu.PushByte(uint8(cpu.PC >> 8))
+			return nil
+		},
+		func(cpu *CPU, mem *memory.Memory) error {
+			cpu.PushByte(uint8(cpu.PC))
 			cpu.PC = uint16(offset)
 			return nil
 		},
-		Cycles: 32,
-	}
+	)
 }
 
 func init() {
