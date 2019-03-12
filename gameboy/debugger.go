@@ -13,6 +13,7 @@ import (
 	"github.com/Knetic/govaluate"
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
+	"github.com/paulloz/ohboi/cartridge"
 	"github.com/paulloz/ohboi/consts"
 )
 
@@ -28,6 +29,7 @@ type tDebugger struct {
 	uiio        *widgets.Paragraph
 	uimem       *widgets.Paragraph
 	uiinput     *widgets.Paragraph
+	uicartridge *widgets.Paragraph
 	uitabpane   *widgets.TabPane
 	breakpoints []Breakpoint
 
@@ -57,6 +59,7 @@ func init() {
 		uiio:        widgets.NewParagraph(),
 		uimem:       widgets.NewParagraph(),
 		uiinput:     widgets.NewParagraph(),
+		uicartridge: widgets.NewParagraph(),
 		uitabpane:   widgets.NewTabPane(),
 
 		stepByStep: true,
@@ -90,6 +93,9 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 		debugger.uinext.Title = "Next instructions"
 		debugger.uinext.SetRect(30, 3, 68, 12)
 
+		debugger.uicartridge.Title = "Cartridge"
+		debugger.uicartridge.SetRect(10, 12, 68, 17)
+
 		debugger.uistack.Title = "Stack"
 		debugger.uistack.SetRect(23, 17, 43, 36)
 
@@ -111,6 +117,7 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 				ui.Render(debugger.uistack)
 				ui.Render(debugger.uiio)
 				ui.Render(debugger.uimem)
+				ui.Render(debugger.uicartridge)
 			case 1:
 				ui.Render(debugger.uiinput)
 			}
@@ -218,6 +225,16 @@ func (debugger *tDebugger) start(gb *GameBoy) {
 					addr += 8
 				}
 				debugger.uimem.Text = mem
+
+				cr := debugger.gb.Memory.Cartridge()
+				if mbc1, ok := cr.MBC.(*cartridge.MBC1); ok {
+					mode := mbc1.GetMode()
+					ramEnabled, ram, ramBank, activeRAMBankStart := mbc1.GetRAMState()
+					text := fmt.Sprintf(" RAM banking: %v, RAM %d\n RAM enabled %+v, RAM bank %d, RAM address %X\n", mode, ram, ramEnabled, ramBank, activeRAMBankStart)
+					romBank, activeROMBankStart := mbc1.GetROMState()
+					text += fmt.Sprintf(" ROM bank: %d, ROM address: %X", romBank, activeROMBankStart)
+					debugger.uicartridge.Text = text
+				}
 
 				io := fmt.Sprintf("\nDIV : 0x%02x\n", gb.Memory.Read(0xff04))
 				io += fmt.Sprintf("IE  : 0x%02x\n", gb.Memory.Read(0xffff))
