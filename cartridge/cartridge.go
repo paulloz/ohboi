@@ -11,6 +11,8 @@ import (
 type MBC interface {
 	Read(address uint16) uint8
 	Write(address uint16, value uint8)
+	Save(filename string) error
+	Load(filename string) error
 }
 
 // Header describes the GameBoy cartBridge header
@@ -34,6 +36,7 @@ type Header struct {
 type Cartridge struct {
 	MBC
 	Header
+	filename string
 }
 
 func (h *Header) readHeader(data []byte) error {
@@ -71,8 +74,12 @@ func (h *Header) validateChecksum(data []byte) error {
 	return nil
 }
 
+func (c *Cartridge) Filename() string {
+	return c.filename
+}
+
 func NewCartridge(filename string) (*Cartridge, error) {
-	cartridge := &Cartridge{}
+	cartridge := &Cartridge{filename: filename}
 
 	// Read data from disk
 	_data, err := ioutil.ReadFile(filename)

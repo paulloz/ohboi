@@ -131,12 +131,14 @@ func (mem *Memory) LoadCartridge(cartridge *cartridge.Cartridge) {
 	mem.cartridge = cartridge
 }
 
-func (mem *Memory) LoadCartridgeFromFile(filename string) {
+func (mem *Memory) LoadCartridgeFromFile(filename string) *cartridge.Cartridge {
 	cartridge, err := cartridge.NewCartridge(filename)
 	if err != nil {
 		panic(err)
 	}
+
 	mem.LoadCartridge(cartridge)
+	return cartridge
 }
 
 func (mem *Memory) Cartridge() *cartridge.Cartridge {

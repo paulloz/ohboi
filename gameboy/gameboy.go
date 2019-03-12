@@ -1,6 +1,10 @@
 package gameboy
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/paulloz/ohboi/apu"
@@ -128,7 +132,16 @@ func (gb *GameBoy) SetTIMA(value uint8) {
 }
 
 func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
-	gb.Memory.LoadCartridgeFromFile(filename)
+	cartridge := gb.Memory.LoadCartridgeFromFile(filename)
+
+	sav := strings.TrimSuffix(filename, filepath.Ext(filename)) + ".sav"
+	if _, err := os.Stat(sav); err == nil {
+		if err := cartridge.Load(sav); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to load cartridge state from %s: %s", err, sav)
+		} else {
+			fmt.Fprintf(os.Stderr, "Cartridge state successfully loaded from %s", sav)
+		}
+	}
 }
 
 func (gb *GameBoy) PowerOn(stop chan int) {
@@ -158,6 +171,10 @@ func (gb *GameBoy) PowerOn(stop chan int) {
 func (gb *GameBoy) PowerOff() {
 	gb.ppu.Destroy()
 	gb.apu.Destroy()
+
+	cartridge := gb.Memory.Cartridge()
+	filename := cartridge.Filename()
+	cartridge.Save(strings.TrimSuffix(filename, filepath.Ext(filename)) + ".sav")
 }
 
 func (gb *GameBoy) GetCPU() *cpu.CPU {

@@ -14,6 +14,14 @@ func (c *ROM) Read(address uint16) uint8 {
 
 func (c *ROM) Write(address uint16, value uint8) {}
 
+func (c *ROM) Load(filename string) error {
+	return nil
+}
+
+func (c *ROM) Save(filename string) error {
+	return nil
+}
+
 func NewROM(data []uint8) *ROM {
 	return &ROM{
 		rom: data,

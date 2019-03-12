@@ -1,5 +1,10 @@
 package cartridge
 
+import (
+	"io/ioutil"
+	"os"
+)
+
 type MBC1 struct {
 	rom []uint8
 
@@ -105,4 +110,32 @@ func (c *MBC1) bankROM(newBank uint8) {
 func (c *MBC1) bankRAM(newBank uint8) {
 	c.ramBank = newBank & c.ramBankMask
 	c.activeRAMBankStart = uint16(c.ramBank) * uint16(0x2000)
+}
+
+func (c *MBC1) Save(filename string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	if _, err := f.Write(c.ram); err != nil {
+		return err
+	}
+
+	return f.Close()
+}
+
+func (c *MBC1) Load(filename string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+
+	content, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+
+	copy(c.ram, content)
+	return nil
 }
