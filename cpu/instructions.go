@@ -76,6 +76,12 @@ func init() {
 			},
 			Cycles: 4,
 		},
+		op.STOP: Instruction{
+			Handler: func(cpu *CPU, mem *memory.Memory) error {
+				return nil
+			},
+			Cycles: 4,
+		},
 		op.DI: Instruction{
 			Handler: func(cpu *CPU, mem *memory.Memory) error {
 				cpu.DisableInterrupts()

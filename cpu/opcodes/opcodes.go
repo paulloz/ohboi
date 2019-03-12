@@ -14,6 +14,7 @@ const (
 	DAA = 0x27
 
 	HALT = 0x76
+	STOP = 0x10
 
 	// LD n, nn
 	LD_B_N = 0x06
