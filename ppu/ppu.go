@@ -328,7 +328,9 @@ func (ppu *PPU) Update(cycles uint32) {
 			copy(ppu.renderData[:], ppu.workData[:])
 			ppu.clearScreen()
 		} else if ly >= 144 {
-			ppu.cpu.RequestInterrupt(cpu.I_VBLANK)
+			if ly == 144 {
+				ppu.cpu.RequestInterrupt(cpu.I_VBLANK)
+			}
 		} else {
 			if ppu.lastDrawnScanline != ly {
 				// TODO: Maybe we should draw at the beginning of H-Blank?
