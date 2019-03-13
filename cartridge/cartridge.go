@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"io/ioutil"
 )
 
@@ -78,11 +79,11 @@ func (c *Cartridge) Filename() string {
 	return c.filename
 }
 
-func NewCartridge(filename string) (*Cartridge, error) {
+func NewCartridge(filename string, file io.Reader) (*Cartridge, error) {
 	cartridge := &Cartridge{filename: filename}
 
 	// Read data from disk
-	_data, err := ioutil.ReadFile(filename)
+	_data, err := ioutil.ReadAll(file)
 	data := make([]uint8, len(_data))
 	if err != nil {
 		return nil, err

@@ -87,3 +87,9 @@ A simple GB emulator written for fun in Go.
 * [http://gbdev.gg8.se/wiki/articles/Pan_Docs](http://gbdev.gg8.se/wiki/articles/Pan_Docs)
 * [http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
 * [https://rednex.github.io/rgbds/gbz80.7.html](https://rednex.github.io/rgbds/gbz80.7.html)
+
+## Bundle a ROM
+
+To bundle a ROM with ohboi, name your ROM `bundledROM.gb` and run the following command:
+
+`go-bindata -nometadata -o statics/bindata.go -tags bundle -pkg=statics -ignore=bindata.go bundledROM.gb`

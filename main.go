@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"github.com/paulloz/ohboi/gameboy"
 	"github.com/paulloz/ohboi/gui"
 	"github.com/paulloz/ohboi/ppu/colors"
+	"github.com/paulloz/ohboi/statics"
 )
 
 var (
@@ -67,10 +69,20 @@ func main() {
 	}
 
 	go func() {
+		var err error
 		if len(romFilename) > 0 {
-			gameBoy.InsertCartridgeFromFile(romFilename)
-			gameBoy.PowerOn(quitChan)
+			_, err = gameBoy.InsertCartridgeFromPath(romFilename)
+		} else if bundled, err := statics.Asset("bundledROM.gb"); err == nil {
+			fmt.Println("Found embedded ROM")
+			reader := bytes.NewReader([]byte(bundled))
+			_, err = gameBoy.InsertCartridge("bundledROM.gb", reader)
 		}
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+		}
+
+		gameBoy.PowerOn(quitChan)
 		quitChan <- 0
 	}()
 

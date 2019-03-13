@@ -1,6 +1,8 @@
 package memory
 
 import (
+	goio "io"
+
 	"github.com/paulloz/ohboi/cartridge"
 	"github.com/paulloz/ohboi/io"
 )
@@ -70,7 +72,11 @@ func (mem *Memory) Read(address uint16) uint8 {
 			return bootRom[address]
 		}
 
-		return mem.cartridge.Read(address)
+		if mem.cartridge != nil {
+			return mem.cartridge.Read(address)
+		}
+
+		return 0xff
 	}
 }
 
@@ -114,7 +120,9 @@ func (mem *Memory) Write(address uint16, value uint8) {
 
 	case address >= SwitchableRAMAddr:
 		// Cartridge RAM
-		mem.cartridge.Write(address, value)
+		if mem.cartridge != nil {
+			mem.cartridge.Write(address, value)
+		}
 
 	case address >= VRAMAddr:
 		// Video RAM
@@ -122,8 +130,9 @@ func (mem *Memory) Write(address uint16, value uint8) {
 
 	default:
 		// Cartridge ROM
-		mem.cartridge.Write(address, value)
-
+		if mem.cartridge != nil {
+			mem.cartridge.Write(address, value)
+		}
 	}
 }
 
@@ -131,14 +140,14 @@ func (mem *Memory) LoadCartridge(cartridge *cartridge.Cartridge) {
 	mem.cartridge = cartridge
 }
 
-func (mem *Memory) LoadCartridgeFromFile(filename string) *cartridge.Cartridge {
-	cartridge, err := cartridge.NewCartridge(filename)
+func (mem *Memory) LoadCartridgeFromFile(filename string, reader goio.Reader) (*cartridge.Cartridge, error) {
+	cartridge, err := cartridge.NewCartridge(filename, reader)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	mem.LoadCartridge(cartridge)
-	return cartridge
+	return cartridge, nil
 }
 
 func (mem *Memory) Cartridge() *cartridge.Cartridge {

@@ -2,10 +2,13 @@ package gameboy
 
 import (
 	"fmt"
+	goio "io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/paulloz/ohboi/cartridge"
 
 	"github.com/paulloz/ohboi/apu"
 	"github.com/paulloz/ohboi/bits"
@@ -131,17 +134,32 @@ func (gb *GameBoy) SetTIMA(value uint8) {
 	gb.timaClock = 0
 }
 
-func (gb *GameBoy) InsertCartridgeFromFile(filename string) {
-	cartridge := gb.Memory.LoadCartridgeFromFile(filename)
+func (gb *GameBoy) InsertCartridgeFromPath(filename string) (*cartridge.Cartridge, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return gb.InsertCartridge(filename, f)
+}
+
+func (gb *GameBoy) InsertCartridge(filename string, reader goio.Reader) (*cartridge.Cartridge, error) {
+	cartridge, err := gb.Memory.LoadCartridgeFromFile(filename, reader)
+	if err != nil {
+		return nil, err
+	}
 
 	sav := strings.TrimSuffix(filename, filepath.Ext(filename)) + ".sav"
 	if _, err := os.Stat(sav); err == nil {
 		if err := cartridge.Load(sav); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to load cartridge state from %s: %s", err, sav)
+			return cartridge, fmt.Errorf("Failed to load cartridge state from %s: %s", err, sav)
 		} else {
-			fmt.Fprintf(os.Stderr, "Cartridge state successfully loaded from %s", sav)
+			return cartridge, fmt.Errorf("Cartridge state successfully loaded from %s", sav)
 		}
 	}
+
+	return cartridge, nil
 }
 
 func (gb *GameBoy) PowerOn(stop chan int) {
@@ -172,9 +190,10 @@ func (gb *GameBoy) PowerOff() {
 	gb.ppu.Destroy()
 	gb.apu.Destroy()
 
-	cartridge := gb.Memory.Cartridge()
-	filename := cartridge.Filename()
-	cartridge.Save(strings.TrimSuffix(filename, filepath.Ext(filename)) + ".sav")
+	if cartridge := gb.Memory.Cartridge(); cartridge != nil {
+		filename := cartridge.Filename()
+		cartridge.Save(strings.TrimSuffix(filename, filepath.Ext(filename)) + ".sav")
+	}
 }
 
 func (gb *GameBoy) GetCPU() *cpu.CPU {
