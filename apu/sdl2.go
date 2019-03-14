@@ -1,3 +1,5 @@
+// +build !android
+
 package apu
 
 import (
@@ -14,7 +16,6 @@ type sdl2 struct {
 
 func (s *sdl2) Output(buffer [BufferSize * 2]byte) {
 	sdl.Do(func() {
-		// fmt.Println(buffer)
 		fmt.Printf("")
 		sdl.QueueAudio(s.dev, buffer[:])
 	})
@@ -28,11 +29,9 @@ func (s *sdl2) Destroy() {
 	})
 }
 
-func newSDL2(samples uint16) *sdl2 {
+func newBackend() (*sdl2, error) {
 	var dev sdl.AudioDeviceID
 
-	// sdl.Do(func() {
-	// })
 	var want, have *sdl.AudioSpec
 	var err error
 
@@ -45,7 +44,7 @@ func newSDL2(samples uint16) *sdl2 {
 
 	dev, err = sdl.OpenAudioDevice("", false, want, have, 0)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	sdl.PauseAudio(false)
@@ -53,5 +52,5 @@ func newSDL2(samples uint16) *sdl2 {
 
 	return &sdl2{
 		dev: dev,
-	}
+	}, nil
 }

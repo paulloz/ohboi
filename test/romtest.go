@@ -17,7 +17,7 @@ func ExecuteROMTest(gb *gameboy.GameBoy, rom string, t *testing.T, check func() 
 	ticker := time.NewTicker(time.Second).C
 
 	config.Get().Emulation.SkipBoot = true
-	gb.InsertCartridgeFromFile(fmt.Sprintf("../%s", rom))
+	gb.InsertCartridgeFromPath(fmt.Sprintf("../%s", rom))
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -63,9 +63,12 @@ func ExecuteGBROMTest(rom string, t *testing.T) []string {
 	output := ""
 
 	config.Get().Emulation.SkipBoot = true
-	gb := gameboy.NewSerialTextGameBoy(func(v uint8) {
+	gb, err := gameboy.NewSerialTextGameBoy(func(v uint8) {
 		output += fmt.Sprintf("%c", v)
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ExecuteROMTest(gb, rom, t, func() int {
 		if strings.Contains(output, "Failed") {
@@ -89,7 +92,10 @@ func ExecuteGBROMTest(rom string, t *testing.T) []string {
 
 func ExecuteMooneyeROMTest(rom string, t *testing.T) {
 	config.Get().Emulation.SkipBoot = true
-	gb := gameboy.NewGameBoy()
+	gb, err := gameboy.NewGameBoy()
+	if err != nil {
+		t.Fatal(err)
+	}
 	cpu := gb.GetCPU()
 
 	ExecuteROMTest(gb, rom, t, func() int {

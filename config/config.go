@@ -33,7 +33,7 @@ func init() {
 
 func initConfig() {
 	instance = &config{
-		Audio:     audioconfig{Enabled: false},
+		Audio:     audioconfig{Enabled: true},
 		Emulation: emulationconfig{SkipBoot: true},
 		Video: videoconfig{
 			ColorTheme: colors.Greens,

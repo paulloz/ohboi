@@ -71,7 +71,7 @@ func NewJoypad(cpu *cpu.CPU, io_ *io.IO) *Joypad {
 		cpu: cpu,
 		io:  io_,
 
-		backend: NewSDL2(),
+		backend: NewBackend(),
 
 		buttons: 0xff,
 		mode:    M_BUTTON,

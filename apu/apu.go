@@ -116,10 +116,13 @@ func (apu *APU) WriteNR52(val uint8) {
 	apu.active = bits.Test(7, val)
 }
 
-func NewAPU(io_ *io.IO) *APU {
+func NewAPU(io_ *io.IO) (*APU, error) {
 	var backend backend
+	var err error
 	if config.Get().Audio.Enabled {
-		backend = newSDL2(BufferSize)
+		if backend, err = newBackend(); err != nil {
+			return nil, err
+		}
 	} else {
 		backend = &dummy{}
 	}
@@ -157,5 +160,5 @@ func NewAPU(io_ *io.IO) *APU {
 
 	io_.Write(io.NR50, 0x77)
 
-	return apu
+	return apu, nil
 }

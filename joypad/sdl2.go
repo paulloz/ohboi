@@ -1,3 +1,5 @@
+// +build !android
+
 package joypad
 
 import (
@@ -52,7 +54,7 @@ func (s *sdl2) ReadButtons() uint8 {
 	return x
 }
 
-func NewSDL2() *sdl2 {
+func NewBackend() *sdl2 {
 	return &sdl2{
 		mapping: map[int]int{
 			A:      sdl.SCANCODE_K,

@@ -1,3 +1,5 @@
+// +build !android
+
 package ppu
 
 import (
@@ -63,6 +65,6 @@ func (sdl2 *sdl2) Destroy() {
 	sdl2.window.Destroy()
 }
 
-func NewSDL2() *sdl2 {
+func NewBackend() *sdl2 {
 	return &sdl2{}
 }

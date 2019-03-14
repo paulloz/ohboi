@@ -200,9 +200,12 @@ func (gb *GameBoy) GetCPU() *cpu.CPU {
 	return gb.cpu
 }
 
-func NewGameBoy() *GameBoy {
+func NewGameBoy() (*GameBoy, error) {
 	io_ := io.NewIO()
-	apu := apu.NewAPU(io_)
+	apu, err := apu.NewAPU(io_)
+	if err != nil {
+		return nil, err
+	}
 
 	memory := memory.NewMemory(io_)
 	cpu := cpu.NewCPU(memory, io_)
@@ -228,11 +231,14 @@ func NewGameBoy() *GameBoy {
 		cpu.PC = 0x100
 	}
 
-	return gb
+	return gb, nil
 }
 
-func NewSerialTextGameBoy(f func(uint8)) *GameBoy {
-	gb := NewGameBoy()
+func NewSerialTextGameBoy(f func(uint8)) (*GameBoy, error) {
+	gb, err := NewGameBoy()
+	if err != nil {
+		return nil, err
+	}
 
 	gb.io.MapRegister(io.SC, func() uint8 { return 0xff }, func(v uint8) {
 		if v == 0x81 {
@@ -240,5 +246,5 @@ func NewSerialTextGameBoy(f func(uint8)) *GameBoy {
 		}
 	})
 
-	return gb
+	return gb, nil
 }

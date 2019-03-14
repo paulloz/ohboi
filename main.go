@@ -61,7 +61,10 @@ func (c *Const) Get() uint8 {
 func main() {
 	quitChan := make(chan int)
 
-	gameBoy = gameboy.NewGameBoy()
+	gameBoy, err := gameboy.NewGameBoy()
+	if err != nil {
+		panic(err)
+	}
 
 	if breakpoint != "" {
 		gameboy.AddBreakpoint(breakpoint)

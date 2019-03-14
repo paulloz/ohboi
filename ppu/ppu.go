@@ -350,7 +350,7 @@ func (ppu *PPU) Destroy() {
 }
 
 func NewPPU(cpu *cpu.CPU, mem *memory.Memory, io_ *io.IO) *PPU {
-	backend := NewSDL2()
+	backend := NewBackend()
 	backend.Initialize(os.Args[0])
 
 	ppu := &PPU{
